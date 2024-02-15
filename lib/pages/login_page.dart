@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/textfield.dart';
+import 'package:kidneyproject/components/button.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -33,27 +33,7 @@ class LoginPage extends StatelessWidget {
                 height: 300,
               ),
 
-    
-
-              TextFieldWidget(
-                controller: usernameController,
-                hintText: 'Correu Electronic',
-                obscureText: false,
-              ),
-
-              TextFieldWidget(
-                controller: passwordController,
-                hintText: 'Contrasenya',
-                obscureText: true,
-              ),
-              
-
-              //logo
-
-              //button inicia sessio
-
-              //text no tens compte
-
+             const button(buttonText: 'Registra\'t'),
               //button registrat
             ],
           ),
