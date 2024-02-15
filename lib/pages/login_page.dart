@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/button.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  LoginPage({Key? key}) : super(key: key);
+
+  //text editar controlladors
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +33,12 @@ class LoginPage extends StatelessWidget {
                 height: 300,
               ),
 
-              const button(),
-
              const button(buttonText: 'Registra\'t'),
               //button registrat
             ],
           ),
         ),
       ),
-    );s
+    );
   }
 }
