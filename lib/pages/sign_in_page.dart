@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
+class SignIn extends StatelessWidget {
+  SignIn({Key? key}) : super(key: key);
 
   //text editar controlladors
   final usernameController = TextEditingController();
@@ -22,35 +23,41 @@ class LoginPage extends StatelessWidget {
               ),
               //text inicia sessio
               const Text(
-                'Inicia sessió',
+                'Inici de sessió',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
+              //logo
               Image.asset(
                 'lib/images/logoKNP_WT.png',
                 height: 300,
               ),
 
-    
-
+              //Introduccio Correu
               TextFieldWidget(
                 controller: usernameController,
                 hintText: 'Correu Electronic',
                 obscureText: false,
               ),
 
+              //Introduccio Contrasenya
               TextFieldWidget(
                 controller: passwordController,
                 hintText: 'Contrasenya',
                 obscureText: true,
               ),
-              
 
-              //logo
+              //Oblidat Contrasenya
+              Text(
+                'Has oblidat la contrasenya?',
+                style: TextStyle(color: Colors.grey[800]),
+                ),
 
               //button inicia sessio
+              MyButton(),
 
               //text no tens compte
 
