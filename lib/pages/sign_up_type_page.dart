@@ -1,43 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/button.dart';
+import 'package:kidneyproject/components/square_tile.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
+class SignUpTypePage extends StatelessWidget {
+  const SignUpTypePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      body: SafeArea(
+      body: const SafeArea(
         child: Center(
           child: Column(
             children: <Widget>[
-              const SizedBox(
+              SizedBox(
                 height: 50,
               ),
-              //text inicia sessio
-              const Text(
-                'Inicia sessió',
+              Text(
+                'Registra\'t',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
-              ),
 
-              //Introduccio Correu
               Button(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SquareTile(imagePath: 'lib/images/apple.png'),
+                  const SizedBox(width: 60),
 
-              Text(
-                'Si no tens un compte, registrat!',
-                style: TextStyle(color: Colors.grey[800]),
+                  SquareTile(imagePath: 'lib/images/google.png')
+                ],
               ),
-
-              const Button(),
-              //button registrat
             ],
           ),
         ),
