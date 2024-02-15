@@ -9,6 +9,11 @@ class SignIn extends StatelessWidget {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
+  void signUserIn() {
+
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,8 +61,12 @@ class SignIn extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[800]),
                 ),
 
+              const SizedBox(height: 15),
+
               //button inicia sessio
-              MyButton(),
+              MyButton(
+                onTap: signUserIn,
+              ),
 
               //text no tens compte
 
