@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
+import 'package:kidneyproject/components/square_tile.dart';
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
 
-class SignUpTypePage extends StatelessWidget {
-  SignUpTypePage({Key? key}) : super(key: key);
+class SignUpChoose extends StatelessWidget {
+  SignUpChoose({Key? key}) : super(key: key);
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -18,6 +20,13 @@ class SignUpTypePage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SignIn()),
+    );
+  }
+
+  void registerEmail(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpTypePage()),
     );
   }
 
@@ -46,53 +55,12 @@ class SignUpTypePage extends StatelessWidget {
                 'lib/images/logoKNP_WT.png',
                 height: 300,
               ),
-
-              TextFieldWidget(
-                controller: nameController,
-                hintText: 'Nom',
-                obscureText: false,
-              ),
-
-              const SizedBox(height: 15),
-
-              TextFieldWidget(
-                controller: usernameController,
-                hintText: 'Correu Electronic',
-                obscureText: false,
-              ),
-
-              const SizedBox(height: 15),
-
-              TextFieldWidget(
-                controller: passwordController,
-                hintText: 'Constrasenya',
-                obscureText: true,
-              ),
-
-              const SizedBox(height: 15),
-
-              //button inicia sessio
               btn_registrar(
-                onTap: signUserIn,
-              ),
+                onTap: (){
+                  registerEmail(context);
+                }),
 
               const SizedBox(height: 15),
-
-              //Oblidat Contrasenya
-              GestureDetector(
-                onTap: () {
-                  navigateToSignInPage(context);
-                },
-                child: Text(
-                  'Ja tens compte? Inicia Sessió',
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              )
-
-              /*const SizedBox(height: 15),
 
               //Oblidat Contrasenya
               Padding(
@@ -121,19 +89,20 @@ class SignUpTypePage extends StatelessWidget {
                   ],
                 ),
               ),
-               
+
+              
 
               const SizedBox(height: 15),
 
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SquareTile(imagePath: 'lib/images/apple.png'),
+                  SquareTile(imagePath: 'lib/images/facebook.png'),
                   SizedBox(width: 30),
 
                   SquareTile(imagePath: 'lib/images/google.png')
                 ],
-              ),*/
+              ),
             ],
           ),
         ),

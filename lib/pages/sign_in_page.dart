@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
-import 'package:kidneyproject/pages/sign_up_type_page.dart';
+import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class SignIn extends StatelessWidget {
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignUpTypePage()),
+      MaterialPageRoute(builder: (context) => SignUpChoose()),
     );
   }
 
