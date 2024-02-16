@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/button.dart';
+import 'package:kidneyproject/components/btn_iniciSessio.dart';
+import 'package:kidneyproject/components/btn_registrar.dart';
+import 'package:kidneyproject/pages/sign_in_page.dart';
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
 
 class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
+  const LoginPage({Key? key}) : super(key: key);
+
+  void iniciS(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignIn()),
+    );
+  }
+
+  void register(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpTypePage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +30,7 @@ class LoginPage extends StatelessWidget {
           child: Column(
             children: <Widget>[
               const SizedBox(
-                height: 50,
+                height: 20,
               ),
               //text inicia sessio
               const Text(
@@ -28,16 +45,29 @@ class LoginPage extends StatelessWidget {
                 height: 300,
               ),
 
+              const SizedBox( height: 30 ),
+
               //Introduccio Correu
-              Button(),
+              btn_iniciSessio(
+                onTap: () {
+                  iniciS(context);
+                },
+              ),
+
+              const SizedBox( height: 15 ),
 
               Text(
                 'Si no tens un compte, registrat!',
                 style: TextStyle(color: Colors.grey[800]),
               ),
 
-              const Button(),
-              //button registrat
+              const SizedBox( height: 15 ),
+
+              btn_registrar(
+                onTap: () {
+                  register(context);
+                },
+              ),
             ],
           ),
         ),

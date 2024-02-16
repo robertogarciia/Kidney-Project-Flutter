@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
@@ -11,6 +12,13 @@ class SignIn extends StatelessWidget {
 
   void signUserIn() {
 
+  }
+
+  void navigateToRegistrationPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpTypePage()),
+    );
   }
 
 
@@ -24,7 +32,7 @@ class SignIn extends StatelessWidget {
             children: <Widget>[
 
               const SizedBox(
-                height: 50,
+                height: 30,
               ),
               //text inicia sessio
               const Text(
@@ -48,12 +56,16 @@ class SignIn extends StatelessWidget {
                 obscureText: false,
               ),
 
+              const SizedBox(height: 15),
+
               //Introduccio Contrasenya
               TextFieldWidget(
                 controller: passwordController,
                 hintText: 'Contrasenya',
                 obscureText: true,
               ),
+
+              const SizedBox(height: 15),
 
               //Oblidat Contrasenya
               Text(
@@ -64,8 +76,24 @@ class SignIn extends StatelessWidget {
               const SizedBox(height: 15),
 
               //button inicia sessio
-              MyButton(
+              btn_iniciSessio(
                 onTap: signUserIn,
+              ),
+
+              const SizedBox(height: 15),
+
+              //Oblidat Contrasenya
+              GestureDetector(
+                onTap: () {
+                  navigateToRegistrationPage(context);
+                },
+                child: Text(
+                  'No tens compte? Registrat',
+                  style: TextStyle(
+                    color: Colors.grey[800],
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
 
               //text no tens compte
