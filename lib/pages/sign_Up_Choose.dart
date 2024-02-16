@@ -90,7 +90,6 @@ class SignUpChoose extends StatelessWidget {
                 ),
               ),
 
-              
 
               const SizedBox(height: 15),
 
@@ -100,7 +99,9 @@ class SignUpChoose extends StatelessWidget {
                   SquareTile(imagePath: 'lib/images/facebook.png'),
                   SizedBox(width: 30),
 
-                  SquareTile(imagePath: 'lib/images/google.png')
+                  SquareTile(imagePath: 'lib/images/google.png'),
+                  SizedBox(width: 30),
+                  SquareTile(imagePath: 'lib/images/apple.png'),
                 ],
               ),
             ],
