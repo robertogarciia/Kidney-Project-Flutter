@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class btn_iniciSessio extends StatelessWidget {
+class btn_registrar extends StatelessWidget {
   final Function()? onTap;
 
-  const btn_iniciSessio({Key? key, required this.onTap}) : super(key: key);
+  const btn_registrar({Key? key, required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class btn_iniciSessio extends StatelessWidget {
           ),
           child: const Center(
             child: Text(
-              "Iniciar Sesión",
+              "Registrar-se",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

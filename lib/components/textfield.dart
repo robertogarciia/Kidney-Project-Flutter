@@ -6,32 +6,32 @@ class TextFieldWidget extends StatelessWidget {
   final bool obscureText;
 
   const TextFieldWidget({
-    super.key,
+    Key? key,
     required this.controller,
     required this.hintText,
     required this.obscureText,
-    });
-  
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal:800.0, vertical: 10.0),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.0),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
           border: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.white),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-            fillColor: Colors.grey.shade200,
-            filled: true,
-            hintText: hintText,
           ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          fillColor: Colors.grey.shade200,
+          filled: true,
+          hintText: hintText,
         ),
+      ),
     );
   }
 }
