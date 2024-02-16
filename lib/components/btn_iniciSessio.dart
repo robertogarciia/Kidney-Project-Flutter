@@ -16,8 +16,8 @@ class btn_iniciSessio extends StatelessWidget {
           padding: const EdgeInsets.all(15),
           margin: const EdgeInsets.symmetric(horizontal: 25),
           decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xFF403DF3),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(
             child: Text(

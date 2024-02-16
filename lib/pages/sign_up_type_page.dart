@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/button.dart';
-import 'package:kidneyproject/components/square_tile.dart';
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
