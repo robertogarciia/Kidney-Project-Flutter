@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class btn_registrar extends StatelessWidget {
+class BtnRegistrar extends StatelessWidget {
   final Function()? onTap;
 
-  const btn_registrar({Key? key, required this.onTap}) : super(key: key);
+  const BtnRegistrar({Key? key, required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

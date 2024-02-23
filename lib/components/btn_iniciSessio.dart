@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class btn_iniciSessio extends StatelessWidget {
+class BtnIniciSessio extends StatelessWidget {
   final Function()? onTap;
 
-  const btn_iniciSessio({Key? key, required this.onTap}) : super(key: key);
+  const BtnIniciSessio({Key? key, required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

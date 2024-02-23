@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
+
 import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+
+import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/pages/tipus_usuari.dart';
+
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
@@ -81,6 +86,13 @@ class SignIn extends StatelessWidget {
     }
   }
 
+  void navigateToTipusUsuari(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TipusUsuari()),
+    );
+  }
+
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
@@ -106,22 +118,26 @@ class SignIn extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               Image.asset(
                 'lib/images/logoKNP_WT.png',
                 height: 300,
               ),
+
               TextFieldWidget(
                 controller: _emailController,
                 hintText: 'Correu Electrònic',
                 obscureText: false,
               ),
               const SizedBox(height: 15),
+
               TextFieldWidget(
                 controller: _contrasenyaController,
                 hintText: 'Contrasenya',
                 obscureText: true,
               ),
               const SizedBox(height: 15),
+
               GestureDetector(
                 onTap: () {
                   // Implementar lógica  restablecer contraseña 
@@ -134,8 +150,23 @@ class SignIn extends StatelessWidget {
               const SizedBox(height: 15),
               btn_iniciSessio(
                 onTap: () => signUserIn(context),
+
+
+              Text(
+                'Has oblidat la contrasenya?',
+                style: TextStyle(color: Colors.grey[800]),
+              ),
+
+              const SizedBox(height: 15),
+
+              BtnIniciSessio(
+                onTap: () {
+                  navigateToTipusUsuari(context);
+                },
+
               ),
               const SizedBox(height: 15),
+
               GestureDetector(
                 onTap: () {
                   navigateToRegistrationPage(context);
