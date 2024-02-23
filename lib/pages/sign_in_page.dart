@@ -1,27 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
-import 'package:kidneyproject/pages/sign_Up_Choose.dart';
-
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
 
-  //text editar controlladors
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _contrasenyaController = TextEditingController();
 
-  void signUserIn() {
+  Future<List<Map<String, dynamic>>> getUsuarios() async {
+    List<Map<String, dynamic>> usuarios = [];
+    QuerySnapshot query = await FirebaseFirestore.instance.collection('Usuarios').get();
 
+    for (QueryDocumentSnapshot documento in query.docs) {
+      usuarios.add(documento.data() as Map<String, dynamic>);
+    }
+
+    return usuarios;
+  }
+
+  Future<void> signUserIn(BuildContext context) async {
+    final usuarios = await getUsuarios();
+
+    // Encripta la contrasenya i comparara amb contrasenyas almacenades
+    var bytes = utf8.encode(_contrasenyaController.text);
+    var digest = sha256.convert(bytes);
+    var hashedPasswordToCheck = digest.toString();
+
+    // Verificar si existeix un usuario amb el correu i la contrasenya 
+    bool credentialsMatch = false;
+    for (Map<String, dynamic> usuario in usuarios) {
+      if (usuario['Email'] == _emailController.text && usuario['Contrasenya'] == hashedPasswordToCheck) {
+        credentialsMatch = true;
+        break;
+      }
+    }
+
+    if (credentialsMatch) {
+      // Inici de sessió exitos
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Inici de Sessió Exitos'),
+            content: Text('Benvingut!'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Error: Credencials incorrectas
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Inici de Sessió Fallit'),
+            content: Text('El correu electrònic o la contrasenya són incorrectes. Per favor, torna a intentar-ho.'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignUpChoose()),
+      MaterialPageRoute(builder: (context) => SignUpTypePage()),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +96,9 @@ class SignIn extends StatelessWidget {
         child: Center(
           child: Column(
             children: <Widget>[
-
               const SizedBox(
                 height: 30,
               ),
-              //text inicia sessio
               const Text(
                 'Inici de sessió',
                 style: TextStyle(
@@ -43,47 +106,36 @@ class SignIn extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              //logo
               Image.asset(
                 'lib/images/logoKNP_WT.png',
                 height: 300,
               ),
-
-              //Introduccio Correu
               TextFieldWidget(
-                controller: usernameController,
-                hintText: 'Correu Electronic',
+                controller: _emailController,
+                hintText: 'Correu Electrònic',
                 obscureText: false,
               ),
-
               const SizedBox(height: 15),
-
-              //Introduccio Contrasenya
               TextFieldWidget(
-                controller: passwordController,
+                controller: _contrasenyaController,
                 hintText: 'Contrasenya',
                 obscureText: true,
               ),
-
               const SizedBox(height: 15),
-
-              //Oblidat Contrasenya
-              Text(
-                'Has oblidat la contrasenya?',
-                style: TextStyle(color: Colors.grey[800]),
+              GestureDetector(
+                onTap: () {
+                  // Implementar lógica  restablecer contraseña 
+                },
+                child: Text(
+                  'Has oblidat la contrasenya?',
+                  style: TextStyle(color: Colors.grey[800]),
                 ),
-
-              const SizedBox(height: 15),
-
-              //button inicia sessio
-              btn_iniciSessio(
-                onTap: signUserIn,
               ),
-
               const SizedBox(height: 15),
-
-              //Oblidat Contrasenya
+              btn_iniciSessio(
+                onTap: () => signUserIn(context),
+              ),
+              const SizedBox(height: 15),
               GestureDetector(
                 onTap: () {
                   navigateToRegistrationPage(context);
@@ -96,10 +148,6 @@ class SignIn extends StatelessWidget {
                   ),
                 ),
               ),
-
-              //text no tens compte
-
-              //button registrat
             ],
           ),
         ),
