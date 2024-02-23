@@ -36,14 +36,14 @@ class TipusUsuari extends StatelessWidget {
 
               const SizedBox( height: 30 ),
     
-              btn_general(
+              BtnGeneral(
                 buttonText: "Pacient", 
                 onTap: iniciS
               ),
 
               const SizedBox( height: 30 ),
 
-              btn_general(
+              BtnGeneral(
                 buttonText: "Familiar", 
                 onTap: iniciS
               ),
@@ -79,7 +79,7 @@ class TipusUsuari extends StatelessWidget {
 
               const SizedBox( height: 30 ),
 
-              btn_general(
+              BtnGeneral(
                 buttonText: "Encara no les vull introduïr", 
                 onTap: iniciS
               ),      
