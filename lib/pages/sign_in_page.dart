@@ -79,7 +79,7 @@ class SignIn extends StatelessWidget {
 
               const SizedBox(height: 15),
 
-              btn_iniciSessio(
+              BtnIniciSessio(
                 onTap: () {
                   navigateToTipusUsuari(context);
                 },

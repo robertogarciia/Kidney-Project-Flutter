@@ -72,7 +72,7 @@ class SignUpTypePage extends StatelessWidget {
               const SizedBox(height: 15),
 
               //button inicia sessio
-              btn_registrar(
+              BtnRegistrar(
                 onTap: signUserIn,
               ),
 

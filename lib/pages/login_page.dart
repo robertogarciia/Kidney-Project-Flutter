@@ -48,7 +48,7 @@ class LoginPage extends StatelessWidget {
               const SizedBox( height: 30 ),
 
               //Introduccio Correu
-              btn_iniciSessio(
+              BtnIniciSessio(
                 onTap: () {
                   iniciS(context);
                 },
@@ -63,7 +63,7 @@ class LoginPage extends StatelessWidget {
 
               const SizedBox( height: 15 ),
 
-              btn_registrar(
+              BtnRegistrar(
                 onTap: () {
                   register(context);
                 },

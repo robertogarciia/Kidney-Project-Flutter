@@ -54,7 +54,7 @@ class SignUpChoose extends StatelessWidget {
                 'lib/images/logoKNP_WT.png',
                 height: 300,
               ),
-              btn_registrar(
+              BtnRegistrar(
                 onTap: (){
                   registerEmail(context);
                 }),
