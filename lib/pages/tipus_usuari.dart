@@ -28,30 +28,61 @@ class TipusUsuari extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
+                'lib/images/logoKNP_NT.png',
+                height: 250,
               ),
 
               const SizedBox( height: 30 ),
     
-
-              const SizedBox( height: 15 ),
               btn_general(
                 buttonText: "Pacient", 
                 onTap: iniciS
-                ),
+              ),
+
               const SizedBox( height: 30 ),
+
               btn_general(
                 buttonText: "Familiar", 
                 onTap: iniciS
-                ),
+              ),
+
               const SizedBox( height: 30 ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Si no ho vols indicar',
+                        style: TextStyle(color: Colors.grey[700])
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox( height: 30 ),
+
               btn_general(
                 buttonText: "Encara no les vull introduïr", 
                 onTap: iniciS
-                ),
-              const SizedBox( height: 15 ),       
+              ),      
             ],
           ),
         ),
