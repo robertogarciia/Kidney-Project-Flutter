@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/pages/dades_personals.dart';
 import 'package:kidneyproject/pages/login_page.dart';
-//import 'package:kidneyproject/pages/login_page.dart'; 
-
-
 
 void main() {
   runApp(const MyApp());
