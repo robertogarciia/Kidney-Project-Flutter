@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/components/button.dart';
+import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
-import 'package:kidneyproject/pages/sign_up_choose.dart';
+import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
