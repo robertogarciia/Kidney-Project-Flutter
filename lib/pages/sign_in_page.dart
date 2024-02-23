@@ -6,7 +6,6 @@ import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/tipus_usuari.dart';
 
@@ -57,6 +56,7 @@ class SignIn extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
+                  navigateToTipusUsuari(context); // Llamada a la función al presionar OK
                 },
                 child: Text('OK'),
               ),
@@ -96,7 +96,7 @@ class SignIn extends StatelessWidget {
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignUpTypePage()),
+      MaterialPageRoute(builder: (context) => SignUpChoose()),
     );
   }
 
@@ -136,22 +136,9 @@ class SignIn extends StatelessWidget {
                 hintText: 'Contrasenya',
                 obscureText: true,
               ),
+
               const SizedBox(height: 15),
-
-              GestureDetector(
-                onTap: () {
-                  // Implementar lógica  restablecer contraseña 
-                },
-                child: Text(
-                  'Has oblidat la contrasenya?',
-                  style: TextStyle(color: Colors.grey[800]),
-                ),
-              ),
-              const SizedBox(height: 15),
-              btn_iniciSessio(
-                onTap: () => signUserIn(context),
-
-
+              
               Text(
                 'Has oblidat la contrasenya?',
                 style: TextStyle(color: Colors.grey[800]),
@@ -160,11 +147,12 @@ class SignIn extends StatelessWidget {
               const SizedBox(height: 15),
 
               BtnIniciSessio(
-                onTap: () {
-                  navigateToTipusUsuari(context);
-                },
+                onTap: () => signUserIn(context),
 
               ),
+              
+              
+
               const SizedBox(height: 15),
 
               GestureDetector(
