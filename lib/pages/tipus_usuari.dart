@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_general.dart';
+import 'package:kidneyproject/pages/dades_personals.dart';
 
 
 class TipusUsuari extends StatelessWidget {
   const TipusUsuari({Key? key}) : super(key: key);
 
-  void iniciS() {
-
+  void iniciS(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DadesPersonals()),
+    );
   }
 
   @override
@@ -38,14 +42,18 @@ class TipusUsuari extends StatelessWidget {
     
               BtnGeneral(
                 buttonText: "Pacient", 
-                onTap: iniciS
+                onTap: () {
+                  iniciS(context);
+                },
               ),
 
               const SizedBox( height: 30 ),
 
               BtnGeneral(
                 buttonText: "Familiar", 
-                onTap: iniciS
+                onTap: () {
+                  iniciS(context);
+                },
               ),
 
               const SizedBox( height: 30 ),
@@ -81,7 +89,9 @@ class TipusUsuari extends StatelessWidget {
 
               BtnGeneral(
                 buttonText: "Encara no les vull introduïr", 
-                onTap: iniciS
+                onTap: () {
+                  iniciS(context);
+                },
               ),      
             ],
           ),
