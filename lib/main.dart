@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/pages/dades_personals3.dart';
+import 'package:kidneyproject/pages/dades_mediques.dart';
 //import 'package:kidneyproject/pages/login_page.dart'; 
 
 
