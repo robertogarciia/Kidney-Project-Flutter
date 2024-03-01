@@ -9,7 +9,7 @@ class TipusUsuari extends StatelessWidget {
   void iniciS(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const DadesPersonals()),
+      MaterialPageRoute(builder: (context) => DadesPersonals()),
     );
   }
 
