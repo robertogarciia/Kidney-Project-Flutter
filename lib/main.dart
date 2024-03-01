@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/pages/dades_personals2.dart';
 import 'package:kidneyproject/pages/login_page.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,14 +13,13 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
-      );
+      home: Formulario2(),
+    );
   }
 }
