@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
 
-import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
