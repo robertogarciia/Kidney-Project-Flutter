@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/login_page.dart';
 import 'package:kidneyproject/components/listfield.dart';
+import 'package:kidneyproject/components/btn_general.dart';
 
 class DadesPersonals extends StatefulWidget {
   DadesPersonals({Key? key}) : super(key: key);
@@ -32,7 +33,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
               const SizedBox(
                 height: 20,
               ),
-              // Texto "Dades Personals"
+
               const Text(
                 "Dades Personals",
                 style: TextStyle(
@@ -41,8 +42,6 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                   color: Colors.black,
                 ),
               ),
-
-              SizedBox( height: 30 ),
 
               Container(
                 margin: const EdgeInsets.all(20),
@@ -55,27 +54,19 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                   children: [
                     TextFieldWidget(
                       controller: _nomController,
-                      hintText: 'Nom',
-                      obscureText: true,
-                    ),
-
-                    SizedBox( height: 30 ),
-
-                    TextFieldWidget(
-                      controller: _nomController,
-                      hintText: 'Cognoms',
-                      obscureText: true,
-                    ),
-
-                    SizedBox( height: 30 ),
-
-                    TextFieldWidget(
-                      controller: _nomController,
                       hintText: 'Data de naixement',
                       obscureText: true,
                     ),
 
-                    SizedBox( height: 30 ),
+                    SizedBox( height: 20 ),
+
+                    const Text(
+                      "Sexe",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
                     Container(
                       height: 50,
@@ -96,10 +87,47 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                           return null;
                         },
                       ),
-                    )
+                    ),
+
+                    SizedBox( height: 20 ),
+
+                    TextFieldWidget(
+                      controller: _nomController,
+                      hintText: 'Telefon',
+                      obscureText: true,
+                    ),
+                    SizedBox( height: 20 ),
+
+                    TextFieldWidget(
+                      controller: _nomController,
+                      hintText: 'Adreça',
+                      obscureText: true,
+                    ),
+
+                    SizedBox( height:20 ),
+
+                    TextFieldWidget(
+                      controller: _nomController,
+                      hintText: 'Població',
+                      obscureText: true,
+                    ),
+
+                    SizedBox( height: 20 ),
+
+                    TextFieldWidget(
+                      controller: _nomController,
+                      hintText: 'Codi postal',
+                      obscureText: true,
+                    ),
                   ],
                 ),
               ),
+              BtnGeneral(
+                buttonText: "Enviar", 
+                onTap: (){
+                  iniciS(context);
+                },
+              )
             ],
           ),
         ),

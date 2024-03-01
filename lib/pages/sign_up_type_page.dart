@@ -149,7 +149,7 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                   child: TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
-                      hintText: 'Nom',
+                      hintText: 'Nom i Cognoms',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
