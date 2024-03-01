@@ -1,4 +1,4 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class RellenarEscribiendo extends StatefulWidget {
   @override
@@ -76,4 +76,3 @@ void main() {
     home: RellenarEscribiendo(),
   ));
 }
-*/
