@@ -3,6 +3,7 @@ import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/login_page.dart';
 import 'package:kidneyproject/components/listfield.dart';
 import 'package:kidneyproject/components/btn_general.dart';
+import 'package:kidneyproject/pages/dades_personals2.dart';
 
 class DadesPersonals extends StatefulWidget {
   DadesPersonals({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
   void iniciS(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+      MaterialPageRoute(builder: (context) => Formulario2()),
     );
   }
 
