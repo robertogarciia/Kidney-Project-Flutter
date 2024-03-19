@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
-
-import 'package:kidneyproject/components/btn_general.dart';
-
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/login_page.dart';
 import 'package:kidneyproject/components/listfield.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/dades_personals2.dart';
 
-
 class DadesPersonals extends StatefulWidget {
   DadesPersonals({Key? key}) : super(key: key);
-
-
-class TipusUsuari extends StatelessWidget {
-  const TipusUsuari({Key? key}) : super(key: key);
 
   @override
   _DadesPersonalsState createState() => _DadesPersonalsState();
 }
 
-
 class _DadesPersonalsState extends State<DadesPersonals> {
-  TextEditingController _nomController = TextEditingController();
+  TextEditingController _sexeController = TextEditingController();
+  TextEditingController _dataNaixementController = TextEditingController();
+  TextEditingController _telefonController = TextEditingController();
+  TextEditingController _adrecaController = TextEditingController();
+  TextEditingController _poblacioController = TextEditingController();
+  TextEditingController _codiPostalController = TextEditingController();
   String? _selectedSexe;
 
   void iniciS(BuildContext context) {
@@ -44,10 +40,8 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 height: 20,
               ),
 
-              //text inicia sessio
               const Text(
-                "Tipus D'usuari",
-
+                "Dades Personals",
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
@@ -65,7 +59,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 child: Column(
                   children: [
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _dataNaixementController,
                       hintText: 'Data de naixement',
                       obscureText: true,
                     ),
@@ -86,6 +80,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                       child: ListField(
                         items: ['Mujer', 'Hombre', 'Otros'],
                         value: _selectedSexe,
+                        controller: _sexeController,
                         hintText: 'Selecciona una opción',
                         onChanged: (String? value) {
                           setState(() {
@@ -104,14 +99,14 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _telefonController,
                       hintText: 'Telefon',
                       obscureText: true,
                     ),
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _adrecaController,
                       hintText: 'Adreça',
                       obscureText: true,
                     ),
@@ -119,7 +114,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height:20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _poblacioController,
                       hintText: 'Població',
                       obscureText: true,
                     ),
@@ -127,39 +122,19 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _codiPostalController,
                       hintText: 'Codi postal',
                       obscureText: true,
                     ),
                   ],
                 ),
               ),
-
-              Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
-              ),
-
-              const SizedBox( height: 30 ),
-    
-
-              const SizedBox( height: 15 ),
-              btn_general(
-                buttonText: "Pacient", 
-                onTap: iniciS
-                ),
-              const SizedBox( height: 30 ),
-              btn_general(
-                buttonText: "Familiar", 
-                onTap: iniciS
-                ),
-              const SizedBox( height: 30 ),
-              btn_general(
-                buttonText: "Encara no les vull introduïr", 
-                onTap: iniciS
-                ),
-              const SizedBox( height: 15 ),       
-
+              BtnGeneral(
+                buttonText: "Enviar", 
+                onTap: (){
+                  iniciS(context);
+                },
+              )
             ],
           ),
         ),
