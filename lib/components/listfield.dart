@@ -6,6 +6,7 @@ class ListField extends StatefulWidget {
   final String hintText;
   final void Function(String?) onChanged;
   final String? Function(String?)? validator;
+  final TextEditingController? controller; 
 
   const ListField({
     Key? key,
@@ -14,6 +15,7 @@ class ListField extends StatefulWidget {
     required this.hintText,
     required this.onChanged,
     this.validator,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -21,6 +23,15 @@ class ListField extends StatefulWidget {
 }
 
 class _ListFieldState extends State<ListField> {
+  late TextEditingController _textEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textEditingController = widget.controller ?? TextEditingController();
+    _textEditingController.text = widget.value ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
@@ -32,7 +43,10 @@ class _ListFieldState extends State<ListField> {
         filled: true,
         fillColor: Colors.grey.shade200,
       ),
-      onChanged: widget.onChanged,
+      onChanged: (newValue) {
+        widget.onChanged(newValue);
+        _textEditingController.text = newValue ?? '';
+      },
       validator: widget.validator,
       items: widget.items
           .map<DropdownMenuItem<String>>((String value) {
@@ -43,5 +57,11 @@ class _ListFieldState extends State<ListField> {
           })
           .toList(),
     );
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
   }
 }

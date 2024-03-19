@@ -46,7 +46,6 @@ class _FormularioState extends State<Formulario> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -97,9 +96,9 @@ class _FormularioState extends State<Formulario> {
                 hintText: 'Codi postal',
                 obscureText: true,
               ),
-
-
-              SizedBox(height: 20),],),),
+            ],
+          ),
+        ),
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
