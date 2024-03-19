@@ -10,10 +10,10 @@ import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 class MenuPrincipal extends StatelessWidget {
   const MenuPrincipal({Key? key}) : super(key: key);
 
-  void iniciS(BuildContext context) {
+  void navigateToPage(BuildContext context, Widget page) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignIn()),
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 
@@ -58,34 +58,69 @@ class MenuPrincipal extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MidleImgs(imagePath: 'lib/images/mando.png'),
+                  BottomImgs(
+                    imagePath: 'lib/images/dades_pers.png',
+                    onTap: () {
+                      navigateToPage(context, SignIn());
+                    },
+                  ),
                   SizedBox(width: 60),
-                  MidleImgs(imagePath: 'lib/images/vids.png'),
+                  MidleImgs(
+                    imagePath: 'lib/images/vids.png',
+                    onTap: () {
+                      navigateToPage(context, SignIn());
+                    },
+                  )
                 ],
               ),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MidleImgs(imagePath: 'lib/images/ajuda.png'),
+                  MidleImgs(
+                    imagePath: 'lib/images/ajuda.png',
+                    onTap: () {
+                      goToJoc(context);
+                    },
+                  ),
                   SizedBox(width: 60),
-                  MidleImgs(imagePath: 'lib/images/inf.png'),
+                  MidleImgs(
+                    imagePath: 'lib/images/inf.png',
+                    onTap: () {
+                      goToJoc(context);
+                    },
+                  )
                 ],
               ),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  BottomImgs(imagePath: 'lib/images/dades_pers.png'),
+                  BottomImgs(
+                    imagePath: 'lib/images/dades_pers.png',
+                    onTap: () {
+                      goToJoc(context);
+                    },
+                  ),
                 ],
               ),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  BottomImgs(imagePath: 'lib/images/comu.png'),
+                  BottomImgs(
+                    imagePath: 'lib/images/comu.png',
+                    onTap: () {
+                      goToJoc(context);
+                    },
+                  ),
                   SizedBox(width: 20),
-                  BottomImgs(imagePath: 'lib/images/dietas.png'),
+                  BottomImgs(
+                    imagePath: 'lib/images/dietas.png',
+                    onTap: () {
+                      goToJoc(context);
+                    },
+                  ),
                 ],
               ),
             ],
