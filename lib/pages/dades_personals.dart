@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+
+import 'package:kidneyproject/components/btn_general.dart';
+
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/login_page.dart';
 import 'package:kidneyproject/components/listfield.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/dades_personals2.dart';
 
+
 class DadesPersonals extends StatefulWidget {
   DadesPersonals({Key? key}) : super(key: key);
+
+
+class TipusUsuari extends StatelessWidget {
+  const TipusUsuari({Key? key}) : super(key: key);
 
   @override
   _DadesPersonalsState createState() => _DadesPersonalsState();
 }
+
 
 class _DadesPersonalsState extends State<DadesPersonals> {
   TextEditingController _nomController = TextEditingController();
@@ -35,8 +44,10 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 height: 20,
               ),
 
+              //text inicia sessio
               const Text(
-                "Dades Personals",
+                "Tipus D'usuari",
+
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
@@ -123,12 +134,32 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                   ],
                 ),
               ),
-              BtnGeneral(
-                buttonText: "Enviar", 
-                onTap: (){
-                  iniciS(context);
-                },
-              )
+
+              Image.asset(
+                'lib/images/logoKNP_WT.png',
+                height: 300,
+              ),
+
+              const SizedBox( height: 30 ),
+    
+
+              const SizedBox( height: 15 ),
+              btn_general(
+                buttonText: "Pacient", 
+                onTap: iniciS
+                ),
+              const SizedBox( height: 30 ),
+              btn_general(
+                buttonText: "Familiar", 
+                onTap: iniciS
+                ),
+              const SizedBox( height: 30 ),
+              btn_general(
+                buttonText: "Encara no les vull introduïr", 
+                onTap: iniciS
+                ),
+              const SizedBox( height: 15 ),       
+
             ],
           ),
         ),

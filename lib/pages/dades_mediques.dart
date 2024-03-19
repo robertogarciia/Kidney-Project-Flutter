@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/textfield.dart';
 
 void main() {
-  runApp(Formulario2());
+  runApp(Formulario3());
 }
 
-class Formulario2 extends StatelessWidget {
+class Formulario3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dades Personals',
+      title: 'Dades Mediques',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -25,20 +25,21 @@ class Formulario extends StatefulWidget {
 
 class _FormularioState extends State<Formulario> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _contrasenyaController = TextEditingController();
-  TextEditingController _repetirContrasenyaController = TextEditingController();
-  TextEditingController _telefonmovilController = TextEditingController();
-  TextEditingController _adrecaController = TextEditingController();
-  TextEditingController _poblacioController = TextEditingController();
-  TextEditingController _codiPostalController = TextEditingController();
+  TextEditingController _alcadaController = TextEditingController();
+  TextEditingController _pesController = TextEditingController();
+  TextEditingController _estadioController = TextEditingController();
+  TextEditingController _estatController = TextEditingController();
+  TextEditingController _diabeticController = TextEditingController();
+  TextEditingController _hipertensController = TextEditingController();
+  TextEditingController _pacientExpertController = TextEditingController();
+    TextEditingController _activitatFisicaController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dades Personals'),
-      ),
+        title: Text('Dades Mediques'),
+      ),  
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -57,50 +58,56 @@ class _FormularioState extends State<Formulario> {
                 child: Column(
                   children: [
               TextFieldWidget(
-                controller: _emailController,
-                hintText: 'Email',
+                controller: _alcadaController,
+                hintText: 'Alçada',
                 obscureText: false,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _contrasenyaController,
-                hintText: 'Contrasenya',
+                controller: _pesController,
+                hintText: 'Pes',
                 obscureText: true,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _repetirContrasenyaController,
-                hintText: 'Repeteix la Contrasenya',
+                controller: _estadioController,
+                hintText: 'Estadio',
                 obscureText: true,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _telefonmovilController,
-                hintText: 'Telefon mòbil',
+                controller: _estatController,
+                hintText: 'Estat',
                 obscureText: true,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _adrecaController,
-                hintText: 'Adreça',
+                controller: _diabeticController,
+                hintText: 'Diabetic',
                 obscureText: true,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _poblacioController,
-                hintText: 'Població',
+                controller: _hipertensController,
+                hintText: 'Hipertens',
                 obscureText: true,
               ),
               SizedBox(height: 20),
               TextFieldWidget(
-                controller: _codiPostalController,
-                hintText: 'Codi postal',
+                controller: _pacientExpertController,
+                hintText: 'Pacient expert',
                 obscureText: true,
               ),
-
-
-              SizedBox(height: 20),],),),
-
+              SizedBox(height: 20),
+              TextFieldWidget(
+                controller: _activitatFisicaController,
+                hintText: 'Activitat Fisica',
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              ],
+              ),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ElevatedButton(
