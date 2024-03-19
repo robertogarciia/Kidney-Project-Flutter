@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
+import 'package:kidneyproject/pages/tipus_usuari.dart';
+
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
 
@@ -40,26 +42,33 @@ class SignIn extends StatelessWidget {
       }
     }
 
-    if (credentialsMatch) {
-      // Inici de sessió exitos
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Inici de Sessió Exitos'),
-            content: Text('Benvingut!'),
-            actions: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
+ if (credentialsMatch) {
+  // Inici de sessió exitos
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Inici de Sessió Exitos'),
+        content: Text('Benvingut!'),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+
+              // Navegar a la pantalla SignUpTypePage después de cerrar el diálogo
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TipusUsuari()),
+              );
+            },
+            child: Text('OK'),
+          ),
+        ],
       );
-    } else {
+    },
+  );
+}
+ else {
       // Error: Credencials incorrectas
       showDialog(
         context: context,
