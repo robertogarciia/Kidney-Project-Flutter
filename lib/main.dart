@@ -1,22 +1,31 @@
 import 'package:flutter/material.dart';
+
 import 'package:kidneyproject/pages/dades_mediques.dart';
 //import 'package:kidneyproject/pages/login_page.dart'; 
 
+import 'package:kidneyproject/pages/menu_principal.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Formulario3(),
+      home: MenuPrincipal(),
+
       );
   }
 }

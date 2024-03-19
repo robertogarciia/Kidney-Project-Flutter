@@ -97,10 +97,10 @@ class _FormularioState extends State<Formulario> {
                 hintText: 'Codi postal',
                 obscureText: true,
               ),
-              SizedBox(height: 20),
-              ],
-              ),
-              ),
+
+
+              SizedBox(height: 20),],),),
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ElevatedButton(

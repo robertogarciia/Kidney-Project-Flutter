@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_general.dart';
+import 'package:kidneyproject/pages/dades_personals.dart';
 
 
 class TipusUsuari extends StatelessWidget {
   const TipusUsuari({Key? key}) : super(key: key);
 
-  void iniciS() {
-
+  void iniciS(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DadesPersonals()),
+    );
   }
 
   @override
@@ -28,30 +32,67 @@ class TipusUsuari extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
+                'lib/images/logoKNP_NT.png',
+                height: 250,
               ),
 
               const SizedBox( height: 30 ),
     
-
-              const SizedBox( height: 15 ),
-              btn_general(
+              BtnGeneral(
                 buttonText: "Pacient", 
-                onTap: iniciS
-                ),
+                onTap: () {
+                  iniciS(context);
+                },
+              ),
+
               const SizedBox( height: 30 ),
-              btn_general(
+
+              BtnGeneral(
                 buttonText: "Familiar", 
-                onTap: iniciS
-                ),
+                onTap: () {
+                  iniciS(context);
+                },
+              ),
+
               const SizedBox( height: 30 ),
-              btn_general(
-                buttonText: "Encara no les vull introduïr", 
-                onTap: iniciS
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Si no ho vols indicar',
+                        style: TextStyle(color: Colors.grey[700])
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
                 ),
-              const SizedBox( height: 15 ),       
+              ),
+
+              const SizedBox( height: 30 ),
+
+              BtnGeneral(
+                buttonText: "Encara no les vull introduïr", 
+                onTap: () {
+                  iniciS(context);
+                },
+              ),      
             ],
           ),
         ),

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "900749590186",
+    "project_id": "fir-kidenyproject",
+    "storage_bucket": "fir-kidenyproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900749590186:android:5f308cf54addf887901ad3",
+        "android_client_info": {
+          "package_name": "com.example.kidneyproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900749590186-bc5eshijm9dfumn6vq7sd9fvq4ccemes.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvWzr8WSV-9xJOP9Yl1SA7Hy-LqT1wE5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900749590186-bc5eshijm9dfumn6vq7sd9fvq4ccemes.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
