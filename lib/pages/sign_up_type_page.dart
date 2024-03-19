@@ -120,9 +120,58 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                 const SizedBox(
                   height: 30,
                 ),
+
                 // Texto "Registra't"
                 const Text(
                   'Registra\'t',
+
+              ),
+
+              //logo
+              Image.asset(
+                'lib/images/logoKNP_WT.png',
+                height: 300,
+              ),
+
+              TextFieldWidget(
+                controller: nameController,
+                hintText: 'Nom',
+                obscureText: false,
+              ),
+
+              const SizedBox(height: 15),
+
+              TextFieldWidget(
+                controller: usernameController,
+                hintText: 'Correu Electronic',
+                obscureText: false,
+              ),
+
+              const SizedBox(height: 15),
+
+              TextFieldWidget(
+                controller: passwordController,
+                hintText: 'Constrasenya',
+                obscureText: true,
+              ),
+
+              const SizedBox(height: 15),
+
+              //button inicia sessio
+              BtnRegistrar(
+                onTap: signUserIn,
+              ),
+
+              const SizedBox(height: 15),
+
+              //Oblidat Contrasenya
+              GestureDetector(
+                onTap: () {
+                  navigateToSignInPage(context);
+                },
+                child: Text(
+                  'Ja tens compte? Inicia Sessió',
+
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,

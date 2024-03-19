@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/textfield.dart';
+
 import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
 import 'package:kidneyproject/pages/tipus_usuari.dart';
+
+import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/pages/tipus_usuari.dart';
+
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
@@ -140,7 +145,7 @@ class SignIn extends StatelessWidget {
                   style: TextStyle(color: Colors.grey[800]),
                 ),
               ),
-              const SizedBox(height: 15),
+               const SizedBox(height: 15),
               btn_iniciSessio(
                 onTap: () => signUserIn(context),
               ),
@@ -150,7 +155,7 @@ class SignIn extends StatelessWidget {
                   navigateToRegistrationPage(context);
                 },
                 child: Text(
-                  'No tens compte? Registrat',
+                  '¿No tienes cuenta? Regístrate',
                   style: TextStyle(
                     color: Colors.grey[800],
                     decoration: TextDecoration.underline,
