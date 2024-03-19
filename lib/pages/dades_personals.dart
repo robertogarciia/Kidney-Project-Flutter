@@ -13,7 +13,12 @@ class DadesPersonals extends StatefulWidget {
 }
 
 class _DadesPersonalsState extends State<DadesPersonals> {
-  TextEditingController _nomController = TextEditingController();
+  TextEditingController _sexeController = TextEditingController();
+  TextEditingController _dataNaixementController = TextEditingController();
+  TextEditingController _telefonController = TextEditingController();
+  TextEditingController _adrecaController = TextEditingController();
+  TextEditingController _poblacioController = TextEditingController();
+  TextEditingController _codiPostalController = TextEditingController();
   String? _selectedSexe;
 
   void iniciS(BuildContext context) {
@@ -54,7 +59,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 child: Column(
                   children: [
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _dataNaixementController,
                       hintText: 'Data de naixement',
                       obscureText: true,
                     ),
@@ -75,6 +80,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                       child: ListField(
                         items: ['Mujer', 'Hombre', 'Otros'],
                         value: _selectedSexe,
+                        controller: _sexeController,
                         hintText: 'Selecciona una opción',
                         onChanged: (String? value) {
                           setState(() {
@@ -93,14 +99,14 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _telefonController,
                       hintText: 'Telefon',
                       obscureText: true,
                     ),
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _adrecaController,
                       hintText: 'Adreça',
                       obscureText: true,
                     ),
@@ -108,7 +114,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height:20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _poblacioController,
                       hintText: 'Població',
                       obscureText: true,
                     ),
@@ -116,7 +122,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                     SizedBox( height: 20 ),
 
                     TextFieldWidget(
-                      controller: _nomController,
+                      controller: _codiPostalController,
                       hintText: 'Codi postal',
                       obscureText: true,
                     ),

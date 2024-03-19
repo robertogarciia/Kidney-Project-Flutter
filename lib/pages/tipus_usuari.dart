@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/dades_personals.dart';
+import 'package:kidneyproject/pages/menu_principal.dart';
 
 
 class TipusUsuari extends StatelessWidget {
@@ -10,6 +11,13 @@ class TipusUsuari extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => DadesPersonals()),
+    );
+  }
+
+  void goToMenu(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MenuPrincipal()),
     );
   }
 
@@ -90,7 +98,7 @@ class TipusUsuari extends StatelessWidget {
               BtnGeneral(
                 buttonText: "Encara no les vull introduïr", 
                 onTap: () {
-                  iniciS(context);
+                  goToMenu(context);
                 },
               ),      
             ],
