@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/components/listfield.dart';
 import 'package:kidneyproject/components/textfield.dart';
 
 void main() {
@@ -27,12 +28,12 @@ class _FormularioState extends State<Formulario> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _alcadaController = TextEditingController();
   TextEditingController _pesController = TextEditingController();
-  TextEditingController _estadioController = TextEditingController();
-  TextEditingController _estatController = TextEditingController();
-  TextEditingController _diabeticController = TextEditingController();
-  TextEditingController _hipertensController = TextEditingController();
-  TextEditingController _pacientExpertController = TextEditingController();
-    TextEditingController _activitatFisicaController = TextEditingController();
+  String? _selectedEstadio;
+  String? _selectedEstat;
+  String? _selectedDiabetic;
+  String? _selectedHipertens;
+  String? _selectedExpert;
+  String? _selectedActivitatFisica;
 
   @override
   Widget build(BuildContext context) {
@@ -69,41 +70,137 @@ class _FormularioState extends State<Formulario> {
                 obscureText: true,
               ),
               SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _estadioController,
-                hintText: 'Estadio',
-                obscureText: true,
-              ),
+              Container(
+                      height: 50,
+                      width: 780,
+                      child: ListField(
+                        items: ['Sense estadio','Amb estadio'],
+                        value: _selectedEstadio,
+                        hintText: 'Selecciona una opción',
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedEstadio = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor selecciona una opción';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
               SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _estatController,
-                hintText: 'Estat',
-                obscureText: true,
-              ),
+              Container(
+                      height: 50,
+                      width: 780,
+                      child: ListField(
+                        items: ['Pre-diàlisis','...'],
+                        value: _selectedEstat,
+                        hintText: 'Selecciona una opción',
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedEstat = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor selecciona una opción';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
               SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _diabeticController,
-                hintText: 'Diabetic',
-                obscureText: true,
-              ),
+              Container(
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 50,
+                            width: 380,
+                            child: ListField(
+                              items: ['Si', 'No'],
+                              value: _selectedDiabetic,
+                              hintText: 'Diabetic',
+                              onChanged: (String? value) {
+                                setState(() {
+                                  _selectedDiabetic = value;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor selecciona una opción';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Container(
+                            height: 50,
+                            width: 380,
+                            child: ListField(
+                              items: ['Si', 'No'],
+                              value: _selectedHipertens,
+                              hintText: 'Hipertens',
+                              onChanged: (String? value) {
+                                setState(() {
+                                  _selectedHipertens = value;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor selecciona una opción';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
               SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _hipertensController,
-                hintText: 'Hipertens',
-                obscureText: true,
-              ),
+              Container(
+                      height: 50,
+                      width: 780,
+                      child: ListField(
+                        items: ['Si','No'],
+                        value: _selectedExpert,
+                        hintText: 'Selecciona una opción',
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedExpert = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor selecciona una opción';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
               SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _pacientExpertController,
-                hintText: 'Pacient expert',
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _activitatFisicaController,
-                hintText: 'Activitat Fisica',
-                obscureText: true,
-              ),
+              Container(
+                      height: 50,
+                      width: 780,
+                      child: ListField(
+                        items: ['Si','No'],
+                        value: _selectedActivitatFisica,
+                        hintText: 'Selecciona una opción',
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedActivitatFisica = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor selecciona una opción';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
               SizedBox(height: 20),
               ],
               ),
