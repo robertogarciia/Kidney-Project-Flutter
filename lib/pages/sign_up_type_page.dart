@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/button.dart';
 import 'package:kidneyproject/components/btn_registrar.dart';
+import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/services/firabase_service.dart';
 
@@ -121,55 +122,12 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                   height: 30,
                 ),
 
-                // Texto "Registra't"
-                const Text(
-                  'Registra\'t',
-
-              ),
-
-              //logo
-              Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
-              ),
-
-              TextFieldWidget(
-                controller: nameController,
-                hintText: 'Nom',
-                obscureText: false,
-              ),
-
-              const SizedBox(height: 15),
-
-              TextFieldWidget(
-                controller: usernameController,
-                hintText: 'Correu Electronic',
-                obscureText: false,
-              ),
-
-              const SizedBox(height: 15),
-
-              TextFieldWidget(
-                controller: passwordController,
-                hintText: 'Constrasenya',
-                obscureText: true,
-              ),
-
-              const SizedBox(height: 15),
-
-              //button inicia sessio
-              BtnRegistrar(
-                onTap: signUserIn,
-              ),
-
-              const SizedBox(height: 15),
-
               //Oblidat Contrasenya
               GestureDetector(
                 onTap: () {
                   navigateToSignInPage(context);
                 },
-                child: Text(
+                child: const Text(
                   'Ja tens compte? Inicia Sessió',
 
                   style: TextStyle(
@@ -177,6 +135,7 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
 
                 // Logo
                 Image.asset(
@@ -189,8 +148,8 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: 'Nom',
+                    decoration: const InputDecoration(
+                      hintText: 'Nom i Cognoms',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -269,7 +228,7 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (_contrasenyaController.text.isEmpty)
-                          Text(
+                          const Text(
                             'Si us plau, ingressa una contrasenya',
                             style: TextStyle(
                               color: Colors.red,
@@ -306,7 +265,7 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                 const SizedBox(height: 15),
 
                 // Buto de registrar
-                btn_registrar(
+                BtnRegistrar(
                   onTap: registerUser,
                 ),
 

@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/btn_iniciSessio.dart';
-import 'package:kidneyproject/components/textfield.dart';
-
-import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
+import 'package:kidneyproject/components/btn_iniciSessio.dart';
+import 'package:kidneyproject/components/textfield.dart';
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:kidneyproject/pages/tipus_usuari.dart';
-
-import 'package:kidneyproject/pages/sign_Up_Choose.dart';
-import 'package:kidneyproject/pages/tipus_usuari.dart';
-
 
 class SignIn extends StatelessWidget {
   SignIn({Key? key}) : super(key: key);
@@ -19,68 +14,68 @@ class SignIn extends StatelessWidget {
   final _emailController = TextEditingController();
   final _contrasenyaController = TextEditingController();
 
-  Future<List<Map<String, dynamic>>> getUsuarios() async {
-    List<Map<String, dynamic>> usuarios = [];
-    QuerySnapshot query = await FirebaseFirestore.instance.collection('Usuarios').get();
-
-    for (QueryDocumentSnapshot documento in query.docs) {
-      usuarios.add(documento.data() as Map<String, dynamic>);
-    }
-
-    return usuarios;
-  }
-
   Future<void> signUserIn(BuildContext context) async {
-    final usuarios = await getUsuarios();
+    // Obtener los usuarios desde Firestore
+    final QuerySnapshot<Map<String, dynamic>> query =
+        await FirebaseFirestore.instance.collection('Usuarios').get();
 
-    // Encripta la contrasenya i comparara amb contrasenyas almacenades
+    // Encriptar la contraseña
     var bytes = utf8.encode(_contrasenyaController.text);
     var digest = sha256.convert(bytes);
     var hashedPasswordToCheck = digest.toString();
 
-    // Verificar si existeix un usuario amb el correu i la contrasenya 
+    // Verificar si existe un usuario con el correo y la contraseña
     bool credentialsMatch = false;
-    for (Map<String, dynamic> usuario in usuarios) {
-      if (usuario['Email'] == _emailController.text && usuario['Contrasenya'] == hashedPasswordToCheck) {
+    String userId = '';
+
+    for (QueryDocumentSnapshot<Map<String, dynamic>> documento in query.docs) {
+      Map<String, dynamic> usuario = documento.data();
+      if (usuario['Email'] == _emailController.text &&
+          usuario['Contrasenya'] == hashedPasswordToCheck) {
         credentialsMatch = true;
+        userId = documento.id; // Obtener el ID del usuario
         break;
       }
     }
 
- if (credentialsMatch) {
-  // Inici de sessió exitos
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Inici de Sessió Exitos'),
-        content: Text('Benvingut!'),
-        actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-
-              // Navegar a la pantalla SignUpTypePage después de cerrar el diálogo
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TipusUsuari()),
-              );
-            },
-            child: Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
-}
- else {
-      // Error: Credencials incorrectas
+    if (credentialsMatch) {
+      // Inicio de sesión exitoso
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inici de Sessió Fallit'),
-            content: Text('El correu electrònic o la contrasenya són incorrectes. Per favor, torna a intentar-ho.'),
+            title: Text('Inicio de Sesión Exitoso'),
+            content: Text('¡Bienvenido!'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+
+                  // Navegar a la pantalla TipusUsuari después de cerrar el diálogo
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TipusUsuari(
+                        userId: userId,
+                      ),
+                    ),
+                  );
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Error: Credenciales incorrectas
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Inicio de Sesión Fallido'),
+            content: Text(
+                'El correo electrónico o la contraseña son incorrectos. Por favor, inténtalo de nuevo.'),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -114,7 +109,7 @@ class SignIn extends StatelessWidget {
                 height: 30,
               ),
               const Text(
-                'Inici de sessió',
+                'Inicio de Sesión',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
@@ -126,27 +121,27 @@ class SignIn extends StatelessWidget {
               ),
               TextFieldWidget(
                 controller: _emailController,
-                hintText: 'Correu Electrònic',
+                hintText: 'Correo Electrónico',
                 obscureText: false,
               ),
               const SizedBox(height: 15),
               TextFieldWidget(
                 controller: _contrasenyaController,
-                hintText: 'Contrasenya',
+                hintText: 'Contraseña',
                 obscureText: true,
               ),
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: () {
-                  // Implementar lógica  restablecer contraseña 
+                  // Implementar lógica para restablecer contraseña
                 },
                 child: Text(
-                  'Has oblidat la contrasenya?',
+                  '¿Olvidaste la contraseña?',
                   style: TextStyle(color: Colors.grey[800]),
                 ),
               ),
-               const SizedBox(height: 15),
-              btn_iniciSessio(
+              const SizedBox(height: 15),
+              BtnIniciSessio(
                 onTap: () => signUserIn(context),
               ),
               const SizedBox(height: 15),
