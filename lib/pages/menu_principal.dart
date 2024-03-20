@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/bottom_imgs.dart';
-import 'package:kidneyproject/components/btn_iniciSessio.dart';
-import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/components/midle_imgs.dart';
 import 'package:kidneyproject/components/top_imgs.dart';
-import 'package:kidneyproject/pages/sign_in_page.dart';
+import 'package:kidneyproject/pages/comunities_principal_page.dart';
+import 'package:kidneyproject/pages/dades_personals.dart';
+import 'package:kidneyproject/pages/diets_principal_page.dart';
+import 'package:kidneyproject/pages/game_principal_page.dart';
+import 'package:kidneyproject/pages/help_prinicipal_page.dart';
+import 'package:kidneyproject/pages/information_principal_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/pages/videos_principal_page.dart';
 
 class MenuPrincipal extends StatelessWidget {
   const MenuPrincipal({Key? key}) : super(key: key);
@@ -61,16 +65,16 @@ class MenuPrincipal extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   BottomImgs(
-                    imagePath: 'lib/images/dades_pers.png',
+                    imagePath: 'lib/images/mando.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Game());
                     },
                   ),
                   const SizedBox(width: 60),
                   MidleImgs(
                     imagePath: 'lib/images/vids.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Videos());
                     },
                   )
                 ],
@@ -82,14 +86,14 @@ class MenuPrincipal extends StatelessWidget {
                   MidleImgs(
                     imagePath: 'lib/images/ajuda.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Help());
                     },
                   ),
                   const SizedBox(width: 60),
                   MidleImgs(
                     imagePath: 'lib/images/inf.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Information());
                     },
                   )
                 ],
@@ -101,7 +105,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/dades_pers.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, DadesPersonals());
                     },
                   ),
                 ],
@@ -113,14 +117,14 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/comu.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Comunities());
                     },
                   ),
                   SizedBox(width: 20),
                   BottomImgs(
                     imagePath: 'lib/images/dietas.png',
                     onTap: () {
-                      navigateToPage(context, SignIn());
+                      navigateToPage(context, Diets());
                     },
                   ),
                 ],
