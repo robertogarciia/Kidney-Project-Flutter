@@ -23,9 +23,30 @@ Future<void> addUsuario(String name, String email, String contrasenya) async {
   var digest = sha256.convert(bytes);
   var hashedPassword = digest.toString();
 
-  await db.collection("Usuarios").add({
+  // Agregar el usuario a la colección principal 'Usuarios'
+  DocumentReference usuarioRef = await db.collection("Usuarios").add({
     "Nombre": name,
     "Email": email,
     "Contrasenya": hashedPassword,
   });
+
+
+  /*Future<void> addUsuario(String name, String email, String contrasenya, String telefono) async {
+  // Encriptar la contraseña usando SHA-256
+  var bytes = utf8.encode(contrasenya);
+  var digest = sha256.convert(bytes);
+  var hashedPassword = digest.toString();
+
+  // Agregar el usuario a la colección principal 'Usuarios'
+  DocumentReference usuarioRef = await db.collection("Usuarios").add({
+    "Nombre": name,
+    "Email": email,
+    "Contrasenya": hashedPassword,
+  });
+
+  // Agregar la información adicional (teléfono) a la subcolección 'DadesPersonals'
+  await usuarioRef.collection("DadesPersonals").add({
+    "Telefono": telefono,
+  });
+}*/
 }
