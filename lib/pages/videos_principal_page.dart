@@ -6,8 +6,8 @@ import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 
-class Comunities extends StatelessWidget {
-  const Comunities({Key? key}) : super(key: key);
+class Videos extends StatelessWidget {
+  const Videos({Key? key}) : super(key: key);
 
   void iniciS(BuildContext context) {
     Navigator.push(
@@ -36,7 +36,7 @@ class Comunities extends StatelessWidget {
               ),
               //text inicia sessio
               const Text(
-                'Comunitats',
+                'Videos',
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
