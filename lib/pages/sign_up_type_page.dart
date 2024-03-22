@@ -31,7 +31,7 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
     // Verifica si el nom esta buit
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Si us plau, ingressa el teu nom.'),
         ),
       );
