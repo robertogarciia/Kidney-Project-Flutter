@@ -1,13 +1,24 @@
+
+
+import 'package:flutter/material.dart';
+import 'package:kidneyproject/components/textfield.dart';
+import 'package:kidneyproject/components/listfield.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/dades_mediques.dart';
 import 'package:kidneyproject/pages/dades_personals2.dart';
 
 class DadesPersonals extends StatefulWidget {
+
+  DadesPersonals({Key? key}) : super(key: key);
+
   final String userId;
 
   const DadesPersonals({Key? key, required this.userId}) : super(key: key);
+
 
   @override
   _DadesPersonalsState createState() => _DadesPersonalsState();
@@ -146,6 +157,9 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 ),
               ),
               BtnGeneral(
+                buttonText: "Enviar", 
+                onTap: (){
+                  iniciS(context);
                 buttonText: "Enviar",
                 onTap: () {
                   String dataNaixement = _dataNaixementController.text;
