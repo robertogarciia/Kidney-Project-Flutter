@@ -1,15 +1,26 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/dades_personals.dart';
 
-
 class TipusUsuari extends StatelessWidget {
-  const TipusUsuari({Key? key}) : super(key: key);
+  final String userId;
 
-  void iniciS(BuildContext context) {
+  const TipusUsuari({Key? key, required this.userId}) : super(key: key);
+
+  Future<void> actualizarTipoUsuario(BuildContext context, String tipoUsuario) async {
+    // Guardar el tipo de usuario en la colección 'tipusDeUsuario' dentro del documento del usuario
+    await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(userId)
+        .collection('tipusDeUsuario')
+        .doc('tipus')
+        .set({'tipus': tipoUsuario});
+
+    // Después de guardar el tipo de usuario, redirigir a la página deseada
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => DadesPersonals()),
+      MaterialPageRoute(builder: (context) => DadesPersonals(userId: userId)),
     );
   }
 
@@ -24,75 +35,37 @@ class TipusUsuari extends StatelessWidget {
               const SizedBox(
                 height: 20,
               ),
-              //text inicia sessio
               const Text(
-                "Tipus D'usuari",
+                "Tipo de Usuario",
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              Image.asset(
-                'lib/images/logoKNP_NT.png',
-                height: 250,
-              ),
-
-              const SizedBox( height: 30 ),
-    
+              const SizedBox(height: 20),
               BtnGeneral(
-                buttonText: "Pacient", 
+                buttonText: "Pacient",
                 onTap: () {
-                  iniciS(context);
+                  actualizarTipoUsuario(context, 'Pacient');
                 },
               ),
-
-              const SizedBox( height: 30 ),
-
+              const SizedBox(height: 20),
               BtnGeneral(
-                buttonText: "Familiar", 
+                buttonText: "Familiar",
                 onTap: () {
-                  iniciS(context);
+                  actualizarTipoUsuario(context, 'Familiar');
                 },
               ),
-
-              const SizedBox( height: 30 ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text(
-                        'Si no ho vols indicar',
-                        style: TextStyle(color: Colors.grey[700])
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        thickness: 0.5,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox( height: 30 ),
-
+              const SizedBox(height: 20),
               BtnGeneral(
-                buttonText: "Encara no les vull introduïr", 
+                buttonText: "No quiero ingresarlos todavía",
                 onTap: () {
-                  iniciS(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DadesPersonals(userId: userId)),
+                  );
                 },
-              ),      
+              ),
             ],
           ),
         ),
