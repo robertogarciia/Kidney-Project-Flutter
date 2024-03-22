@@ -12,8 +12,7 @@ import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
 
 class MenuPrincipal extends StatelessWidget {
-   final String userId;
-  const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
+  const MenuPrincipal({Key? key}) : super(key: key);
 
   
 
@@ -106,7 +105,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/dades_pers.png',
                     onTap: () {
-                      navigateToPage(context, DadesPersonals(userId: userId));
+                      navigateToPage(context, DadesPersonals());
                     },
                   ),
                 ],
