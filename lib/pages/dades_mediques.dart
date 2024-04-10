@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/listfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
@@ -38,29 +37,21 @@ class _FormularioState extends State<Formulario> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _alcadaController = TextEditingController();
   TextEditingController _pesController = TextEditingController();
-
   String? _selectedEstadio;
-  String? _selectedEstat;
+  TextEditingController _estatController = TextEditingController();
   String? _selectedDiabetic;
   String? _selectedHipertens;
-  String? _selectedExpert;
+  String? _selectedPacientExpert;
   String? _selectedActivitatFisica;
-  
-  TextEditingController _estadioController = TextEditingController();
-  TextEditingController _estatController = TextEditingController();
-  TextEditingController _diabeticController = TextEditingController();
-  TextEditingController _hipertensController = TextEditingController();
-  TextEditingController _pacientExpertController = TextEditingController();
-  TextEditingController _activitatFisicaController = TextEditingController();
 
-  Future<void> guardarDatosMedicos(String userId, String alcada, String pes, String estadio, String estat, String diabetic, String hipertens, String pacientExpert, String activitatFisica) async {
+  Future<void> guardarDatosMedicos(String userId, String diabetic, String hipertens, String pacientExpert, String activitatFisica, String estadio, String alcada, String pes, String estat) async {
     try {
-      // Guardar los datos médicos en la colección 'dadesMediques' dentro del documento del usuario
+      // Guardar los datos médicos dentro del documento 'dadesMediques'
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(userId)
           .collection('dadesMediques')
-          .doc('dades')
+          .doc('datos')
           .set({
         'alcada': alcada,
         'pes': pes,
@@ -71,7 +62,9 @@ class _FormularioState extends State<Formulario> {
         'pacientExpert': pacientExpert,
         'activitatFisica': activitatFisica,
       });
-         Navigator.pushReplacement(
+
+      // Redirigir al menú principal después de guardar los datos
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
       );
@@ -86,7 +79,7 @@ class _FormularioState extends State<Formulario> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dades Mediques'),
-      ),  
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -104,200 +97,194 @@ class _FormularioState extends State<Formulario> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-              TextFieldWidget(
-                controller: _alcadaController,
-                hintText: 'Alçada',
-                obscureText: false,
-              ),
-              SizedBox(height: 20),
-              TextFieldWidget(
-                controller: _pesController,
-                hintText: 'Pes',
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-              Container(
+                    TextFormField(
+                      controller: _alcadaController,
+                      decoration: InputDecoration(
+                        hintText: 'Alçada',
+                        suffixText: 'cm',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: _pesController,
+                      decoration: InputDecoration(
+                        hintText: 'Pes',
+                        suffixText: 'Kg',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    const Text(
+                      "Estadio",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
                       height: 50,
-                      width: 780,
-                      child: ListField(
-                        items: ['Sense estadio','Amb estadio'],
+                      width: 300,
+                      child: DropdownButtonFormField(
+                        items: List.generate(25, (index) => (index + 1).toString()).map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                         value: _selectedEstadio,
-                        hintText: 'Selecciona una opción',
                         onChanged: (String? value) {
                           setState(() {
                             _selectedEstadio = value;
                           });
                         },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor selecciona una opción';
-                          }
-                          return null;
-                        },
+                        decoration: InputDecoration(
+                          hintText: 'Selecciona una opción',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                     ),
-              SizedBox(height: 20),
-              Container(
+                    SizedBox(height: 10),
+                    TextFieldWidget(
+                      controller: _estatController,
+                      hintText: 'Estat',
+                      obscureText: false,
+                    ),
+                    SizedBox(height: 10),
+                    const Text(
+                      "Diabetic",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
                       height: 50,
-                      width: 780,
-                      child: ListField(
-                        items: ['Pre-diàlisis','...'],
-                        value: _selectedEstat,
-                        hintText: 'Selecciona una opción',
+                      width: 300,
+                      child: DropdownButtonFormField(
+                        items: ['Si', 'No'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        value: _selectedDiabetic,
                         onChanged: (String? value) {
                           setState(() {
-                            _selectedEstat = value;
+                            _selectedDiabetic = value;
                           });
                         },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor selecciona una opción';
-                          }
-                          return null;
-                        },
+                        decoration: InputDecoration(
+                          hintText: 'Selecciona una opción',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                     ),
-              SizedBox(height: 20),
-              Container(
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 50,
-                            width: 380,
-                            child: ListField(
-                              items: ['Si', 'No'],
-                              value: _selectedDiabetic,
-                              hintText: 'Diabetic',
-                              onChanged: (String? value) {
-                                setState(() {
-                                  _selectedDiabetic = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor selecciona una opción';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Container(
-                            height: 50,
-                            width: 380,
-                            child: ListField(
-                              items: ['Si', 'No'],
-                              value: _selectedHipertens,
-                              hintText: 'Hipertens',
-                              onChanged: (String? value) {
-                                setState(() {
-                                  _selectedHipertens = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor selecciona una opción';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
+                    SizedBox(height: 10),
+                    const Text(
+                      "Hipertens",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-              SizedBox(height: 20),
-              Container(
+                    Container(
                       height: 50,
-                      width: 780,
-                      child: ListField(
-                        items: ['Si','No'],
-                        value: _selectedExpert,
-                        hintText: 'Selecciona una opción',
+                      width: 300,
+                      child: DropdownButtonFormField(
+                        items: ['Si', 'No'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        value: _selectedHipertens,
                         onChanged: (String? value) {
                           setState(() {
-                            _selectedExpert = value;
+                            _selectedHipertens = value;
                           });
                         },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor selecciona una opción';
-                          }
-                          return null;
-                        },
+                        decoration: InputDecoration(
+                          hintText: 'Selecciona una opción',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                     ),
-              SizedBox(height: 20),
-              Container(
+                    SizedBox(height: 10),
+                    const Text(
+                      "Pacient Expert",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
                       height: 50,
-                      width: 780,
-                      child: ListField(
-                        items: ['Si','No'],
+                      width: 300,
+                      child: DropdownButtonFormField(
+                        items: ['Si', 'No'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        value: _selectedPacientExpert,
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedPacientExpert = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Selecciona una opción',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    const Text(
+                      "Activitat Física",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      height: 50,
+                      width: 300,
+                      child: DropdownButtonFormField(
+                        items: ['Si', 'No'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                         value: _selectedActivitatFisica,
-                        hintText: 'Selecciona una opción',
                         onChanged: (String? value) {
                           setState(() {
                             _selectedActivitatFisica = value;
                           });
                         },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor selecciona una opción';
-                          }
-                          return null;
-                        },
+                        decoration: InputDecoration(
+                          hintText: 'Selecciona una opción',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                     ),
-              SizedBox(height: 20),
-              ],
-              ),
-                    TextFieldWidget(
-                      controller: _alcadaController,
-                      hintText: 'Alçada',
-                      obscureText: false,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _pesController,
-                      hintText: 'Pes',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _estadioController,
-                      hintText: 'Estadio',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _estatController,
-                      hintText: 'Estat',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _diabeticController,
-                      hintText: 'Diabetic',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _hipertensController,
-                      hintText: 'Hipertens',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _pacientExpertController,
-                      hintText: 'Pacient expert',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
-                    TextFieldWidget(
-                      controller: _activitatFisicaController,
-                      hintText: 'Activitat Fisica',
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -309,14 +296,14 @@ class _FormularioState extends State<Formulario> {
                       // Si el formulario es válido, guardar los datos médicos
                       guardarDatosMedicos(
                         widget.userId,
-                        _alcadaController.text,
-                        _pesController.text,
-                        _estadioController.text,
-                        _estatController.text,
-                        _diabeticController.text,
-                        _hipertensController.text,
-                        _pacientExpertController.text,
-                        _activitatFisicaController.text,
+                        _selectedDiabetic ?? '',
+                        _selectedHipertens ?? '',
+                        _selectedPacientExpert ?? '',
+                        _selectedActivitatFisica ?? '',
+                        _selectedEstadio ?? '',
+                        '${_alcadaController.text} cm',
+                        '${_pesController.text} kg',
+                        _estatController.text
                       );
 
                       // Mostrar un diálogo de éxito

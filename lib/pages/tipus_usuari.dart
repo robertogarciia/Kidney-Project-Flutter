@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/btn_general.dart';
+import 'package:kidneyproject/pages/dades_familiars2.dart';
 import 'package:kidneyproject/pages/dades_personals.dart';
+import 'package:kidneyproject/pages/menu_principal.dart'; // Importa la página principal
+// Importa la página dades_familiars.dart
+import 'package:kidneyproject/pages/dades_familiars.dart';
 
 class TipusUsuari extends StatelessWidget {
   final String userId;
@@ -17,11 +21,26 @@ class TipusUsuari extends StatelessWidget {
         .doc('tipus')
         .set({'tipus': tipoUsuario});
 
-    // Después de guardar el tipo de usuario, redirigir a la página deseada
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => DadesPersonals(userId: userId)),
-    );
+    // Redirigir a la página correspondiente según el tipo de usuario seleccionado
+    if (tipoUsuario == 'Pacient') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => DadesPersonals(userId: userId)),
+      );
+    } else if (tipoUsuario == 'Familiar') {
+     
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => DadesFamiliars(userId: userId)), 
+  );
+
+
+    } else {
+     Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+      );
+    }
   }
 
   @override
@@ -60,10 +79,7 @@ class TipusUsuari extends StatelessWidget {
               BtnGeneral(
                 buttonText: "No quiero ingresarlos todavía",
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => DadesPersonals(userId: userId)),
-                  );
+                  actualizarTipoUsuario(context, 'No quiero ingresarlos todavía');
                 },
               ),
             ],
