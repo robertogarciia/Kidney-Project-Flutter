@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/components/video_card.dart';
 
 class Videos extends StatelessWidget {
   const Videos({Key? key}) : super(key: key);
@@ -30,7 +31,7 @@ class Videos extends StatelessWidget {
               SizedBox(
                 height: 20,
               ),
-              //text inicia sessio
+              // Text per al títol de la pàgina
               Text(
                 'Videos',
                 style: TextStyle(
@@ -38,7 +39,10 @@ class Videos extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
+              // Afegim la targeta del vídeo
+              VideoCard(videoUrl: 'https://youtu.be/kuNXAJfEm08?si=fTvNPa2g2gt9TvH2', videoTitle: 'Ibai MCY vs RMA'),
+              VideoCard(videoUrl: 'https://youtu.be/mQOWHLGuhOQ?si=y8RC3Ts5nDNL-Z5k', videoTitle: 'Pre Match BCN vs PSG'),
+
             ],
           ),
         ),
