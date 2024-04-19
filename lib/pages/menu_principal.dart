@@ -9,12 +9,13 @@ import 'package:kidneyproject/pages/game_principal_page.dart';
 import 'package:kidneyproject/pages/help_prinicipal_page.dart';
 import 'package:kidneyproject/pages/information_principal_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/pages/trivial_game.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
 
 class MenuPrincipal extends StatelessWidget {
-  const MenuPrincipal({Key? key}) : super(key: key);
+  const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
 
-  
+  final String userId;
 
   void navigateToPage(BuildContext context, Widget page) {
     Navigator.push(
@@ -67,7 +68,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/mando.png',
                     onTap: () {
-                      navigateToPage(context, Game());
+                      navigateToPage(context, TrivialPage(userId: userId));
                     },
                   ),
                   const SizedBox(width: 60),
@@ -105,7 +106,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/dades_pers.png',
                     onTap: () {
-                      navigateToPage(context, DadesPersonals());
+                      navigateToPage(context, DadesPersonals(userId: userId));
                     },
                   ),
                 ],
