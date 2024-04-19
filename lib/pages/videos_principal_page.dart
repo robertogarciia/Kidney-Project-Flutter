@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/components/video_card.dart';
+import 'package:kidneyproject/components/custom_search_delegate.dart';
 
 class Videos extends StatelessWidget {
   const Videos({Key? key}) : super(key: key);
@@ -24,6 +25,26 @@ class Videos extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
+      appBar: AppBar(
+        title: Text('Videos'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(), // Reemplaza CustomSearchDelegate con tu propia implementación de la clase SearchDelegate
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.account_circle),
+            onPressed: () {
+              // Implementa aquí la navegación al perfil del usuario
+            },
+          ),
+        ],
+      ),
       body: const SafeArea(
         child: SingleChildScrollView(
           child: Center(
@@ -31,14 +52,6 @@ class Videos extends StatelessWidget {
               children: <Widget>[
                 SizedBox(
                   height: 20,
-                ),
-                // Text per al títol de la pàgina
-                Text(
-                  'Videos',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
                 // Afegim la targeta del vídeo
                 VideoCard(videoUrl: 'https://www.youtube.com/watch?v=3hQdl9lRYL0&t=56s', videoTitle: '¿Qué es la hemodiálisis?'),
