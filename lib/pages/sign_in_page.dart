@@ -88,7 +88,7 @@ class SignIn extends StatelessWidget {
   void navigateToTipusUsuari(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TipusUsuari()),
+      MaterialPageRoute(builder: (context) => TipusUsuari(userId: 'userId',)),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/pages/login_page.dart';
+import 'package:kidneyproject/pages/videos_principal_page.dart';
 
 
 import 'package:kidneyproject/pages/menu_principal.dart';
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
 
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MenuPrincipal(),
+      home: Videos(),
 
       );
   }
