@@ -87,7 +87,6 @@ class _FormularioState extends State<Formulario> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(height: 20),
               Container(
                 margin: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -107,7 +106,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 5),
                     TextFormField(
                       controller: _pesController,
                       decoration: InputDecoration(
@@ -118,7 +117,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     const Text(
                       "Estadio",
                       style: TextStyle(
@@ -150,7 +149,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     TextFieldWidget(
                       controller: _estatController,
                       hintText: 'Estat',
@@ -188,7 +187,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     const Text(
                       "Hipertens",
                       style: TextStyle(
@@ -220,7 +219,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     const Text(
                       "Pacient Expert",
                       style: TextStyle(
@@ -252,7 +251,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     const Text(
                       "Activitat Física",
                       style: TextStyle(
@@ -284,7 +283,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                   ],
                 ),
               ),
