@@ -263,16 +263,25 @@ void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
     }
   }
 
-  void _discardIncorrectAnswer() {
-    if (!incorrectAnswerDiscarded) {
-      setState(() {
-        int correctIndex = questionsAndAnswers[currentQuestionIndex]['answers'].indexWhere((answer) => answer == questionsAndAnswers[currentQuestionIndex]['correctAnswer']);
-        buttonColors[correctIndex] = Colors.blue;
-        buttonColors[correctIndex != 0 ? 0 : 1] = Colors.red;
-        incorrectAnswerDiscarded = true;
-      });
-    }
+ void _discardIncorrectAnswer() {
+  if (!incorrectAnswerDiscarded) {
+    setState(() {
+      // Obtener el índice de la respuesta correcta
+      int correctIndex = questionsAndAnswers[currentQuestionIndex]['answers'].indexOf(questionsAndAnswers[currentQuestionIndex]['correctAnswer']);
+
+   
+
+      // Marcar el botón incorrecto como incorrecto
+      int incorrectIndex = buttonColors.indexWhere((color) => color == Colors.blue && buttonColors.indexOf(color) != correctIndex);
+      if (incorrectIndex != -1) {
+        buttonColors[incorrectIndex] = Colors.red;
+      }
+
+      incorrectAnswerDiscarded = true;
+    });
   }
+}
+
 
 void resetGame() {
   setState(() {
