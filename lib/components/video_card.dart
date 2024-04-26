@@ -4,11 +4,13 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 class VideoCard extends StatefulWidget {
   final String videoUrl;
   final String videoTitle;
+  final String videoCategoria;
 
   const VideoCard({
     Key? key,
     required this.videoUrl,
     required this.videoTitle,
+    required this.videoCategoria,
   }) : super(key: key);
 
   get category => null;

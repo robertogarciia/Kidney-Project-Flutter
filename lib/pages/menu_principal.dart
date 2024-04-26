@@ -14,7 +14,6 @@ import 'package:kidneyproject/pages/videos_principal_page.dart';
 
 class MenuPrincipal extends StatelessWidget {
   const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
-  
 
   final String userId;
 
