@@ -266,21 +266,22 @@ void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
  void _discardIncorrectAnswer() {
   if (!incorrectAnswerDiscarded) {
     setState(() {
-      // Obtener el índice de la respuesta correcta
-      int correctIndex = questionsAndAnswers[currentQuestionIndex]['answers'].indexOf(questionsAndAnswers[currentQuestionIndex]['correctAnswer']);
+      // Obtener la respuesta correcta
+      String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'];
 
-   
-
-      // Marcar el botón incorrecto como incorrecto
-      int incorrectIndex = buttonColors.indexWhere((color) => color == Colors.blue && buttonColors.indexOf(color) != correctIndex);
-      if (incorrectIndex != -1) {
-        buttonColors[incorrectIndex] = Colors.red;
+      // Iterar sobre las respuestas y encontrar la incorrecta
+      for (int i = 0; i < questionsAndAnswers[currentQuestionIndex]['answers'].length; i++) {
+        if (questionsAndAnswers[currentQuestionIndex]['answers'][i] != correctAnswer) {
+          buttonColors[i] = Colors.red; // Marcar la respuesta incorrecta como incorrecta
+          break; // Salir del bucle una vez que se haya marcado una respuesta incorrecta
+        }
       }
 
       incorrectAnswerDiscarded = true;
     });
   }
 }
+
 
 
 void resetGame() {
