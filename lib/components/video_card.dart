@@ -11,6 +11,8 @@ class VideoCard extends StatefulWidget {
     required this.videoTitle,
   }) : super(key: key);
 
+  get category => null;
+
   @override
   _VideoCardState createState() => _VideoCardState();
 }
