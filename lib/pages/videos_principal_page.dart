@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/components/video_card.dart';
 
-class Videos extends StatelessWidget {
+class Videos extends StatefulWidget {
   const Videos({Key? key}) : super(key: key);
+
+  @override
+  _VideosState createState() => _VideosState();
+}
+
+class _VideosState extends State<Videos> {
+  String? selectedCategory;
 
   void iniciS(BuildContext context) {
     Navigator.push(
@@ -20,11 +28,17 @@ class Videos extends StatelessWidget {
     );
   }
 
+  void resetFilter() {
+    setState(() {
+      selectedCategory = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      body: const SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
             child: Column(
@@ -32,7 +46,7 @@ class Videos extends StatelessWidget {
                 SizedBox(
                   height: 20,
                 ),
-                // Text per al títol de la pàgina
+                // Texto para el título de la página
                 Text(
                   'Videos',
                   style: TextStyle(
@@ -40,16 +54,67 @@ class Videos extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // Afegim la targeta del vídeo
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=3hQdl9lRYL0&t=56s', videoTitle: '¿Qué es la hemodiálisis?'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=xUyEkXXcig8', videoTitle: 'Diálisis'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=OJJ_Xrlq7QI', videoTitle: '¿Cuántos litros de líquido se eliminan durante la hemodiálisis?'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=4TUJ9MAPcuM', videoTitle: 'CONTROVERSIA. Diálisis en casa: ¿Hemodiálisis domiciliaria o Diálisis Peritoneal?'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=P3RJ7tLGZuQ', videoTitle: 'Experiencia de paciente en hemodiálisis domiciliaria'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=KIfjL4O6uQk', videoTitle: 'Consejos sobre cuidados para pacientes en hemodiálisis, IGSS TV 207'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=OHVg-Ymf2zM', videoTitle: '6 recomendaciones y cuidados que debes de tener para tu catéter de hemodiálisis'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=K-c8Feb1ARk', videoTitle: 'La MEJOR ALIMENTACIÓN durante la DIÁLISIS | Tipo de dieta en la diálisis | Nutrición y Dietética'),
-                VideoCard(videoUrl: 'https://www.youtube.com/watch?v=Y09v5emN0c0', videoTitle: '🚩Alimentos PROHIBIDOS para la INSUFICIENCIA RENAL Nutricion en pacientes con insuficiencia renal'),
+                // Fila con el filtro y el botón de reset
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // DropdownButton para filtrar por categoría
+                    DropdownButton<String>(
+                      hint: Text('Seleccionar categoría'),
+                      value: selectedCategory,
+                      items: ['Diálisis', 'Nutrición'] // Aquí debes proporcionar las categorías únicas disponibles
+                          .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedCategory = value;
+                        });
+                      },
+                    ),
+                    SizedBox(width: 20),
+                    // Botón de reset para restablecer el filtrado
+                    ElevatedButton(
+                      onPressed: resetFilter,
+                      child: Text('Quitar filtro'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                // Mostrar videos desde Firebase
+                StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('Videos').snapshots(),
+                  builder: (BuildContext context, AsyncSnapshot
+                  <QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Muestra un indicador de carga mientras se cargan los datos
+                    }
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Text('No hay videos disponibles'); // Maneja el caso de que no haya datos en la colección
+                    }
+                    // Filtrar los videos por categoría si se ha seleccionado una categoría
+                    List<DocumentSnapshot> filteredVideos = selectedCategory != null
+                        ? snapshot.data!.docs.where((doc) => doc['Categoria'] == selectedCategory).toList()
+                        : snapshot.data!.docs;
+
+                    return Column(
+                      children: filteredVideos.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        return VideoCard(
+                          videoUrl: data['url'], // Obtén la URL del documento
+                          videoTitle: data['Titol'],
+                          videoCategoria: data['Categoria'], // Obtén el título del documento
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
               ],
             ),
           ),
