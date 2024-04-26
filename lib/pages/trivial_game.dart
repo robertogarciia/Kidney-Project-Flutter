@@ -16,23 +16,9 @@ class _TrivialPageState extends State<TrivialPage> {
   int correctAnswersCount = 0;
   int coins = 0;
 
-  List<Map<String, dynamic>> questionsAndAnswers = [
-    {
-      'question': 'Quins són els productes principals de deixalla del cos que els seus ronyons no filtren bé i s''acumulen en la sang?',
-      'answers': ['Maltosa', 'Fosfatina', 'Urato'],
-      'correctAnswer': 'Urato',
-    },
-    {
-      'question': 'Cal preparar el braç abans d''iniciar les sessions d''HD?',
-      'answers': ['mai, no fa falta', 'si, per a millorar els accessos vasculars a puncionar', 'per a què?, funciona sol'],
-      'correctAnswer': 'si, per a millorar els accessos vasculars a puncionar',
-    },
-    {
-      'question': 'Habitualment, si encara no té el tractament dialític determinat, es començarà sempre per:',
-      'answers': ['catèter per a HD', 'catèter Tenkhoff de peritoneal', 'cateterisme cardíac'],
-      'correctAnswer': 'catèter per a HD',
-    },
-  ];
+  List<Map<String, dynamic>> questionsAndAnswers = [];
+
+ 
 
   List<Color> buttonColors = [
     Colors.blue,
@@ -45,8 +31,39 @@ class _TrivialPageState extends State<TrivialPage> {
   @override
   void initState() {
     super.initState();
+    _fetchQuestions();
     _fetchCoins();
   }
+void _fetchQuestions() async {
+  try {
+    QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
+        .collection('Trivial')
+        .get();
+
+    List<Map<String, dynamic>> fetchedQuestionsAndAnswers = questionSnapshot.docs.map((doc) {
+      Map<String, dynamic> data = {
+        'question': doc['Pregunta'],
+        'answers': List<String>.from(doc['Respostes']),
+        'correctAnswer': doc['Resposta Correcta'],
+      };
+
+      // Mostrar los datos por consola
+      print('Question: ${data['question']}');
+      print('Answers: ${data['answers']}');
+      print('Correct Answer: ${data['correctAnswer']}');
+      
+      return data;
+    }).toList();
+
+    // Actualizar el estado para mostrar las preguntas y respuestas
+    setState(() {
+      questionsAndAnswers = fetchedQuestionsAndAnswers;
+    });
+  } catch (error) {
+    print('Error fetching questions: $error');
+  }
+}
+
 
   void _fetchCoins() async {
     try {
@@ -177,50 +194,58 @@ class _TrivialPageState extends State<TrivialPage> {
     );
   }
 
-  void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
-    String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
-    bool isCorrect = selectedAnswer.trim() == correctAnswer;
+void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
+  String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
+  bool isCorrect = selectedAnswer.trim() == correctAnswer;
 
-    setState(() {
-      buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
-    });
+  setState(() {
+    buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
+  });
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
-          content: Text(isCorrect
-              ? '¡Oleeee! La resposta és $correctAnswer.'
-              : 'Ohhh, la resposta correcta és $correctAnswer.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (isCorrect) {
-                  setState(() {
-                    correctAnswersCount++;
-                    _addCoins(50);
-                    if (currentQuestionIndex < questionsAndAnswers.length - 1) {
-                      currentQuestionIndex++;
-                      incorrectAnswerDiscarded = false;
-                    } else {
-                      saveGameData(widget.userId, correctAnswersCount, coins);
-                      showSummaryDialog(context);
-                    }
-                  });
-                } else {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
+        content: Text(isCorrect
+            ? '¡Oleeee! La resposta és $correctAnswer.'
+            : 'Ohhh, la resposta correcta és $correctAnswer.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (isCorrect) {
+                setState(() {
+                  correctAnswersCount++;
+                  _addCoins(50);
+                  if (currentQuestionIndex < questionsAndAnswers.length - 1) {
+                    currentQuestionIndex++;
+                    incorrectAnswerDiscarded = false;
+                  } else {
+                    saveGameData(widget.userId, correctAnswersCount, coins);
+                    showSummaryDialog(context);
+                  }
+                });
+              } else {
+                setState(() {
+                  buttonColors[buttonIndex] = Colors.red;
                   _discardIncorrectAnswer();
-                }
-                resetButtonColors();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                  // Avanzar a la siguiente pregunta si la respuesta es incorrecta
+                  if (currentQuestionIndex < questionsAndAnswers.length - 1) {
+                    currentQuestionIndex++;
+                  }
+                });
+              }
+              resetButtonColors();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void saveGameData(String userId, int points, int coins) async {
     try {
@@ -249,13 +274,16 @@ class _TrivialPageState extends State<TrivialPage> {
     }
   }
 
-  void resetGame() {
-    setState(() {
-      currentQuestionIndex = 0;
-      correctAnswersCount = 0;
-      coins = 0;
-    });
-  }
+void resetGame() {
+  setState(() {
+    currentQuestionIndex = 0;
+    correctAnswersCount = 0;
+    resetButtonColors();
+  });
+
+  // Guardar los datos del juego al reiniciar
+  saveGameData(widget.userId, correctAnswersCount, coins);
+}
 
   void resetButtonColors() {
     setState(() {

@@ -40,17 +40,24 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   }
 
   bool validarDni(String dni) {
-    // Comprobamos la longitud
     if (dni.length != 9) return false;
-  
-    // Comprobamos que los primeros 8 caracteres sean números
     String numerosDni = dni.substring(0, 8);
     if (!numerosDni.runes.every((char) => char >= 48 && char <= 57)) return false;
-  
-    // Comprobamos que el último caracter sea una letra
     String letraDni = dni.substring(8);
     return letraDni.runes.every((char) => char >= 65 && char <= 90);
   }
+
+Future<bool> existePacienteConDNI(String dni) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collectionGroup('dades')
+      .where('Dni', isEqualTo: dni)
+      .limit(1)
+      .get();
+
+  return querySnapshot.docs.isNotEmpty;
+}
+
+
 
   Future<void> guardarDatosFamiliares(
       BuildContext context,
@@ -123,26 +130,45 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
         },
       );
     } else {
-      // Guardar los datos en Firestore
-      await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(userId)
-          .collection('dadesFamiliars')
-          .add({
-        'dataNaixement': dataNaixement,
-        'DniPacient': DniPacient,
-        'familiar': familiar,
-        'telefon': telefon,
-        'adreca': adreca,
-        'poblacio': poblacio,
-        'codiPostal': codiPostal,
-      });
+      bool pacienteExiste = await existePacienteConDNI(DniPacient);
+      if (!pacienteExiste) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("DNI no encontrado"),
+              content: Text("No se encontró ningún paciente con el DNI ingresado."),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("Aceptar"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        await FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(userId)
+            .collection('dadesFamiliars')
+            .add({
+          'dataNaixement': dataNaixement,
+          'DniPacient': DniPacient,
+          'familiar': familiar,
+          'telefon': telefon,
+          'adreca': adreca,
+          'poblacio': poblacio,
+          'codiPostal': codiPostal,
+        });
 
-      // Redirigir a la página del menú principal
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
-      );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+        );
+      }
     }
   }
 
@@ -160,7 +186,7 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
                 const Text(
                   "Dades Familiars",
                   style: TextStyle(
-                    fontSize: 40,
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -276,7 +302,8 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
                         poblacio,
                         codiPostal);
                   },
-                )
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
