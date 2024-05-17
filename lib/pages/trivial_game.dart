@@ -20,9 +20,8 @@ class _TrivialPageState extends State<TrivialPage> {
 
   List<Map<String, dynamic>> questionsAndAnswers = [];
 
- 
-
   List<Color> buttonColors = [
+    Colors.blue,
     Colors.blue,
     Colors.blue,
     Colors.blue,
@@ -36,40 +35,41 @@ class _TrivialPageState extends State<TrivialPage> {
     _fetchQuestions();
     _fetchCoins();
   }
-void _fetchQuestions() async {
-  try {
-    QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
-        .collection('Trivial')
-        .limit(5) // Limitar la consulta a solo 5 documentos
-        .get();
 
-    List<Map<String, dynamic>> fetchedQuestionsAndAnswers = questionSnapshot.docs.map((doc) {
-      Map<String, dynamic> data = {
-        'question': doc['Pregunta'],
-        'answers': List<String>.from(doc['Respostes']),
-        'correctAnswer': doc['Resposta Correcta'],
-      };
+  void _fetchQuestions() async {
+    try {
+      QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
+          .collection('Trivial')
+          .limit(5) // Limitar la consulta a solo 5 documentos
+          .get();
 
-      // Mostrar los datos por consola
-      print('Question: ${data['question']}');
-      print('Answers: ${data['answers']}');
-      print('Correct Answer: ${data['correctAnswer']}');
-      
-      return data;
-    }).toList();
+      List<Map<String, dynamic>> fetchedQuestionsAndAnswers = questionSnapshot.docs.map((doc) {
+        Map<String, dynamic> data = {
+          'question': doc['Pregunta'],
+          'answers': List<String>.from(doc['Respostes']),
+          'correctAnswer': doc['Resposta Correcta'],
+        };
 
-    // Barajar las preguntas y seleccionar las primeras 5
-    fetchedQuestionsAndAnswers.shuffle();
-    fetchedQuestionsAndAnswers = fetchedQuestionsAndAnswers.sublist(0, min(5, fetchedQuestionsAndAnswers.length));
+        // Mostrar los datos por consola
+        print('Question: ${data['question']}');
+        print('Answers: ${data['answers']}');
+        print('Correct Answer: ${data['correctAnswer']}');
 
-    // Actualizar el estado para mostrar las preguntas y respuestas
-    setState(() {
-      questionsAndAnswers = fetchedQuestionsAndAnswers;
-    });
-  } catch (error) {
-    print('Error fetching questions: $error');
+        return data;
+      }).toList();
+
+      // Barajar las preguntas y seleccionar las primeras 5
+      fetchedQuestionsAndAnswers.shuffle();
+      fetchedQuestionsAndAnswers = fetchedQuestionsAndAnswers.sublist(0, min(5, fetchedQuestionsAndAnswers.length));
+
+      // Actualizar el estado para mostrar las preguntas y respuestas
+      setState(() {
+        questionsAndAnswers = fetchedQuestionsAndAnswers;
+      });
+    } catch (error) {
+      print('Error fetching questions: $error');
+    }
   }
-}
 
   void _fetchCoins() async {
     try {
@@ -138,12 +138,35 @@ void _fetchQuestions() async {
                   height: 40,
                   child: IconButton(
                     icon: Image.asset(
-                      'lib/images/ayuda.png',
+                      'lib/images/helpWrong.png',
                     ),
                     onPressed: () {
-                      if (coins >= 100) {
-                        _subtractCoins(100);
+                      if (coins >= 200) {
+                        _subtractCoins(200);
                         _discardIncorrectAnswer();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('No tens suficients monedes'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 40,
+                  height: 40,
+                  child: IconButton(
+                    icon: Image.asset(
+                      'lib/images/helpCorrect.png',
+                    ),
+                    onPressed: () {
+                      if (coins >= 200) {
+                        _subtractCoins(200);
+                        _markCorrectAnswer();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -200,58 +223,57 @@ void _fetchQuestions() async {
     );
   }
 
-void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
-  String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
-  bool isCorrect = selectedAnswer.trim() == correctAnswer;
+  void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
+    String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
+    bool isCorrect = selectedAnswer.trim() == correctAnswer;
 
-  setState(() {
-    buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
-  });
+    setState(() {
+      buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
+    });
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
-        content: Text(isCorrect
-            ? '¡Oleeee! La resposta és $correctAnswer.'
-            : 'Ohhh, la resposta correcta és $correctAnswer.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              if (isCorrect) {
-                setState(() {
-                  correctAnswersCount++;
-                  _addCoins(50);
-                  if (currentQuestionIndex < questionsAndAnswers.length - 1) {
-                    currentQuestionIndex++;
-                    incorrectAnswerDiscarded = false;
-                  } else {
-                    saveGameData(widget.userId, correctAnswersCount, coins);
-                    showSummaryDialog(context);
-                  }
-                });
-              } else {
-                setState(() {
-                  buttonColors[buttonIndex] = Colors.red;
-                  _discardIncorrectAnswer();
-                  // Avanzar a la siguiente pregunta si la respuesta es incorrecta
-                  if (currentQuestionIndex < questionsAndAnswers.length - 1) {
-                    currentQuestionIndex++;
-                  }
-                });
-              }
-              resetButtonColors();
-            },
-            child: Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
+          content: Text(isCorrect
+              ? '¡Oleeee! La resposta és $correctAnswer.'
+              : 'Ohhh, la resposta correcta és $correctAnswer.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (isCorrect) {
+                  setState(() {
+                    correctAnswersCount++;
+                    _addCoins(50);
+                    if (currentQuestionIndex < questionsAndAnswers.length - 1) {
+                      currentQuestionIndex++;
+                      incorrectAnswerDiscarded = false;
+                    } else {
+                      saveGameData(widget.userId, correctAnswersCount, coins);
+                      showSummaryDialog(context);
+                    }
+                  });
+                } else {
+                  setState(() {
+                    buttonColors[buttonIndex] = Colors.red;
+                    _discardIncorrectAnswer();
+                    // Avanzar a la siguiente pregunta si la respuesta es incorrecta
+                    if (currentQuestionIndex < questionsAndAnswers.length - 1) {
+                      currentQuestionIndex++;
+                    }
+                  });
+                }
+                resetButtonColors();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void saveGameData(String userId, int points, int coins) async {
     try {
@@ -269,37 +291,50 @@ void checkAnswer(String selectedAnswer, BuildContext context, int buttonIndex) {
     }
   }
 
- void _discardIncorrectAnswer() {
-  if (!incorrectAnswerDiscarded) {
+  void _discardIncorrectAnswer() {
+    if (!incorrectAnswerDiscarded) {
+      setState(() {
+        // Obtener la respuesta correcta
+        String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'];
+
+        // Iterar sobre las respuestas y encontrar la incorrecta
+        for (int i = 0; i < questionsAndAnswers[currentQuestionIndex]['answers'].length; i++) {
+          if (questionsAndAnswers[currentQuestionIndex]['answers'][i] != correctAnswer) {
+            buttonColors[i] = Colors.red; // Marcar la respuesta incorrecta como incorrecta
+            break; // Salir del bucle una vez que se haya marcado una respuesta incorrecta
+          }
+        }
+
+        incorrectAnswerDiscarded = true;
+      });
+    }
+  }
+
+  void _markCorrectAnswer() {
     setState(() {
       // Obtener la respuesta correcta
       String correctAnswer = questionsAndAnswers[currentQuestionIndex]['correctAnswer'];
 
-      // Iterar sobre las respuestas y encontrar la incorrecta
+      // Iterar sobre las respuestas y encontrar la correcta
       for (int i = 0; i < questionsAndAnswers[currentQuestionIndex]['answers'].length; i++) {
-        if (questionsAndAnswers[currentQuestionIndex]['answers'][i] != correctAnswer) {
-          buttonColors[i] = Colors.red; // Marcar la respuesta incorrecta como incorrecta
-          break; // Salir del bucle una vez que se haya marcado una respuesta incorrecta
+        if (questionsAndAnswers[currentQuestionIndex]['answers'][i] == correctAnswer) {
+          buttonColors[i] = Colors.green; // Marcar la respuesta correcta como correcta
+          break; // Salir del bucle una vez que se haya marcado la respuesta correcta
         }
       }
-
-      incorrectAnswerDiscarded = true;
     });
   }
-}
 
+  void resetGame() {
+    setState(() {
+      currentQuestionIndex = 0;
+      correctAnswersCount = 0;
+      resetButtonColors();
+    });
 
-
-void resetGame() {
-  setState(() {
-    currentQuestionIndex = 0;
-    correctAnswersCount = 0;
-    resetButtonColors();
-  });
-
-  // Guardar los datos del juego al reiniciar
-  saveGameData(widget.userId, correctAnswersCount, coins);
-}
+    // Guardar los datos del juego al reiniciar
+    saveGameData(widget.userId, correctAnswersCount, coins);
+  }
 
   void resetButtonColors() {
     setState(() {
