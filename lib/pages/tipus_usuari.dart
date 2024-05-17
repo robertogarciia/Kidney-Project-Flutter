@@ -78,9 +78,9 @@ class TipusUsuari extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               BtnGeneral(
-                buttonText: "No quiero ingresarlos todavía",
+                buttonText: "No vull introduir-los ara",
                 onTap: () {
-                  actualizarTipoUsuario(context, 'No quiero ingresarlos todavía');
+                  actualizarTipoUsuario(context, 'No especificat');
                 },
               ),
             ],

@@ -68,10 +68,10 @@ class _DadesPersonalsState extends State<DadesPersonals> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("Campos obligatorios"),
-            content: Text("Por favor, complete todos los campos."),
+            content: Text("Si us plau, omple tots els camps obligatoris"),
             actions: <Widget>[
               TextButton(
-                child: Text("Aceptar"),
+                child: Text("Acceptar"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -85,11 +85,11 @@ class _DadesPersonalsState extends State<DadesPersonals> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Teléfono inválido"),
-            content: Text("Por favor, introduzca un número de teléfono válido de 9 dígitos."),
+            title: Text("Telèfon invàlid"),
+            content: Text("Si us plau, introdueix un telèfon vàlid"),
             actions: <Widget>[
               TextButton(
-                child: Text("Aceptar"),
+                child: Text("Acceptar"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -103,11 +103,11 @@ class _DadesPersonalsState extends State<DadesPersonals> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("DNI inválido"),
-            content: Text("Por favor, introduzca un DNI válido."),
+            title: Text("DNI invàlid"),
+            content: Text("Si us plau, introdueix un DNI vàlid"),
             actions: <Widget>[
               TextButton(
-                child: Text("Aceptar"),
+                child: Text("Acceptar"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -198,7 +198,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                         height: 50,
                         width: 300,
                         child: DropdownButtonFormField(
-                          items: ['Mujer', 'Hombre', 'Otros'].map((String value) {
+                          items: ['Dona', 'Home', 'Altre'].map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -211,7 +211,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                             });
                           },
                           decoration: InputDecoration(
-                            hintText: 'Selecciona una opción',
+                            hintText: 'Selecciona una opció',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),

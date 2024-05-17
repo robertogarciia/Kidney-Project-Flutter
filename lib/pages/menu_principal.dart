@@ -55,7 +55,7 @@ class MenuPrincipal extends StatelessWidget {
 
               //text inicia sessio
               const Text(
-                'Menu Prncipal',
+                'Menú Principal',
                 style: TextStyle(
                   fontSize: 50,
                   fontWeight: FontWeight.bold,
