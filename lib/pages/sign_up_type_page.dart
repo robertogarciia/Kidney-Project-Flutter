@@ -113,14 +113,15 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
     return Scaffold(
       backgroundColor: Colors.grey[300],
       body: SafeArea(
-        child: Center(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: <Widget>[
-                const SizedBox(
-                  height: 30,
-                ),
+        child: SingleChildScrollView(
+          child: Center(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(
+                    height: 30,
+                  ),
 
               //Oblidat Contrasenya
               GestureDetector(
@@ -289,9 +290,12 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
+}
+
+
 
 class PasswordField extends StatefulWidget {
   final TextEditingController controller;

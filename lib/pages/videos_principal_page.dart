@@ -37,7 +37,15 @@ class _VideosState extends State<Videos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navega hacia atrás en la pila de navegación al presionar el botón
+          },
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
@@ -48,7 +56,7 @@ class _VideosState extends State<Videos> {
                 ),
                 // Texto para el título de la página
                 Text(
-                  'Videos',
+                  'Vídeos',
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -62,7 +70,7 @@ class _VideosState extends State<Videos> {
                     DropdownButton<String>(
                       hint: Text('Seleccionar categoría'),
                       value: selectedCategory,
-                      items: ['Diálisis', 'Nutrición'] // Aquí debes proporcionar las categorías únicas disponibles
+                      items: ['Diàlisis', 'Nutrició'] // Aquí debes proporcionar las categorías únicas disponibles
                           .map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -79,7 +87,7 @@ class _VideosState extends State<Videos> {
                     // Botón de reset para restablecer el filtrado
                     ElevatedButton(
                       onPressed: resetFilter,
-                      child: Text('Quitar filtro'),
+                      child: Text('Restablir filtre'),
                     ),
                   ],
                 ),

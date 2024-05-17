@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
@@ -38,6 +40,7 @@ void _fetchQuestions() async {
   try {
     QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
         .collection('Trivial')
+        .limit(5) // Limitar la consulta a solo 5 documentos
         .get();
 
     List<Map<String, dynamic>> fetchedQuestionsAndAnswers = questionSnapshot.docs.map((doc) {
@@ -55,6 +58,10 @@ void _fetchQuestions() async {
       return data;
     }).toList();
 
+    // Barajar las preguntas y seleccionar las primeras 5
+    fetchedQuestionsAndAnswers.shuffle();
+    fetchedQuestionsAndAnswers = fetchedQuestionsAndAnswers.sublist(0, min(5, fetchedQuestionsAndAnswers.length));
+
     // Actualizar el estado para mostrar las preguntas y respuestas
     setState(() {
       questionsAndAnswers = fetchedQuestionsAndAnswers;
@@ -63,7 +70,6 @@ void _fetchQuestions() async {
     print('Error fetching questions: $error');
   }
 }
-
 
   void _fetchCoins() async {
     try {

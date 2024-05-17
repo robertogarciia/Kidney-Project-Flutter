@@ -34,7 +34,7 @@ class SignIn extends StatelessWidget {
           usuario['Contrasenya'] == hashedPasswordToCheck) {
         credentialsMatch = true;
         userId = documento.id; // Obtener el ID del usuario
-              print('UserID: $userId'); // Imprimir el ID por consola
+        print('UserID: $userId'); // Imprimir el ID por consola
 
         break;
       }
@@ -46,8 +46,8 @@ class SignIn extends StatelessWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inicio de Sesión Exitoso'),
-            content: Text('¡Bienvenido!'),
+            title: Text('Inici de sessió exitós'),
+            content: Text('Benvingut/da!'),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -59,7 +59,6 @@ class SignIn extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => TipusUsuari(
                         userId: userId,
-                        
                       ),
                     ),
                   );
@@ -76,9 +75,9 @@ class SignIn extends StatelessWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inicio de Sesión Fallido'),
+            title: Text('Inici de sessió fallit'),
             content: Text(
-                'El correo electrónico o la contraseña son incorrectos. Por favor, inténtalo de nuevo.'),
+                'El correu electrònic o la contrasenya introduïts són incorrectes. Si us plau, torna a intentar-ho.'),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () {
@@ -105,62 +104,69 @@ class SignIn extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[300],
       body: SafeArea(
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(
-                height: 30,
-              ),
-              const Text(
-                'Inicio de Sesión',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
-              ),
-              TextFieldWidget(
-                controller: _emailController,
-                hintText: 'Correo Electrónico',
-                obscureText: false,
-              ),
-              const SizedBox(height: 15),
-              TextFieldWidget(
-                controller: _contrasenyaController,
-                hintText: 'Contraseña',
-                obscureText: true,
-              ),
-              const SizedBox(height: 15),
-              GestureDetector(
-                onTap: () {
-                  // Implementar lógica para restablecer contraseña
-                },
-                child: Text(
-                  '¿Olvidaste la contraseña?',
-                  style: TextStyle(color: Colors.grey[800]),
-                ),
-              ),
-              const SizedBox(height: 15),
-              BtnIniciSessio(
-                onTap: () => signUserIn(context),
-              ),
-              const SizedBox(height: 15),
-              GestureDetector(
-                onTap: () {
-                  navigateToRegistrationPage(context);
-                },
-                child: Text(
-                  '¿No tienes cuenta? Regístrate',
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    decoration: TextDecoration.underline,
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const SizedBox(
+                    height: 30,
                   ),
-                ),
+                  const Text(
+                    'Inicia sessió',
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Image.asset(
+                    'lib/images/logoKNP_WT.png',
+                    height: 300,
+                  ),
+                  const SizedBox(height: 15),
+                  TextFieldWidget(
+                    controller: _emailController,
+                    hintText: 'Correu Electrònic',
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 15),
+                  TextFieldWidget(
+                    controller: _contrasenyaController,
+                    hintText: 'Contrasenya',
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 15),
+                  GestureDetector(
+                    onTap: () {
+                      // Implementar lógica para restablecer contraseña
+                    },
+                    child: Text(
+                      'Has oblidat la contrasenya?',
+                      style: TextStyle(color: Colors.grey[800]),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  BtnIniciSessio(
+                    onTap: () => signUserIn(context),
+                  ),
+                  const SizedBox(height: 15),
+                  GestureDetector(
+                    onTap: () {
+                      navigateToRegistrationPage(context);
+                    },
+                    child: Text(
+                      'Si no tens un compte, registra\'t!',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

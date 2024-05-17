@@ -21,7 +21,7 @@ class BtnIniciSessio extends StatelessWidget {
           ),
           child: const Center(
             child: Text(
-              "Iniciar Sesión",
+              "Inicia sessió",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
