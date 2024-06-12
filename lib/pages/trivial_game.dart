@@ -141,8 +141,8 @@ class _TrivialPageState extends State<TrivialPage> {
                       'lib/images/helpWrong.png',
                     ),
                     onPressed: () {
-                      if (coins >= 200) {
-                        _subtractCoins(200);
+                      if (coins >= 100) {
+                        _subtractCoins(100);
                         _discardIncorrectAnswer();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,7 +151,7 @@ class _TrivialPageState extends State<TrivialPage> {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                      }
+                      } 
                     },
                   ),
                 ),
