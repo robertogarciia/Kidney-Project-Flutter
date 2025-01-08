@@ -195,7 +195,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 80,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: ['Dona', 'Home', 'Altre'].map((String value) {

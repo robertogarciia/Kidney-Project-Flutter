@@ -8,6 +8,8 @@ import 'package:kidneyproject/pages/diets_principal_page.dart';
 import 'package:kidneyproject/pages/game_principal_page.dart';
 import 'package:kidneyproject/pages/help_prinicipal_page.dart';
 import 'package:kidneyproject/pages/information_principal_page.dart';
+import 'package:kidneyproject/pages/lesMevesDades.dart';
+import 'package:kidneyproject/pages/menu_joc.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/trivial_game.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
@@ -43,17 +45,27 @@ class MenuPrincipal extends StatelessWidget {
                 height: 5,
               ),
 
+              // Ajuste con Flexible para que no se corte la imagen
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TopImgs(imagePath: 'lib/images/logoKNP_NT.png'),
-                  SizedBox(width: 200),
-
-                  TopImgs(imagePath: 'lib/images/ajustes.png'),
+                  Expanded(
+                    // Esto evitará que la imagen se corte
+                    child: SizedBox(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: TopImgs(imagePath: 'lib/images/ajustes.png'),
+                    ),
+                  ),
                 ],
               ),
 
-              //text inicia sessio
+              // Texto "Inicia sessio"
               const Text(
                 'Menú Principal',
                 style: TextStyle(
@@ -68,7 +80,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/mando.png',
                     onTap: () {
-                      navigateToPage(context, TrivialPage(userId: userId));
+                      navigateToPage(context, MenuJoc(userId: userId));
                     },
                   ),
                   const SizedBox(width: 60),
@@ -106,8 +118,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/dades_pers.png',
                     onTap: () {
-                      navigateToPage(context, DadesPersonals(userId: userId));
-
+                      navigateToPage(context, LesMevesDades(userId: userId));
                     },
                   ),
                 ],

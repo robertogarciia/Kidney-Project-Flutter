@@ -127,7 +127,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: List.generate(25, (index) => (index + 1).toString()).map((String value) {
@@ -146,15 +146,20 @@ class _FormularioState extends State<Formulario> {
                             hintText: 'Selecciona una opció',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
+                              
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(height: 5),
-                      TextFieldWidget(
+                      SizedBox(height: 15),
+                       TextFormField(
                         controller: _estatController,
-                        hintText: 'Estat',
-                        obscureText: false,
+                        decoration: InputDecoration(
+                          hintText: 'Estat',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                       SizedBox(height: 10),
                       const Text(
@@ -165,7 +170,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: ['Sí', 'No'].map((String value) {
@@ -197,7 +202,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: ['Sí', 'No'].map((String value) {
@@ -229,7 +234,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: ['Sí', 'No'].map((String value) {
@@ -261,7 +266,7 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
                           items: ['Sí', 'No'].map((String value) {

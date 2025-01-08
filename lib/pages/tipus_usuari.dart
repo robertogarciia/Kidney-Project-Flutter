@@ -56,7 +56,7 @@ class TipusUsuari extends StatelessWidget {
                 height: 20,
               ),
               const Text(
-                "Tipo de Usuario",
+                "Tipus d'Usuari",
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
