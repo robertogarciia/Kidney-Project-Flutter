@@ -5,20 +5,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/menu_joc.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
 
-class TrivialPage extends StatefulWidget {
+class TrivialPageNoHabilitats extends StatefulWidget {
   final String userId;
 
-  TrivialPage({Key? key, required this.userId}) : super(key: key);
+  TrivialPageNoHabilitats({Key? key, required this.userId}) : super(key: key);
 
   @override
-  _TrivialPageState createState() => _TrivialPageState();
+  _TrivialPageNoHabilitatsState createState() => _TrivialPageNoHabilitatsState();
 }
 
-class _TrivialPageState extends State<TrivialPage> {
+class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
   int currentQuestionIndex = 0;
   int correctAnswersCount = 0;
   int coins = 0;
-  bool _isExplanationVisible = true; // Boolean to toggle explanation visibility
+ // bool _isExplanationVisible = true; // Boolean to toggle explanation visibility
 
   List<Map<String, dynamic>> questionsAndAnswers = [];
 
@@ -117,36 +117,35 @@ class _TrivialPageState extends State<TrivialPage> {
       print('Error updating coins in Firestore: $error');
     }
   }
-  void _toggleExplanation() {
+/*  void _toggleExplanation() {
     setState(() {
       _isExplanationVisible = !_isExplanationVisible;
     });
-  }
+  }*/
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Trivial Game'),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Image.asset(
-                'lib/images/coin.png',
-                width: 24,
-                height: 24,
-              ),
-              SizedBox(width: 5),
-              Text('$coins'),
-            ],
+    Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Trivial Game'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Image.asset(
+                  'lib/images/coin.png',
+                  width: 24,
+                  height: 24,
+                ),
+                SizedBox(width: 5),
+                Text('$coins'),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: SingleChildScrollView(  // Asegura que el contenido se pueda desplazar
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -183,106 +182,11 @@ Widget build(BuildContext context) {
                 );
               }).toList(),
             SizedBox(height: 30.0),
-            Text(
-              'Pistes',
-              style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // HelpWrong Button (Elimina una resposta incorrecta)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (coins >= 100) {
-                      _subtractCoins(100);
-                      _discardIncorrectAnswer(); // Llama a la función que elimina una resposta incorrecta.
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('No tens suficients monedes'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'lib/images/helpWrong.png',
-                        height: 40,
-                      ),
-                      SizedBox(width: 5),
-                      Text('100'),
-                    ],
-                  ),
-                ),
-                // HelpCorrect Button (Muestra la respuesta correcta)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (coins >= 200) {
-                      _subtractCoins(200);
-                      _markCorrectAnswer(); // Llama a la función que marca la resposta correcta.
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('No tens suficients monedes'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'lib/images/helpCorrect.png',
-                        height: 40,
-                      ),
-                      SizedBox(width: 5),
-                      Text('200'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30.0),
-            // Toggle Button to show or hide the explanation
-            ElevatedButton(
-              onPressed: _toggleExplanation,
-              child: Text(_isExplanationVisible ? 'Ocultar explicació' : 'Mostrar explicació'),
-            ),
-            SizedBox(height: 20.0),
-            // Explanation text that is conditionally shown
-            if (_isExplanationVisible)
-              Text(
-                "Explicació dels botons: \n\n"
-                "1. Botó vermell: Al presionar el botó, elimina una resposta incorrecta. (Cost: 100 monedes).\n\n"
-                "2. Botó verd: Al presionar el botó, marca la resposta correcta. (Cost: 200 monedes).",
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto', // O cualquier otra fuente que prefieras
-                  color: Colors.black87, // Color del texto
-                  height: 1.2, // Espaciado entre líneas
-                ),
-                textAlign: TextAlign.left, // Alineación del texto a la izquierda
-              ),
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void checkAnswer(
       String selectedAnswer, BuildContext context, int buttonIndex) {
@@ -321,7 +225,7 @@ Widget build(BuildContext context) {
                 } else {
                   setState(() {
                     buttonColors[buttonIndex] = Colors.red;
-                    _discardIncorrectAnswer();
+                   // _discardIncorrectAnswer();
                     // Avanzar a la siguiente pregunta si la respuesta es incorrecta
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
@@ -354,7 +258,7 @@ Widget build(BuildContext context) {
     }
   }
 
-  void _discardIncorrectAnswer() {
+  /*void _discardIncorrectAnswer() {
     if (!incorrectAnswerDiscarded) {
       setState(() {
         // Obtener la respuesta correcta
@@ -396,7 +300,7 @@ Widget build(BuildContext context) {
         }
       }
     });
-  }
+  }*/
 
   void resetGame() {
     setState(() {

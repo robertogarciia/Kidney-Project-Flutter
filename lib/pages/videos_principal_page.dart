@@ -13,6 +13,7 @@ class Videos extends StatefulWidget {
 
 class _VideosState extends State<Videos> {
   String? selectedCategory;
+  String searchQuery = '';  // Para almacenar la consulta de búsqueda
 
   void iniciS(BuildContext context) {
     Navigator.push(
@@ -31,6 +32,7 @@ class _VideosState extends State<Videos> {
   void resetFilter() {
     setState(() {
       selectedCategory = null;
+      searchQuery = '';  // Resetea el término de búsqueda también
     });
   }
 
@@ -39,6 +41,8 @@ class _VideosState extends State<Videos> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
+                backgroundColor: Color(0xFFFF603D), 
+
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -62,6 +66,45 @@ class _VideosState extends State<Videos> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                SizedBox(height: 20),
+
+                // Buscador mejorado
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 5,
+                          blurRadius: 15,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value.toLowerCase();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Buscar por título...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.blue,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
                 // Fila con el filtro y el botón de reset
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -92,11 +135,11 @@ class _VideosState extends State<Videos> {
                   ],
                 ),
                 SizedBox(height: 20),
+                
                 // Mostrar videos desde Firebase
                 StreamBuilder(
                   stream: FirebaseFirestore.instance.collection('Videos').snapshots(),
-                  builder: (BuildContext context, AsyncSnapshot
-                  <QuerySnapshot> snapshot) {
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return CircularProgressIndicator(); // Muestra un indicador de carga mientras se cargan los datos
                     }
@@ -106,10 +149,15 @@ class _VideosState extends State<Videos> {
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return Text('No hay videos disponibles'); // Maneja el caso de que no haya datos en la colección
                     }
-                    // Filtrar los videos por categoría si se ha seleccionado una categoría
-                    List<DocumentSnapshot> filteredVideos = selectedCategory != null
-                        ? snapshot.data!.docs.where((doc) => doc['Categoria'] == selectedCategory).toList()
-                        : snapshot.data!.docs;
+
+                    // Filtrar los videos por categoría y búsqueda si se han establecido
+                    List<DocumentSnapshot> filteredVideos = snapshot.data!.docs
+                        .where((doc) {
+                          bool matchesCategory = selectedCategory == null || doc['Categoria'] == selectedCategory;
+                          bool matchesSearch = doc['Titol'].toLowerCase().contains(searchQuery);
+                          return matchesCategory && matchesSearch;
+                        })
+                        .toList();
 
                     return Column(
                       children: filteredVideos.map((DocumentSnapshot document) {
