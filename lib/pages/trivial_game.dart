@@ -338,21 +338,59 @@ Widget build(BuildContext context) {
     );
   }
 
-  void saveGameData(String userId, int points, int coins) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(userId)
-          .collection('trivial')
-          .doc('datos')
-          .set({
+void saveGameData(String userId, int points, int coins) async {
+  try {
+    // Referencia al documento de Firestore
+    DocumentReference userRef = FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(userId)
+        .collection('trivial')
+        .doc('datos');
+
+    // Log para verificar los datos a guardar
+    print('Guardando datos: Puntos = $points, Monedas = $coins');
+
+    // Obtener el documento
+    DocumentSnapshot userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      // Si el documento existe, comprobar si 'maxPuntuacion' está presente
+      int currentMaxScore = 0; // Valor por defecto si el campo no existe
+
+      if (userDoc.data() != null && (userDoc.data() as Map<String, dynamic>).containsKey('maxPuntuacion')) {
+        // Si maxPuntuacion existe, la leemos
+        currentMaxScore = userDoc['maxPuntuacion'] ?? 0;
+      } else {
+        // Si no existe, inicializamos con el valor actual de los puntos
+        currentMaxScore = points;
+      }
+
+      // Determinar la nueva puntuación máxima (si es mayor, la actualizamos)
+      int newMaxScore = points > currentMaxScore ? points : currentMaxScore;
+
+      // Guardar los nuevos datos, incluyendo la puntuación máxima
+      await userRef.set({
+        'points': points,  // Guardar los puntos de esta partida
+        'coins': coins,
+        'maxPuntuacion': newMaxScore,  // Siempre actualizamos la puntuación máxima si es necesario
+      }, SetOptions(merge: true));  // Merge solo actualiza los campos
+
+      print('Datos guardados correctamente, maxPuntuacion actualizada si corresponde');
+    } else {
+      // Si el documento no existe, lo creamos con la puntuación inicial
+      await userRef.set({
         'points': points,
         'coins': coins,
+        'maxPuntuacion': points,  // Si no existe, inicializamos 'maxPuntuacion' con los puntos
       });
-    } catch (error) {
-      print('Error saving game data: $error');
+
+      print('Nuevo documento de usuario creado con maxPuntuacion: $points');
     }
+  } catch (error) {
+    print('Error al guardar los datos del juego: $error');
   }
+}
+
 
   void _discardIncorrectAnswer() {
     if (!incorrectAnswerDiscarded) {
