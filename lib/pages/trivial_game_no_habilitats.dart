@@ -242,21 +242,49 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
     );
   }
 
-  void saveGameData(String userId, int points, int coins) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(userId)
-          .collection('trivial')
-          .doc('datos')
-          .set({
-        'points': points,
+void saveGameData(String userId, int pointsNoHabilitats, int coins) async {
+  try {
+    DocumentReference userRef = FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(userId)
+        .collection('trivial')
+        .doc('datos');
+
+    print('Guardando datos: Puntos = $pointsNoHabilitats, Monedas = $coins');
+
+    DocumentSnapshot userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      int currentMaxScoreNoHabilitats = 0; 
+
+      if (userDoc.data() != null && (userDoc.data() as Map<String, dynamic>).containsKey('maxPuntuacionNoHabilitats')) {
+        currentMaxScoreNoHabilitats = userDoc['maxPuntuacionNoHabilitats'] ?? 0;
+      } else {
+        currentMaxScoreNoHabilitats = pointsNoHabilitats;
+      }
+
+      int newMaxScoreNoHabilitats = pointsNoHabilitats > currentMaxScoreNoHabilitats ? pointsNoHabilitats : currentMaxScoreNoHabilitats;
+
+      await userRef.set({
+        'pointsNoHabilitats': pointsNoHabilitats,  
         'coins': coins,
+        'maxPuntuacionNoHabilitats': newMaxScoreNoHabilitats,  
+      }, SetOptions(merge: true));  
+
+      print('Datos guardados correctamente, maxPuntuacion actualizada si corresponde');
+    } else {
+      await userRef.set({
+        'pointsNoHabilitats': pointsNoHabilitats,
+        'coins': coins,
+        'maxPuntuacionNoHabilitats': pointsNoHabilitats,  
       });
-    } catch (error) {
-      print('Error saving game data: $error');
+
+      print('Nuevo documento de usuario creado con maxPuntuacion: $pointsNoHabilitats');
     }
+  } catch (error) {
+    print('Error al guardar los datos del juego: $error');
   }
+}
 
   /*void _discardIncorrectAnswer() {
     if (!incorrectAnswerDiscarded) {

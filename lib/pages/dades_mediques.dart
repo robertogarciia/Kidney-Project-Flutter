@@ -4,7 +4,8 @@ import 'package:kidneyproject/components/textfield.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
 
 void main() {
-  runApp(const Formulario3(userId: 'userID_value')); // Aquí proporciona el valor real de userID
+  runApp(const Formulario3(
+      userId: 'userID_value')); // Aquí proporciona el valor real de userID
 }
 
 class Formulario3 extends StatelessWidget {
@@ -38,13 +39,24 @@ class _FormularioState extends State<Formulario> {
   TextEditingController _alcadaController = TextEditingController();
   TextEditingController _pesController = TextEditingController();
   String? _selectedEstadio;
-  TextEditingController _estatController = TextEditingController();
+  String? _estatController;
   String? _selectedDiabetic;
   String? _selectedHipertens;
   String? _selectedPacientExpert;
   String? _selectedActivitatFisica;
+  String? _selectedTipusC;
 
-  Future<void> guardarDatosMedicos(String userId, String diabetic, String hipertens, String pacientExpert, String activitatFisica, String estadio, String alcada, String pes, String estat) async {
+  Future<void> guardarDatosMedicos(
+      String userId,
+      String diabetic,
+      String hipertens,
+      String pacientExpert,
+      String activitatFisica,
+      String estadio,
+      String alcada,
+      String pes,
+      String estat,
+      String tipusC) async {
     try {
       // Guardar los datos médicos dentro del documento 'dadesMediques'
       await FirebaseFirestore.instance
@@ -61,6 +73,7 @@ class _FormularioState extends State<Formulario> {
         'hipertens': hipertens,
         'pacientExpert': pacientExpert,
         'activitatFisica': activitatFisica,
+        'tipusC': _selectedTipusC,
       });
 
       // Redirigir al menú principal después de guardar los datos
@@ -74,24 +87,180 @@ class _FormularioState extends State<Formulario> {
     }
   }
 
+  void determinarTipusC() {
+    // Lee altura en metros, sustituyendo comas por puntos si es necesario
+    double alcadaEnMetros =
+        double.tryParse(_alcadaController.text.replaceAll(',', '.')) ?? 0;
+    double pes = double.tryParse(_pesController.text.replaceAll(',', '.')) ?? 0;
+
+    // Calcula IMC
+    double imc =
+        alcadaEnMetros > 0 ? (pes / (alcadaEnMetros * alcadaEnMetros)) : 0;
+
+    // Determina categoría de IMC
+    String categoriaIMC;
+    if (imc < 18.5) {
+      categoriaIMC = 'Desnodrit';
+    } else if (imc >= 25) {
+      categoriaIMC = 'Obès';
+    } else {
+      categoriaIMC = 'Normal';
+    }
+
+    // Imprime el IMC y la categoría, o lo que necesites hacer con esta información
+    print('IMC: $imc, Categoría: $categoriaIMC');
+
+    // Determina TipusC según combinaciones
+    if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C1';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C2';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C3';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C4';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlasi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C5';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C6';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C7';
+    } else if (categoriaIMC == 'Normal' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C8';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C9';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C10';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C11';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C12';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C13';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C14';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C15';
+    } else if (categoriaIMC == 'Desnodrit' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C16';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C17';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C18';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C19';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'Sí' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C20';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C21';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Pre-Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C22';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'No') {
+      _selectedTipusC = 'C23';
+    } else if (categoriaIMC == 'Obès' &&
+        _selectedActivitatFisica == 'No' &&
+        _estatController == 'Diàlisi' &&
+        _selectedDiabetic == 'Sí') {
+      _selectedTipusC = 'C24';
+    } else {
+      _selectedTipusC = 'No Determinat';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Dades Mèdiques'),
-      ),
+      backgroundColor: Color.fromARGB(255, 161, 196, 249),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                const SizedBox(height: 20),
+                const Text(
+                  "Dades Mèdiques",
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
                 Container(
                   margin: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Color(0xA6403DF3),
+                    color: Color.fromARGB(255, 255, 255, 255),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(20),
@@ -101,7 +270,7 @@ class _FormularioState extends State<Formulario> {
                         controller: _alcadaController,
                         decoration: InputDecoration(
                           hintText: 'Alçada',
-                          suffixText: 'cm',
+                          suffixText: 'm',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
@@ -130,7 +299,9 @@ class _FormularioState extends State<Formulario> {
                         height: 60,
                         width: 300,
                         child: DropdownButtonFormField(
-                          items: List.generate(25, (index) => (index + 1).toString()).map((String value) {
+                          items: List.generate(
+                                  5, (index) => (index + 1).toString())
+                              .map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -146,21 +317,46 @@ class _FormularioState extends State<Formulario> {
                             hintText: 'Selecciona una opció',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(height: 15),
-                       TextFormField(
-                        controller: _estatController,
-                        decoration: InputDecoration(
-                          hintText: 'Estat',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                      ),
+                      SizedBox(height: 10),
+                        const Text(
+  "Estat",
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  ),
+),
+Container(
+  height: 60, // Altura del contenedor
+  width: 300, // Ancho del contenedor
+  child: DropdownButtonFormField<String>(
+    value: _estatController,
+    decoration: InputDecoration(
+      hintText: 'Selecciona una opció',
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+    ),
+    items: <String>['Pre-Diàlisi', 'Diàlisi', 'Trasplantat']
+        .map((String value) => DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            ))
+        .toList(),
+    onChanged: (String? newValue) {
+      setState(() {
+        _estatController = newValue!;
+      });
+    },
+    validator: (value) => value == null
+        ? 'Por favor, selecciona un estado'
+        : null,
+  ),
+),
+
                       SizedBox(height: 10),
                       const Text(
                         "Diabètic",
@@ -293,56 +489,69 @@ class _FormularioState extends State<Formulario> {
                     ],
                   ),
                 ),
-               Padding(
-  padding: const EdgeInsets.symmetric(vertical: 16.0),
-  child: Column(
-    children: [
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // Si el formulario es válido, guardar los datos médicos
-                  guardarDatosMedicos(
-                    widget.userId,
-                    _selectedDiabetic ?? '',
-                    _selectedHipertens ?? '',
-                    _selectedPacientExpert ?? '',
-                    _selectedActivitatFisica ?? '',
-                    _selectedEstadio ?? '',
-                    '${_alcadaController.text} cm',
-                    '${_pesController.text} kg',
-                    _estatController.text
-                  );
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  determinarTipusC();
 
-                  // Mostrar un diálogo de éxito
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        content: Text('Les dades mèdiques s\'han guardat correctament.'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Cerrar'),
+                                  // Si el formulario es válido, guardar los datos médicos
+                                  guardarDatosMedicos(
+                                      widget.userId,
+                                      _selectedDiabetic ?? '',
+                                      _selectedHipertens ?? '',
+                                      _selectedPacientExpert ?? '',
+                                      _selectedActivitatFisica ?? '',
+                                      _selectedEstadio ?? '',
+                                      '${_alcadaController.text} m',
+                                      '${_pesController.text} kg',
+                                      _estatController ?? '',
+                                      _selectedTipusC ?? '');
+
+                                  // Mostrar un diálogo de éxito
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                            'Les dades mèdiques s\'han guardat correctament.'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('Cerrar'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color.fromARGB(
+                                        197, 4, 0, 255)), // Fondo azul
+                              ),
+                              child: Text(
+                                'Enviar',
+                                style: TextStyle(
+                                  color: Colors.white, // Texto blanco
+                                ),
+                              ),
+                            ),
                           ),
                         ],
-                      );
-                    },
-                  );
-                }
-              },
-              child: Text('Enviar'),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

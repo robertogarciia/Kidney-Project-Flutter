@@ -9,6 +9,7 @@ import 'package:kidneyproject/pages/game_principal_page.dart';
 import 'package:kidneyproject/pages/help_prinicipal_page.dart';
 import 'package:kidneyproject/pages/information_principal_page.dart';
 import 'package:kidneyproject/pages/lesMevesDades.dart';
+import 'package:kidneyproject/pages/menuDietes.dart';
 import 'package:kidneyproject/pages/menu_joc.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/trivial_game.dart';
@@ -137,7 +138,7 @@ class MenuPrincipal extends StatelessWidget {
                   BottomImgs(
                     imagePath: 'lib/images/dietas.png',
                     onTap: () {
-                      navigateToPage(context, Diets());
+                      navigateToPage(context, MenuDietes(userId: userId));
                     },
                   ),
                 ],

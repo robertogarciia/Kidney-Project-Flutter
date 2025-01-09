@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  firebase_storage: ^11.0.7
+
   flutter:
     sdk: flutter
   youtube_player_flutter: ^8.0.0  # Utiliza la versión más reciente
@@ -41,7 +43,7 @@ dependencies:
   firebase_core: ^2.25.4
   cloud_firestore: ^4.15.5
   crypto: ^3.0.3
-  
+
 
 dev_dependencies:
   flutter_test:

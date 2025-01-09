@@ -41,7 +41,7 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
           field == 'diabetic' ||
           field == 'pacientExpert' ||
           field == 'activitatFisica' ||
-          field == 'estadio') {
+          field == 'estadio'|| field == 'estat') {
         await FirebaseFirestore.instance
             .collection('Usuarios')
             .doc(widget.userId)
@@ -143,6 +143,11 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
               data['estadio'] != null) {
             _selectedValues['estadio'] =
                 data['estadio'] ?? '1'; // Default value '1' en caso de null
+          }
+          if (!_selectedValues.containsKey('estat') &&
+              data['estat'] != null) {
+            _selectedValues['estat'] =
+                data['estat'] ?? 'Diàlisi'; // Valor predeterminado 'Diàlisi' si es nulo
           }
 
           return SingleChildScrollView(
@@ -331,7 +336,7 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
                         ? DropdownButton<String>(
                             value: _selectedValues[
                                 field], // Valor desde el estado inicial
-                            items: List.generate(25, (index) {
+                            items: List.generate(5, (index) {
                               int value =
                                   index + 1; // Esto genera números de 1 a 25
                               return DropdownMenuItem<String>(
@@ -375,8 +380,92 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
           ),
         ),
       );
-    } else {
-      // Si es un campo de texto
+    }
+  else if (field == 'estat') {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Container(
+      padding: const EdgeInsets.all(15.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 5,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title, // Título del campo
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _isEditing[field] == true // Si está en modo edición
+                    ? DropdownButton<String>(
+                        value: _selectedValues[field] ?? 'Diàlisi', // Se asegura de que haya un valor predeterminado
+                        items: <String>['Pre-diàlisi', 'Diàlisi', 'Trasplantat']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          print("Nuevo valor seleccionado: $newValue"); // Verifica el nuevo valor
+                          setState(() {
+                            // Esto se actualiza correctamente cuando cambia
+                            _selectedValues[field] = newValue ?? 'Diàlisi'; // Usa el valor predeterminado si es nulo
+                          });
+                        },
+                      )
+                    : Text(
+                        _selectedValues[field] ?? 'Diàlisi', // Muestra el valor si no está en edición
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              _isEditing[field] == true ? Icons.save : Icons.edit,
+              color: Colors.blueAccent,
+            ),
+            onPressed: () {
+              if (_isEditing[field] == true) {
+                _saveChanges(field); // Guarda los cambios cuando se edita
+              } else {
+                setState(() {
+                  _isEditing[field] = true; // Cambia el estado a modo de edición
+                });
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
+     else {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Container(

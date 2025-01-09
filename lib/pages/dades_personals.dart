@@ -144,7 +144,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Color.fromARGB(255, 161, 196, 249),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -163,7 +163,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
                 Container(
                   margin: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xA6403DF3),
+                    color: Color.fromARGB(255, 255, 255, 255),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(20),
