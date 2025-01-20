@@ -88,16 +88,13 @@ class _FormularioState extends State<Formulario> {
   }
 
   void determinarTipusC() {
-    // Lee altura en metros, sustituyendo comas por puntos si es necesario
     double alcadaEnMetros =
         double.tryParse(_alcadaController.text.replaceAll(',', '.')) ?? 0;
     double pes = double.tryParse(_pesController.text.replaceAll(',', '.')) ?? 0;
 
-    // Calcula IMC
     double imc =
         alcadaEnMetros > 0 ? (pes / (alcadaEnMetros * alcadaEnMetros)) : 0;
 
-    // Determina categoría de IMC
     String categoriaIMC;
     if (imc < 18.5) {
       categoriaIMC = 'Desnodrit';
@@ -107,10 +104,8 @@ class _FormularioState extends State<Formulario> {
       categoriaIMC = 'Normal';
     }
 
-    // Imprime el IMC y la categoría, o lo que necesites hacer con esta información
     print('IMC: $imc, Categoría: $categoriaIMC');
 
-    // Determina TipusC según combinaciones
     if (categoriaIMC == 'Normal' &&
         _selectedActivitatFisica == 'Sí' &&
         _estatController == 'Pre-Diàlisi' &&
@@ -330,8 +325,8 @@ class _FormularioState extends State<Formulario> {
   ),
 ),
 Container(
-  height: 60, // Altura del contenedor
-  width: 300, // Ancho del contenedor
+  height: 60, 
+  width: 300, 
   child: DropdownButtonFormField<String>(
     value: _estatController,
     decoration: InputDecoration(
@@ -352,7 +347,7 @@ Container(
       });
     },
     validator: (value) => value == null
-        ? 'Por favor, selecciona un estado'
+        ? 'Si us plau, selecciona una opció'
         : null,
   ),
 ),
@@ -501,7 +496,6 @@ Container(
                                 if (_formKey.currentState!.validate()) {
                                   determinarTipusC();
 
-                                  // Si el formulario es válido, guardar los datos médicos
                                   guardarDatosMedicos(
                                       widget.userId,
                                       _selectedDiabetic ?? '',
@@ -514,7 +508,6 @@ Container(
                                       _estatController ?? '',
                                       _selectedTipusC ?? '');
 
-                                  // Mostrar un diálogo de éxito
                                   showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
@@ -537,12 +530,12 @@ Container(
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all(
                                     Color.fromARGB(
-                                        197, 4, 0, 255)), // Fondo azul
+                                        197, 4, 0, 255)), 
                               ),
                               child: Text(
                                 'Enviar',
                                 style: TextStyle(
-                                  color: Colors.white, // Texto blanco
+                                  color: Colors.white, 
                                 ),
                               ),
                             ),

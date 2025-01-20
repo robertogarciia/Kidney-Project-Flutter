@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:kidneyproject/pages/cestaPage.dart';
 import 'package:kidneyproject/pages/detallPage.dart';
 
 class pageCarns extends StatefulWidget {
@@ -31,6 +32,22 @@ class _pageCarnsState extends State<pageCarns> {
       appBar: AppBar(
         title: const Text('Carns Disponibles'),
         backgroundColor: Colors.greenAccent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart), // Icono de cesta
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => cestaPage(
+                    userId: widget.userId, // Pasa el userId a la nueva página
+                    tipusC: widget.tipusC, // Pasa el tipusC a la nueva página
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('Dietes').snapshots(),
@@ -123,7 +140,6 @@ class _pageCarnsState extends State<pageCarns> {
                               ),
                             ),
                           ),
-                        
                         ],
                       ),
                     ),
