@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/pages/cestaProvider.dart';
+import 'package:provider/provider.dart'; // Importa el paquete Provider
 
 class detallPage extends StatelessWidget {
   final String nombre;
@@ -35,32 +37,29 @@ class detallPage extends StatelessWidget {
             SizedBox(height: 16),
             _buildDescription(),
             SizedBox(height: 16),
-            _buildBackButton(context),
+            _buildAddToCestaButton(context),
           ],
         ),
       ),
     );
   }
 
-  // Widget que muestra la imagen más grande y la puntuación en recuadros separados
   Widget _buildImageWithPuntuacion() {
     Color puntuacionColor;
 
-    // Cambiar el color de fondo según la puntuación
     if (puntuacion == 0) {
-      puntuacionColor = Colors.red; // Fondo rojo si la puntuación es 0
+      puntuacionColor = Colors.red;
     } else if (puntuacion == 1) {
-      puntuacionColor = Colors.orange; // Fondo naranja si la puntuación es 1
+      puntuacionColor = Colors.orange;
     } else if (puntuacion == 2) {
-      puntuacionColor = Colors.green; // Fondo verde si la puntuación es 2
+      puntuacionColor = Colors.green;
     } else {
-      puntuacionColor = Colors.greenAccent; // Color predeterminado
+      puntuacionColor = Colors.greenAccent;
     }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Imagen más grande dentro de un recuadro verde
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -72,18 +71,16 @@ class detallPage extends StatelessWidget {
             child: Image.network(
               imageUrl,
               fit: BoxFit.cover,
-              height: 150, // Tamaño más grande para la imagen
+              height: 150,
               width: 150,
             ),
           ),
         ),
-        SizedBox(width: 16), // Espacio entre la imagen y la puntuación
-
-        // Puntuación con fondo dependiendo del valor
+        SizedBox(width: 16),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           decoration: BoxDecoration(
-            color: puntuacionColor, // Fondo dependiendo de la puntuación
+            color: puntuacionColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: puntuacionColor, width: 2),
           ),
@@ -91,7 +88,7 @@ class detallPage extends StatelessWidget {
             children: [
               Icon(
                 Icons.star,
-                color: Colors.white, // Estrella blanca para resaltar sobre el fondo
+                color: Colors.white,
                 size: 30,
               ),
               SizedBox(width: 8),
@@ -100,7 +97,7 @@ class detallPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // Texto blanco
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -110,7 +107,6 @@ class detallPage extends StatelessWidget {
     );
   }
 
-  // Widget para la descripción
   Widget _buildDescription() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -140,12 +136,20 @@ class detallPage extends StatelessWidget {
     );
   }
 
-  // Widget para el botón de regresar
-  Widget _buildBackButton(BuildContext context) {
+  Widget _buildAddToCestaButton(BuildContext context) {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          Navigator.of(context).pop();
+          // Obtiene el Provider y añade el producto a la cesta
+          Provider.of<CestaProvider>(context, listen: false).agregarItem(nombre,puntuacion, imageUrl);
+
+          // Muestra un SnackBar confirmando la acción
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$nombre afegit a la cistella'),
+              duration: Duration(seconds: 2),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: Colors.greenAccent,

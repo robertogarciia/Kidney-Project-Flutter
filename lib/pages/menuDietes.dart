@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/crearDietes.dart';
+import 'package:kidneyproject/pages/menu_principal.dart'; // Import the menuPrincipal page
 
 class MenuDietes extends StatefulWidget {
   final String userId;
@@ -12,12 +13,12 @@ class MenuDietes extends StatefulWidget {
 }
 
 class _MenuDietesState extends State<MenuDietes> {
-  String _tipusC = '';  
+  String _tipusC = '';
 
   @override
   void initState() {
     super.initState();
-    _getTipusC();  
+    _getTipusC();
   }
 
   Future<void> _getTipusC() async {
@@ -31,12 +32,12 @@ class _MenuDietesState extends State<MenuDietes> {
 
       if (docSnapshot.exists) {
         setState(() {
-          _tipusC = docSnapshot['tipusC'] ?? ''; 
+          _tipusC = docSnapshot['tipusC'] ?? '';
         });
         print("TipusC recuperado: $_tipusC");
       } else {
         setState(() {
-          _tipusC = 'Desconocido';  
+          _tipusC = 'Desconocido';
         });
         print("Documento no encontrado. TipusC es 'Desconocido'.");
       }
@@ -51,6 +52,18 @@ class _MenuDietesState extends State<MenuDietes> {
       appBar: AppBar(
         title: const Text('Menú Dietes'),
         backgroundColor: Colors.greenAccent,
+        leading: IconButton(  // Add this to enable custom back navigation
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate to the MenuPrincipal when the back arrow is pressed
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MenuPrincipal(userId: widget.userId),  // Replace with your MenuPrincipal page
+              ),
+            );
+          },
+        ),
       ),
       body: Center(
         child: Padding(

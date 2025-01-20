@@ -33,6 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
   youtube_player_flutter: ^8.0.0  # Utiliza la versión más reciente
+  provider: ^6.1.2
 
 
 
