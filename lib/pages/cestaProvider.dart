@@ -5,8 +5,9 @@ class CestaProvider with ChangeNotifier {
 
   List<Map<String, dynamic>> get cestaItems => _cestaItems;
 
-  int get puntuacionTotal => _cestaItems.fold(0, (total, item) => total + item['puntuacion'] as int);
-
+int get puntuacionTotal => _cestaItems.isEmpty 
+    ? 0 
+    : _cestaItems.map((item) => item['puntuacion'] as int).reduce((a, b) => a > b ? a : b);
   get userId => null;
 
 void agregarItem(String item, int puntuacion, String imageUrl) {
@@ -23,10 +24,14 @@ void agregarItem(String item, int puntuacion, String imageUrl) {
 }
 
 
-  void eliminarItem(String item) {
-    _cestaItems.removeWhere((element) => element['item'] == item);
+ void eliminarItem(String item) {
+  final index = _cestaItems.indexWhere((element) => element['item'] == item);
+  if (index != -1) {
+    _cestaItems.removeAt(index); 
     notifyListeners();
   }
+}
+
     void vaciarCesta() {
     cestaItems.clear();
     notifyListeners();

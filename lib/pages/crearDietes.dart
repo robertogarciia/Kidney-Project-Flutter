@@ -3,6 +3,17 @@ import 'package:flutter/widgets.dart';
 import 'package:kidneyproject/pages/cestaPage.dart';
 import 'package:kidneyproject/pages/cestaProvider.dart';
 import 'package:kidneyproject/pages/pageCarns.dart';
+import 'package:kidneyproject/pages/pageCondiments.dart';
+import 'package:kidneyproject/pages/pageDolcos.dart';
+import 'package:kidneyproject/pages/pageEmbotits.dart';
+import 'package:kidneyproject/pages/pageFruita.dart';
+import 'package:kidneyproject/pages/pageGreixos.dart';
+import 'package:kidneyproject/pages/pageLactics.dart';
+import 'package:kidneyproject/pages/pageLlegums.dart';
+import 'package:kidneyproject/pages/pageOu.dart';
+import 'package:kidneyproject/pages/pagePeix.dart';
+import 'package:kidneyproject/pages/pageTubercles.dart';
+import 'package:kidneyproject/pages/pageVerdures.dart';
 import 'package:provider/provider.dart';
 
 class crearDietes extends StatefulWidget {
@@ -59,13 +70,12 @@ class _crearDietesState extends State<crearDietes> {
                     MainAxisSize.min, // Evitar que se estire la columna
                 children: [
                   _buildButton('Peix', () {
-                    // Acción al presionar "Peix"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pagePeix(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Carns', () {
                     // Acción al presionar "Carns"
@@ -78,85 +88,85 @@ class _crearDietesState extends State<crearDietes> {
                     );
                   }),
                   _buildButton('Ous', () {
-                    // Acción al presionar "Ous"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageOu(userId: widget.userId, tipusC: widget.tipusC),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Embotits', () {
-                    // Acción al presionar "Embotits"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageEmbotits(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Làctics', () {
-                    // Acción al presionar "Làctics"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageLactics(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Llegums', () {
-                    // Acción al presionar "Llegums"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageLlegums(userId: widget.userId,tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Verdures', () {
-                    // Acción al presionar "Verdures"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageVerdures(userId: widget.userId,tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
+                  }),
+                  _buildButton('Tubèrcles', () { 
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => pageTubercles(userId: widget.userId, tipusC: widget.tipusC,),
+                    ),
+                  );
+
                   }),
                   _buildButton('Fruites', () {
-                    // Acción al presionar "Fruites"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageFruita(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Grases', () {
-                    // Acción al presionar "Grases"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageGreixos(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Dolços', () {
-                    // Acción al presionar "Dolços"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageDolcos(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                   _buildButton('Condiments i salses', () {
-                    // Acción al presionar "Condiments i salses"
-                    /*Navigator.push(
+                    Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CrearDietesPage(userId: widget.userId),
+                      builder: (context) => pageCondiments(userId: widget.userId, tipusC: widget.tipusC,),
                     ),
-                  );*/
+                  );
                   }),
                 ],
               ),

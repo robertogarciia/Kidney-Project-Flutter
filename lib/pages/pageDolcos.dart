@@ -4,18 +4,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:kidneyproject/pages/cestaPage.dart';
 import 'package:kidneyproject/pages/detallPage.dart';
 
-class pageCarns extends StatefulWidget {
+class pageDolcos extends StatefulWidget {
   final String userId;
   final String tipusC;
 
-  const pageCarns({Key? key, required this.userId, required this.tipusC})
+  const pageDolcos({Key? key, required this.userId, required this.tipusC})
       : super(key: key);
 
   @override
-  _pageCarnsState createState() => _pageCarnsState();
+  _pageDolcosState createState() => _pageDolcosState();
 }
 
-class _pageCarnsState extends State<pageCarns> {
+class _pageDolcosState extends State<pageDolcos> {
   Future<String> _getDownloadUrl(String path) async {
     try {
       final ref = FirebaseStorage.instance.refFromURL(path);
@@ -30,7 +30,7 @@ class _pageCarnsState extends State<pageCarns> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carns Disponibles'),
+        title: const Text('Dolços Disponibles'),
         backgroundColor: Colors.greenAccent,
         actions: [
           IconButton(
@@ -52,7 +52,7 @@ class _pageCarnsState extends State<pageCarns> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Dietes')
-            .where('Categoria', isEqualTo: 'Carn')
+            .where('Categoria', isEqualTo: 'Dolços')
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {

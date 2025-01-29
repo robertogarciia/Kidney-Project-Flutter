@@ -26,38 +26,35 @@ class _resumDietesPageState extends State<resumDietesPage> {
   final TextEditingController _nombreController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool isMounted = true; // Flag para comprobar si el widget está montado
+  bool isMounted = true;
 
   @override
   void dispose() {
-    // Establecer isMounted como false cuando el widget es desmontado
     isMounted = false;
     super.dispose();
   }
 
   String _evaluarDieta() {
-    if (widget.puntuacionTotal <= 2) {
-      return 'Aquesta dieta no és recomanable. Hi han aliments que no són bons per a tu.';
-    } else if (widget.puntuacionTotal > 2 && widget.puntuacionTotal <= 5) {
+    if (widget.puntuacionTotal == 0) {
+      return 'Enhorabona! La dieta creada és excel·lent.';
+    } else if (widget.puntuacionTotal == 1) {
       return 'Aquesta dieta és millorable. Hi han millors aliments a triar.';
     } else {
-      return 'Enhorabona! La dieta creada és excel·lent.';
+      return 'Aquesta dieta no és recomanable. Hi han aliments que no són bons per a tu.';
     }
   }
 
   Future<void> _guardarResumen() async {
-
-
     final String nombre = _nombreController.text.trim();
-     if (nombre.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Afegeix un nom per a la dieta.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return; // Don't save if the name is empty
-  }
+    if (nombre.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Afegeix un nom per a la dieta.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     final Timestamp fechaCreacion = Timestamp.now();
 
@@ -70,6 +67,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
         'nombre': nombre,
         'fechaCreacion': fechaCreacion,
         'puntuacionTotal': widget.puntuacionTotal,
+        'alimentos': widget.alimentos,
       });
 
       if (isMounted) {
@@ -80,7 +78,8 @@ class _resumDietesPageState extends State<resumDietesPage> {
           ),
         );
 
-        final cestaProvider = Provider.of<CestaProvider>(context, listen: false);
+        final cestaProvider =
+            Provider.of<CestaProvider>(context, listen: false);
         if (cestaProvider != null) {
           cestaProvider.vaciarCesta();
         }
@@ -128,7 +127,6 @@ class _resumDietesPageState extends State<resumDietesPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Sección para el nombre de la dieta
               Container(
                 padding: const EdgeInsets.all(20),
                 margin: const EdgeInsets.symmetric(vertical: 20),
@@ -147,7 +145,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Introduce un nombre para la dieta',
+                      'Introdueix un nom per a la dieta',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -158,8 +156,9 @@ class _resumDietesPageState extends State<resumDietesPage> {
                     TextFormField(
                       controller: _nombreController,
                       decoration: InputDecoration(
-                        labelText: 'Nombre de la dieta',
-                        labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
+                        labelText: 'Nom de la dieta',
+                        labelStyle: TextStyle(
+                            color: const Color.fromARGB(255, 0, 0, 0)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -177,14 +176,16 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   ],
                 ),
               ),
-
-              // Mostrar la lista de alimentos
-              for (var alimento in widget.alimentos) 
+              for (var alimento in widget.alimentos)
                 Container(
                   padding: const EdgeInsets.all(20),
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: alimento['puntuacion'] == 0
+                        ? Colors.green.withOpacity(0.8)
+                        : (alimento['puntuacion'] == 1
+                            ? Colors.orange.withOpacity(0.8)
+                            : Colors.red.withOpacity(0.8)),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -196,26 +197,34 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   ),
                   child: Row(
                     children: [
-                      // Imagen del alimento
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          alimento['imageUrl'],
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white, 
+                          borderRadius:
+                              BorderRadius.circular(8), 
+                        ),
+                        padding: EdgeInsets.all(
+                            5),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            alimento['imageUrl'],
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 15),
-
-                      // Nombre y puntuación
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Puntuación: ${alimento['puntuacion']}',
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color.fromARGB(255, 255, 255, 255)),
                             ),
                           ],
                         ),
@@ -223,8 +232,6 @@ class _resumDietesPageState extends State<resumDietesPage> {
                     ],
                   ),
                 ),
-
-              // Puntuación y evaluación de la dieta
               Container(
                 padding: const EdgeInsets.all(20),
                 margin: const EdgeInsets.symmetric(vertical: 10),
@@ -243,8 +250,9 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Puntuación Total: ${widget.puntuacionTotal}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      'Puntuació Total: ${widget.puntuacionTotal}',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -252,9 +260,9 @@ class _resumDietesPageState extends State<resumDietesPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: widget.puntuacionTotal <= 2
+                        color: widget.puntuacionTotal == 0
                             ? Colors.green
-                            : (widget.puntuacionTotal <= 4
+                            : (widget.puntuacionTotal == 1
                                 ? Colors.orange
                                 : Colors.red),
                       ),
@@ -262,9 +270,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
-
               ElevatedButton(
                 onPressed: _guardarResumen,
                 style: ElevatedButton.styleFrom(
@@ -275,7 +281,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                   ),
                   textStyle: TextStyle(fontSize: 18),
                 ),
-                child: Text('Guardar Resumen'),
+                child: Text('Guardar Dieta'),
               ),
             ],
           ),
