@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/crearDietes.dart';
-import 'package:kidneyproject/pages/menu_principal.dart'; // Import the menuPrincipal page
+import 'package:kidneyproject/pages/lesMevesDietes.dart';
+import 'package:kidneyproject/pages/menu_principal.dart'; 
 
 class MenuDietes extends StatefulWidget {
   final String userId;
@@ -52,14 +53,13 @@ class _MenuDietesState extends State<MenuDietes> {
       appBar: AppBar(
         title: const Text('Menú Dietes'),
         backgroundColor: Colors.greenAccent,
-        leading: IconButton(  // Add this to enable custom back navigation
+        leading: IconButton(  
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigate to the MenuPrincipal when the back arrow is pressed
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => MenuPrincipal(userId: widget.userId),  // Replace with your MenuPrincipal page
+                builder: (context) => MenuPrincipal(userId: widget.userId),  
               ),
             );
           },
@@ -99,13 +99,12 @@ class _MenuDietesState extends State<MenuDietes> {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  // Acción al presionar "Veure Dietes"
-                  /* Navigator.push(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => VeureDietesPage(userId: widget.userId),
+                      builder: (context) => lesMevesDietes(userId: widget.userId, tipusC: _tipusC),
                     ),
-                  );*/
+                  );
                 },
                 child: const Text(
                   'Veure Dietes',

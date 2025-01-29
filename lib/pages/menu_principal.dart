@@ -46,17 +46,15 @@ class MenuPrincipal extends StatelessWidget {
                 height: 5,
               ),
 
-              // Ajuste con Flexible para que no se corte la imagen
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TopImgs(imagePath: 'lib/images/logoKNP_NT.png'),
                   Expanded(
-                    // Esto evitará que la imagen se corte
                     child: SizedBox(),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
+                    padding: EdgeInsets.only(right: 20.0),
                     child: SizedBox(
                       width: 50,
                       height: 50,
@@ -84,7 +82,7 @@ class MenuPrincipal extends StatelessWidget {
                       navigateToPage(context, MenuJoc(userId: userId));
                     },
                   ),
-                  const SizedBox(width: 60),
+                  const SizedBox(width: 30),
                   MidleImgs(
                     imagePath: 'lib/images/vids.png',
                     onTap: () {
@@ -103,7 +101,7 @@ class MenuPrincipal extends StatelessWidget {
                       navigateToPage(context, Help());
                     },
                   ),
-                  const SizedBox(width: 60),
+                  const SizedBox(width: 30),
                   MidleImgs(
                     imagePath: 'lib/images/inf.png',
                     onTap: () {
@@ -112,12 +110,15 @@ class MenuPrincipal extends StatelessWidget {
                   )
                 ],
               ),
+              const SizedBox(height: 10),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   BottomImgs(
                     imagePath: 'lib/images/dades_pers.png',
+                    width: 335, 
+                    height: 115,
                     onTap: () {
                       navigateToPage(context, LesMevesDades(userId: userId));
                     },
@@ -128,15 +129,19 @@ class MenuPrincipal extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  BottomImgs(
+                  MidleImgs(
                     imagePath: 'lib/images/comu.png',
+                    height: 155,
+                    width: 155,
                     onTap: () {
                       navigateToPage(context, Comunities());
                     },
                   ),
-                  SizedBox(width: 20),
-                  BottomImgs(
+                  const SizedBox(width: 20),
+                  MidleImgs(
                     imagePath: 'lib/images/dietas.png',
+                      height: 155,
+                    width: 155,
                     onTap: () {
                       navigateToPage(context, MenuDietes(userId: userId));
                     },

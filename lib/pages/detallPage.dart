@@ -23,7 +23,7 @@ class detallPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           nombre,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.greenAccent,
         elevation: 0,
@@ -48,11 +48,11 @@ class detallPage extends StatelessWidget {
     Color puntuacionColor;
 
     if (puntuacion == 0) {
-      puntuacionColor = Colors.red;
+      puntuacionColor = Colors.green;
     } else if (puntuacion == 1) {
       puntuacionColor = Colors.orange;
     } else if (puntuacion == 2) {
-      puntuacionColor = Colors.green;
+      puntuacionColor = Colors.red;
     } else {
       puntuacionColor = Colors.greenAccent;
     }
@@ -119,7 +119,7 @@ class detallPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Descripción:',
+            'Descripció:',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -136,33 +136,43 @@ class detallPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAddToCestaButton(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          // Obtiene el Provider y añade el producto a la cesta
-          Provider.of<CestaProvider>(context, listen: false).agregarItem(nombre,puntuacion, imageUrl);
+ Widget _buildAddToCestaButton(BuildContext context) {
+  return Center(
+    child: ElevatedButton(
+      onPressed: () {
+        final cestaProvider = Provider.of<CestaProvider>(context, listen: false);
 
-          // Muestra un SnackBar confirmando la acción
+        if (cestaProvider.cestaItems.length >= 4) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$nombre afegit a la cistella'),
+            const SnackBar(
+              content: Text('No pots afegir més de 4 elements a la cistella.'),
               duration: Duration(seconds: 2),
             ),
           );
-        },
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, backgroundColor: Colors.greenAccent,
-          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        child: Text(
-          'Afegir a la cistella',
-          style: TextStyle(fontSize: 18),
+        } else {
+          cestaProvider.agregarItem(nombre, puntuacion, imageUrl);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$nombre afegit a la cistella'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, backgroundColor: Colors.greenAccent,
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
-    );
-  }
+      child: const Text(
+        'Afegir a la cistella',
+        style: TextStyle(fontSize: 18),
+      ),
+    ),
+  );
+}
+
 }

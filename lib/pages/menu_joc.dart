@@ -59,8 +59,7 @@ class _MenuJocState extends State<MenuJoc> {
     super.initState();
     _fetchCoinsAndPoints();
   }
-
- @override
+@override
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: Colors.white,
@@ -90,89 +89,46 @@ Widget build(BuildContext context) {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Alinear a la izquierda
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const SizedBox(height: 16), // Espacio debajo del AppBar
-
-              // Mostrar las máximas puntuaciones arriba a la izquierda
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Max. puntuació amb habilitats: $maxPuntuacion',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8), // Separador
-
-                      Row(
-                        children: [
-                          const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Max. puntuació sense habilitats: $maxPuntuacionNoHabilitats',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20), // Separador antes del resto del contenido
+              const SizedBox(height: 16),
 
               // Resto del contenido
-            
-
-              // Aquí sigue el código original para el contenido principal
-             Padding(
-  padding: const EdgeInsets.all(8.0),
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center, // Asegura la alineación central
-    children: [
-      const Text(
-        "Tipus de Joc",
-        style: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: Color.fromRGBO(66, 61, 242, 1.0),
-        ),
-      ),
-      const SizedBox(height: 20), // Espacio entre el título y las monedas
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'lib/images/coin.png',
-            width: 24,
-            height: 24,
-          ),
-          const SizedBox(width: 8), // Separación entre la moneda y el texto
-          Text(
-            '$coins',
-            style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w600),
-          ),
-                
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Tipus de Joc",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromRGBO(66, 61, 242, 1.0),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'lib/images/coin.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$coins',
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-              
-             
+              ),
+
               const SizedBox(height: 10),
 
               Padding(
@@ -205,7 +161,6 @@ Widget build(BuildContext context) {
                   ],
                 ),
               ),
-              // Sigue el resto del contenido como los botones para los juegos
               const SizedBox(height: 40),
 
               GestureDetector(
@@ -265,6 +220,44 @@ Widget build(BuildContext context) {
                       ),
                     ),
                   ),
+                ),
+              ),
+
+              // Máximas puntuaciones con el mismo diseño
+              const SizedBox(height: 40),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Max. puntuació amb habilitats: $maxPuntuacion',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Max. puntuació sense habilitats: $maxPuntuacionNoHabilitats',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -4,18 +4,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:kidneyproject/pages/cestaPage.dart';
 import 'package:kidneyproject/pages/detallPage.dart';
 
-class pageCarns extends StatefulWidget {
+class pageEmbotits extends StatefulWidget {
   final String userId;
   final String tipusC;
 
-  const pageCarns({Key? key, required this.userId, required this.tipusC})
+  const pageEmbotits({Key? key, required this.userId, required this.tipusC})
       : super(key: key);
 
   @override
-  _pageCarnsState createState() => _pageCarnsState();
+  _pageEmbotitsState createState() => _pageEmbotitsState();
 }
 
-class _pageCarnsState extends State<pageCarns> {
+class _pageEmbotitsState extends State<pageEmbotits> {
   Future<String> _getDownloadUrl(String path) async {
     try {
       final ref = FirebaseStorage.instance.refFromURL(path);
@@ -30,7 +30,7 @@ class _pageCarnsState extends State<pageCarns> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carns Disponibles'),
+        title: const Text('Embotits Disponibles'),
         backgroundColor: Colors.greenAccent,
         actions: [
           IconButton(
@@ -52,7 +52,7 @@ class _pageCarnsState extends State<pageCarns> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Dietes')
-            .where('Categoria', isEqualTo: 'Carn')
+            .where('Categoria', isEqualTo: 'Embotit')
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
@@ -95,9 +95,9 @@ class _pageCarnsState extends State<pageCarns> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => detallPage(
-                            nombre: dieta['Nom'] ?? 'Sin nombre',
+                            nombre: dieta['Nom'] ?? 'Sense nombre',
                             descripcion:
-                                dieta['Descripció'] ?? 'Sin descripción',
+                                dieta['Descripció'] ?? 'sense descripció',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
                           ),
