@@ -15,32 +15,76 @@ class LesMevesDades extends StatefulWidget {
 class _LesMevesDadesState extends State<LesMevesDades> {
   late Future<List<DocumentSnapshot>> _userData;
   Map<String, TextEditingController> _controllers = {};
-  Map<String, bool> _isEditing = {}; // Para manejar el modo de edición de cada campo
+  Map<String, bool> _isEditing = {}; 
 
   @override
   void initState() {
     super.initState();
     print("Iniciando carga de datos para el usuario: ${widget.userId}");
 
-    _userData = _loadUserData();  // Carga inicial de los datos
+    _userData = _loadUserData();  
   }
 
-  // Cargar los datos del usuario
   Future<List<DocumentSnapshot>> _loadUserData() async {
-    final personalData = await FirebaseFirestore.instance
+    final userDoc = await FirebaseFirestore.instance
         .collection('Usuarios')
         .doc(widget.userId)
-        .collection('dadesPersonals')
-        .doc('dades')
+        .collection('tipusDeUsuario')
+        .doc('tipus')
         .get();
-    final generalData = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .get();
-    return [personalData, generalData];
+
+    final userData = userDoc.data() as Map<String, dynamic>;
+
+    if (userData['tipo'] == 'Familiar') {
+      final relatedPatientDocs = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('relacionFamiliarPaciente')
+          .get();
+
+      if (relatedPatientDocs.docs.isNotEmpty) {
+        final relatedPatientData =
+            relatedPatientDocs.docs.first.data() as Map<String, dynamic>;
+        final dniPaciente = relatedPatientData['DniPaciente'];
+        return await _loadPatientData(dniPaciente);
+      }
+    } else if (userData['tipo'] == 'Pacient') {
+      final personalData = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
+      final generalData = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .get();
+      return [personalData, generalData];
+    }
+
+    return [];
   }
 
-  // Función para guardar cambios
+  Future<List<DocumentSnapshot>> _loadPatientData(String dniPaciente) async {
+    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
+    
+    for (var userDoc in usersSnapshot.docs) {
+      final personalDataSnapshot = await userDoc.reference
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
+
+      if (personalDataSnapshot.exists) {
+        final personalData = personalDataSnapshot.data() as Map<String, dynamic>;
+        if (personalData['Dni'] == dniPaciente) {
+          final generalDataSnapshot = await userDoc.reference.get();
+          return [personalDataSnapshot, generalDataSnapshot];
+        }
+      }
+    }
+    return [];
+  }
+
   Future<void> _saveChanges(String field, String value) async {
     try {
       // Actualizando los datos en Firestore
@@ -52,8 +96,8 @@ class _LesMevesDadesState extends State<LesMevesDades> {
           .update({field: value});
 
       setState(() {
-        _isEditing[field] = false; // Desactiva el modo de edición
-        _userData = _loadUserData(); // Recarga los datos actualizados
+        _isEditing[field] = false; 
+        _userData = _loadUserData(); 
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +110,6 @@ class _LesMevesDadesState extends State<LesMevesDades> {
     }
   }
 
-  // Crear un controlador para el campo editable
   TextEditingController _getController(String field, String value) {
     if (!_controllers.containsKey(field)) {
       _controllers[field] = TextEditingController(text: value);
@@ -77,22 +120,21 @@ class _LesMevesDadesState extends State<LesMevesDades> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
-  backgroundColor: Colors.greenAccent,
-  elevation: 0,
-  leading: IconButton(
-    icon: Icon(Icons.arrow_back, color: Colors.white),
-    onPressed: () {
-      // Regresar directamente al menú principal
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
-        (route) => false,
-      );
-    },
-  ),
-),
-
+      appBar: AppBar(
+        backgroundColor: Colors.greenAccent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Regresar directamente al menú principal
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
+              (route) => false,
+            );
+          },
+        ),
+      ),
       body: FutureBuilder<List<DocumentSnapshot>>(
         future: _userData,
         builder: (context, snapshot) {
@@ -108,7 +150,6 @@ class _LesMevesDadesState extends State<LesMevesDades> {
             return const Center(child: Text('No es troben dades.'));
           }
 
-          // Datos recuperados correctamente
           var personalData = snapshot.data![0].data() as Map<String, dynamic>;
           var generalData = snapshot.data![1].data() as Map<String, dynamic>;
 
@@ -138,7 +179,6 @@ class _LesMevesDadesState extends State<LesMevesDades> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navegar a la página de "Mis Datos Médicos"
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -207,7 +247,7 @@ class _LesMevesDadesState extends State<LesMevesDades> {
                             border: const OutlineInputBorder(),
                             hintText: 'Introduiex un valor',
                           ),
-                          onSubmitted: (_) => _saveChanges(field, _controllers[field]?.text ?? ''), // Guardar cambios al presionar Enter
+                          onSubmitted: (_) => _saveChanges(field, _controllers[field]?.text ?? ''), 
                         )
                       : Text(
                           value,
@@ -227,10 +267,10 @@ class _LesMevesDadesState extends State<LesMevesDades> {
               ),
               onPressed: () {
                 if (_isEditing[field] == true) {
-                  _saveChanges(field, _controllers[field]?.text ?? ''); // Guardar cambios si está editando
+                  _saveChanges(field, _controllers[field]?.text ?? '');
                 } else {
                   setState(() {
-                    _isEditing[field] = true; // Activar modo de edición
+                    _isEditing[field] = true; 
                   });
                 }
               },
