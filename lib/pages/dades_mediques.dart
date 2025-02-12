@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/textfield.dart';
+import 'package:kidneyproject/pages/estatAnim.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
 
 void main() {
@@ -79,7 +80,7 @@ class _FormularioState extends State<Formulario> {
       // Redirigir al menú principal después de guardar los datos
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+        MaterialPageRoute(builder: (context) => EstatAnim(userId: userId)),
       );
     } catch (error) {
       // Manejo de errores
@@ -508,23 +509,7 @@ Container(
                                       _estatController ?? '',
                                       _selectedTipusC ?? '');
 
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        content: Text(
-                                            'Les dades mèdiques s\'han guardat correctament.'),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text('Cerrar'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
+                                 
                                 }
                               },
                               style: ButtonStyle(

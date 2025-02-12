@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
 
@@ -20,8 +20,33 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   TextEditingController _adrecaController = TextEditingController();
   TextEditingController _poblacioController = TextEditingController();
   TextEditingController _codiPostalController = TextEditingController();
+  TextEditingController _dniFamiliarController = TextEditingController();
   String? _selectedFamiliar;
   DateTime? _selectedDate;
+  bool _dniExiste = false;
+
+  // Función para imprimir todos los DNI de los pacientes en la consola
+  Future<void> imprimirDnisPacientes() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .get();
+
+    for (var userDoc in querySnapshot.docs) {
+      var personalDataSnapshot = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(userDoc.id)
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
+
+      if (personalDataSnapshot.exists) {
+        var data = personalDataSnapshot.data() as Map<String, dynamic>;
+        if (data.containsKey('Dni')) {
+          print('DNI del paciente ${userDoc.id}: ${data['Dni']}');
+        }
+      }
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -39,6 +64,7 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     }
   }
 
+  // Método para validar que el DNI es válido
   bool validarDni(String dni) {
     if (dni.length != 9) return false;
     String numerosDni = dni.substring(0, 8);
@@ -47,129 +73,136 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     return letraDni.runes.every((char) => char >= 65 && char <= 90);
   }
 
-Future<bool> existePacienteConDNI(String dni) async {
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collectionGroup('dades')
-      .where('Dni', isEqualTo: dni)
-      .limit(1)
-      .get();
+  // Verificar si existe un paciente con el DNI
+  Future<bool> existePacienteConDNI(String Dni) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .get();
 
-  return querySnapshot.docs.isNotEmpty;
-}
+    for (var userDoc in querySnapshot.docs) {
+      var personalDataSnapshot = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(userDoc.id)
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
 
-
+      if (personalDataSnapshot.exists) {
+        var data = personalDataSnapshot.data() as Map<String, dynamic>;
+        if (data['Dni'] == Dni) {
+          return true; // Paciente encontrado
+        }
+      }
+    }
+    return false; // No se encontró el paciente con el DNI
+  }
+    Future<void> validarDniEnTiempoReal(String dni) async {
+    bool existe = await existePacienteConDNI(dni);
+    setState(() {
+      _dniExiste = existe;
+    });
+  }
 
   Future<void> guardarDatosFamiliares(
-      BuildContext context,
-      String userId,
-      String dataNaixement,
-      String DniPacient,
-      String familiar,
-      String telefon,
-      String adreca,
-      String poblacio,
-      String codiPostal) async {
+    BuildContext context,
+    String userId,
+    String dataNaixement,
+    String DniPacient,
+    String familiar,
+    String telefon,
+    String adreca,
+    String poblacio,
+    String codiPostal,
+    String DniFamiliar, // nuevo parámetro para el DNI del familiar
+  ) async {
     if (dataNaixement.isEmpty ||
         DniPacient.isEmpty ||
         _selectedFamiliar == null ||
         telefon.isEmpty ||
         adreca.isEmpty ||
         poblacio.isEmpty ||
-        codiPostal.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Campos obligatorios"),
-            content: Text("Por favor, complete todos los campos."),
-            actions: <Widget>[
-              TextButton(
-                child: Text("Aceptar"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+        codiPostal.isEmpty ||
+        DniFamiliar.isEmpty) {
+      _mostrarAlerta(context, "Campos obligatorios", "Por favor, complete todos los campos.");
     } else if (telefon.length != 9) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Teléfono inválido"),
-            content: Text("Por favor, introduzca un número de teléfono válido de 9 dígitos."),
-            actions: <Widget>[
-              TextButton(
-                child: Text("Aceptar"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    } else if (!validarDni(DniPacient)) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("DNI inválido"),
-            content: Text("Por favor, introduzca un DNI válido."),
-            actions: <Widget>[
-              TextButton(
-                child: Text("Aceptar"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _mostrarAlerta(context, "Teléfono inválido", "Por favor, introduzca un número de teléfono válido de 9 dígitos.");
+    } else if (!validarDni(DniPacient) || !validarDni(DniFamiliar)) {
+      _mostrarAlerta(context, "DNI inválido", "Por favor, introduzca un DNI válido.");
     } else {
       bool pacienteExiste = await existePacienteConDNI(DniPacient);
       if (!pacienteExiste) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("DNI no encontrado"),
-              content: Text("No se encontró ningún paciente con el DNI ingresado."),
-              actions: <Widget>[
-                TextButton(
-                  child: Text("Aceptar"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
+        _mostrarAlerta(context, "DNI no encontrado", "No se encontró ningún paciente con el DNI ingresado.");
       } else {
-        await FirebaseFirestore.instance
-            .collection('Usuarios')
-            .doc(userId)
-            .collection('dadesFamiliars')
-            .add({
-          'dataNaixement': dataNaixement,
-          'DniPacient': DniPacient,
-          'familiar': familiar,
-          'telefon': telefon,
-          'adreca': adreca,
-          'poblacio': poblacio,
-          'codiPostal': codiPostal,
-        });
+        _mostrarAlerta(context, "DNI ENCONTRADO", "se encontró paciente con el DNI ingresado.");
+        try {
+          // Guardar los datos familiares
+          await FirebaseFirestore.instance
+              .collection('Usuarios')
+              .doc(userId)
+              .collection('dadesFamiliars')
+              .doc('dades')
+              .set({
+            'dataNaixement': dataNaixement,
+            'DniPacient': DniPacient,
+            'familiar': familiar,
+            'telefon': telefon,
+            'adreca': adreca,
+            'poblacio': poblacio,
+            'codiPostal': codiPostal,
+            'DniFamiliar': DniFamiliar,
+          });
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
-        );
+          print("dades familiars guardades correctamente.");
+
+          // Crear la relación entre el paciente y el familiar en la colección 'relacionFamiliarPaciente'
+          await FirebaseFirestore.instance
+          .collection('Usuarios')
+                .doc(userId)
+                .collection('relacionFamiliarPaciente')
+              .add({
+            'DniPaciente': DniPacient,
+            'DniFamiliar': DniFamiliar,
+            'familiar': familiar,
+          });
+
+          print("Relació pacient-familiar guardada correctamente.");
+
+          // Redirigir a la siguiente pantalla
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+          );
+        } catch (e) {
+          print("Error al guardar los datos: $e");
+        }
       }
     }
+  }
+
+  void _mostrarAlerta(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Aceptar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    imprimirDnisPacientes();
   }
 
   @override
@@ -213,10 +246,22 @@ Future<bool> existePacienteConDNI(String dni) async {
                         ),
                       ),
                       SizedBox(height: 20),
+                    Container(
+                    child: Column(
+                    children: [
                       TextField(
                         controller: _DniPacientContoller,
-                        decoration: InputDecoration(hintText: 'Dni pacient'),
+                        decoration: InputDecoration(
+                          hintText: 'Dni pacient',
+                          errorText: _dniExiste ? 'El DNI ja està registrat en el sistema' : null,
+                        ),
+                        onChanged: (value) {
+                          validarDniEnTiempoReal(value);
+                        },
                       ),
+                    ],
+                  ),
+                    ),
                       SizedBox(height: 20),
                       const Text(
                         "Familiar",
@@ -231,10 +276,7 @@ Future<bool> existePacienteConDNI(String dni) async {
                         child: DropdownButtonFormField(
                           items: ['Pare', 'Mare', 'Germa/na', 'Parella', 'Altres']
                               .map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
+                            return DropdownMenuItem<String>(value: value, child: Text(value));
                           }).toList(),
                           value: _selectedFamiliar,
                           onChanged: (String? value) {
@@ -278,6 +320,11 @@ Future<bool> existePacienteConDNI(String dni) async {
                         ],
                         decoration: InputDecoration(hintText: 'Codi postal'),
                       ),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: _dniFamiliarController,
+                        decoration: InputDecoration(hintText: 'Dni Familiar'),
+                      ),
                     ],
                   ),
                 ),
@@ -290,6 +337,7 @@ Future<bool> existePacienteConDNI(String dni) async {
                     String adreca = _adrecaController.text;
                     String poblacio = _poblacioController.text;
                     String codiPostal = _codiPostalController.text;
+                    String DniFamiliar = _dniFamiliarController.text;
 
                     guardarDatosFamiliares(
                         context,
@@ -300,7 +348,8 @@ Future<bool> existePacienteConDNI(String dni) async {
                         telefon,
                         adreca,
                         poblacio,
-                        codiPostal);
+                        codiPostal,
+                        DniFamiliar);
                   },
                 ),
                 const SizedBox(height: 20),
