@@ -220,7 +220,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   ),
                 ),
               ),
-
+//hola
               SizedBox(height: 30),
 
               // Sección con los íconos de las caras
