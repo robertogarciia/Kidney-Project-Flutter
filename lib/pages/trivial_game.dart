@@ -259,11 +259,11 @@ Widget build(BuildContext context) {
             // Toggle Button to show or hide the explanation
             ElevatedButton(
               onPressed: _toggleExplanation,
-              child: Text(_isExplanationVisible ? 'Ocultar explicació' : 'Mostrar explicació'),
+              child: Text(_isExplanationVisible ? 'Mostrar explicació' : 'Ocultar explicació'),
             ),
             SizedBox(height: 20.0),
             // Explanation text that is conditionally shown
-            if (_isExplanationVisible)
+            if (!_isExplanationVisible)
               Text(
                 "Explicació dels botons: \n\n"
                 "1. Botó vermell: Al presionar el botó, elimina una resposta incorrecta. (Cost: 100 monedes).\n\n"

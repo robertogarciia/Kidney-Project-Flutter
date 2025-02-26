@@ -113,70 +113,75 @@ class laMevaDietaDetall extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ListView.builder(
-              itemCount: alimentos.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                final alimento = alimentos[index];
-                final imageUrl = alimento['imageUrl'] ?? '';
-                final nombreProducto = alimento['item'] ?? 'Sense nom';
+          ListView.builder(
+  itemCount: alimentos.length,
+  shrinkWrap: true,
+  itemBuilder: (context, index) {
+    final alimento = alimentos[index];
+    final imageUrl = alimento['imageUrl'] ?? '';
+    final nombreProducto = alimento['item'] ?? 'Sense nom';
+    final puntuacion = alimento['puntuacion'] ?? 0;
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 8,
-                    color: Colors.greenAccent.shade200,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                      leading: Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.grey,
-                              blurRadius: 5.0,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            imageUrl,
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        nombreProducto,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Puntuació: ${alimento['puntuacion']}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      tileColor: Colors.transparent,
-                    ),
-                  ),
-                );
-              },
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        elevation: 8,
+        color: _getCardColor(puntuacion),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          leading: Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.grey,
+                  blurRadius: 5.0,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          title: Text(
+            nombreProducto,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          subtitle: Text(
+            'Puntuació: $puntuacion',
+            style: const TextStyle(
+              fontSize: 17,
+              color: Colors.black54,
+              fontWeight: FontWeight.bold,
+
+            ),
+          ),
+          tileColor: Colors.transparent,
+        ),
+      ),
+    );
+  },
+),
+
             const SizedBox(height: 20),
+            
           ],
         ),
       ),
@@ -213,4 +218,15 @@ class laMevaDietaDetall extends StatelessWidget {
       ),
     );
   }
+  
+Color _getCardColor(int puntuacion) {
+  switch (puntuacion) {
+    case 1:
+      return Colors.orangeAccent.shade200;
+    case 2:
+      return Colors.redAccent.shade200;
+    default:
+      return Colors.greenAccent.shade200;
+  }
+}
 }
