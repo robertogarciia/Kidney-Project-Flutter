@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,12 +26,12 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   String? _selectedFamiliar;
   DateTime? _selectedDate;
   bool _dniExiste = false;
+  Timer? _debounce;
 
   // Función para imprimir todos los DNI de los pacientes en la consola
   Future<void> imprimirDnisPacientes() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .get();
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in querySnapshot.docs) {
       var personalDataSnapshot = await FirebaseFirestore.instance
@@ -68,16 +70,16 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   bool validarDni(String dni) {
     if (dni.length != 9) return false;
     String numerosDni = dni.substring(0, 8);
-    if (!numerosDni.runes.every((char) => char >= 48 && char <= 57)) return false;
+    if (!numerosDni.runes.every((char) => char >= 48 && char <= 57))
+      return false;
     String letraDni = dni.substring(8);
     return letraDni.runes.every((char) => char >= 65 && char <= 90);
   }
 
   // Verificar si existe un paciente con el DNI
   Future<bool> existePacienteConDNI(String Dni) async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .get();
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in querySnapshot.docs) {
       var personalDataSnapshot = await FirebaseFirestore.instance
@@ -96,10 +98,19 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     }
     return false; // No se encontró el paciente con el DNI
   }
-    Future<void> validarDniEnTiempoReal(String dni) async {
-    bool existe = await existePacienteConDNI(dni);
-    setState(() {
-      _dniExiste = existe;
+
+  Future<void> validarDniEnTiempoReal(String dni) async {
+    // Cancela la solicitud anterior si el usuario sigue escribiendo
+    _debounce?.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      bool existe = await existePacienteConDNI(dni);
+      if (dni == _DniPacientContoller.text) {
+        // Evita actualizaciones si el usuario sigue escribiendo
+        setState(() {
+          _dniExiste = existe;
+        });
+      }
     });
   }
 
@@ -123,17 +134,22 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
         poblacio.isEmpty ||
         codiPostal.isEmpty ||
         DniFamiliar.isEmpty) {
-      _mostrarAlerta(context, "Campos obligatorios", "Por favor, complete todos los campos.");
+      _mostrarAlerta(context, "Campos obligatorios",
+          "Por favor, complete todos los campos.");
     } else if (telefon.length != 9) {
-      _mostrarAlerta(context, "Teléfono inválido", "Por favor, introduzca un número de teléfono válido de 9 dígitos.");
+      _mostrarAlerta(context, "Teléfono inválido",
+          "Por favor, introduzca un número de teléfono válido de 9 dígitos.");
     } else if (!validarDni(DniPacient) || !validarDni(DniFamiliar)) {
-      _mostrarAlerta(context, "DNI inválido", "Por favor, introduzca un DNI válido.");
+      _mostrarAlerta(
+          context, "DNI inválido", "Por favor, introduzca un DNI válido.");
     } else {
       bool pacienteExiste = await existePacienteConDNI(DniPacient);
       if (!pacienteExiste) {
-        _mostrarAlerta(context, "DNI no encontrado", "No se encontró ningún paciente con el DNI ingresado.");
+        _mostrarAlerta(context, "DNI no encontrado",
+            "No se encontró ningún paciente con el DNI ingresado.");
       } else {
-        _mostrarAlerta(context, "DNI ENCONTRADO", "se encontró paciente con el DNI ingresado.");
+        _mostrarAlerta(context, "DNI ENCONTRADO",
+            "se encontró paciente con el DNI ingresado.");
         try {
           // Guardar los datos familiares
           await FirebaseFirestore.instance
@@ -156,9 +172,9 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
 
           // Crear la relación entre el paciente y el familiar en la colección 'relacionFamiliarPaciente'
           await FirebaseFirestore.instance
-          .collection('Usuarios')
-                .doc(userId)
-                .collection('relacionFamiliarPaciente')
+              .collection('Usuarios')
+              .doc(userId)
+              .collection('relacionFamiliarPaciente')
               .add({
             'DniPaciente': DniPacient,
             'DniFamiliar': DniFamiliar,
@@ -170,7 +186,8 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
           // Redirigir a la siguiente pantalla
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+            MaterialPageRoute(
+                builder: (context) => MenuPrincipal(userId: userId)),
           );
         } catch (e) {
           print("Error al guardar los datos: $e");
@@ -208,7 +225,7 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Color.fromARGB(255, 161, 196, 249),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -227,7 +244,7 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
                 Container(
                   margin: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xA6403DF3),
+                    color: Color.fromARGB(255, 255, 255, 255),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(20),
@@ -246,22 +263,33 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
                         ),
                       ),
                       SizedBox(height: 20),
-                    Container(
-                    child: Column(
-                    children: [
-                      TextField(
-                        controller: _DniPacientContoller,
-                        decoration: InputDecoration(
-                          hintText: 'Dni pacient',
-                          errorText: _dniExiste ? 'El DNI ja està registrat en el sistema' : null,
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _DniPacientContoller,
+                              decoration: const InputDecoration(
+                                hintText: 'Dni pacient',
+                              ),
+                              onChanged: (value) {
+                                validarDniEnTiempoReal(value);
+                              },
+                            ),
+                            const SizedBox(
+                                height:
+                                    8), // Espaciado entre el campo y el mensaje
+                            Text(
+                              _dniExiste
+                                  ? '✅ El DNI està registrat en el sistema'
+                                  : '❌ El DNI no està registrat',
+                              style: TextStyle(
+                                color: _dniExiste ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ],
                         ),
-                        onChanged: (value) {
-                          validarDniEnTiempoReal(value);
-                        },
                       ),
-                    ],
-                  ),
-                    ),
                       SizedBox(height: 20),
                       const Text(
                         "Familiar",
@@ -271,12 +299,18 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
                         ),
                       ),
                       Container(
-                        height: 50,
+                        height: 70,
                         width: 300,
                         child: DropdownButtonFormField(
-                          items: ['Pare', 'Mare', 'Germa/na', 'Parella', 'Altres']
-                              .map((String value) {
-                            return DropdownMenuItem<String>(value: value, child: Text(value));
+                          items: [
+                            'Pare',
+                            'Mare',
+                            'Germa/na',
+                            'Parella',
+                            'Altres'
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                                value: value, child: Text(value));
                           }).toList(),
                           value: _selectedFamiliar,
                           onChanged: (String? value) {

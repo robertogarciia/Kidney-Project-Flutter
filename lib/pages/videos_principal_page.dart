@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
@@ -13,26 +14,12 @@ class Videos extends StatefulWidget {
 
 class _VideosState extends State<Videos> {
   String? selectedCategory;
-  String searchQuery = '';  // Para almacenar la consulta de búsqueda
-
-  void iniciS(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SignIn()),
-    );
-  }
-
-  void register(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SignUpChoose()),
-    );
-  }
+  String searchQuery = ''; // Para almacenar la consulta de búsqueda
 
   void resetFilter() {
     setState(() {
       selectedCategory = null;
-      searchQuery = '';  // Resetea el término de búsqueda también
+      searchQuery = ''; // Resetea el término de búsqueda también
     });
   }
 
@@ -41,12 +28,11 @@ class _VideosState extends State<Videos> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-                backgroundColor: Color(0xFFFF603D), 
-
+        backgroundColor: Color(0xFFFF603D),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navega hacia atrás en la pila de navegación al presionar el botón
+            Navigator.pop(context); // Navega hacia atrás
           },
         ),
       ),
@@ -55,10 +41,8 @@ class _VideosState extends State<Videos> {
           child: Center(
             child: Column(
               children: <Widget>[
-                SizedBox(
-                  height: 20,
-                ),
-                // Texto para el título de la página
+                SizedBox(height: 20),
+                // Título de la página
                 Text(
                   'Vídeos',
                   style: TextStyle(
@@ -68,7 +52,7 @@ class _VideosState extends State<Videos> {
                 ),
                 SizedBox(height: 20),
 
-                // Buscador mejorado
+                // Buscador
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Container(
@@ -98,23 +82,22 @@ class _VideosState extends State<Videos> {
                           Icons.search,
                           color: Colors.blue,
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(height: 20),
 
-                // Fila con el filtro y el botón de reset
+                // Filtros
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // DropdownButton para filtrar por categoría
                     DropdownButton<String>(
                       hint: Text('Seleccionar categoría'),
                       value: selectedCategory,
-                      items: ['Diàlisis', 'Nutrició'] // Aquí debes proporcionar las categorías únicas disponibles
-                          .map((String value) {
+                      items: ['Diàlisis', 'Nutrició'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -127,7 +110,6 @@ class _VideosState extends State<Videos> {
                       },
                     ),
                     SizedBox(width: 20),
-                    // Botón de reset para restablecer el filtrado
                     ElevatedButton(
                       onPressed: resetFilter,
                       child: Text('Restablir filtre'),
@@ -135,37 +117,50 @@ class _VideosState extends State<Videos> {
                   ],
                 ),
                 SizedBox(height: 20),
-                
-                // Mostrar videos desde Firebase
+
+                // Mostrar los videos
                 StreamBuilder(
-                  stream: FirebaseFirestore.instance.collection('Videos').snapshots(),
-                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  stream: FirebaseFirestore.instance
+                      .collection('Videos')
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // Muestra un indicador de carga mientras se cargan los datos
+                      return CircularProgressIndicator(); // Cargando datos
                     }
                     if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
+                      return Text(
+                          'Error: ${snapshot.error}'); // Manejo de errores
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Text('No hay videos disponibles'); // Maneja el caso de que no haya datos en la colección
+                      return Text('No hay videos disponibles'); // No hay datos
                     }
 
-                    // Filtrar los videos por categoría y búsqueda si se han establecido
-                    List<DocumentSnapshot> filteredVideos = snapshot.data!.docs
-                        .where((doc) {
-                          bool matchesCategory = selectedCategory == null || doc['Categoria'] == selectedCategory;
-                          bool matchesSearch = doc['Titol'].toLowerCase().contains(searchQuery);
-                          return matchesCategory && matchesSearch;
-                        })
-                        .toList();
+                    // Filtrar los videos por categoría y búsqueda
+                    List<DocumentSnapshot> filteredVideos =
+                        snapshot.data!.docs.where((doc) {
+                      bool matchesCategory = selectedCategory == null ||
+                          doc['Categoria'] == selectedCategory;
+                      bool matchesSearch = doc['Titol'] != null &&
+                          doc['Titol'].toLowerCase().contains(searchQuery);
+                      return matchesCategory && matchesSearch;
+                    }).toList();
+
+                    if (filteredVideos.isEmpty) {
+                      return Text(
+                          'No se encontraron videos con los filtros aplicados.');
+                    }
 
                     return Column(
                       children: filteredVideos.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+
                         return VideoCard(
-                          videoUrl: data['url'], // Obtén la URL del documento
-                          videoTitle: data['Titol'],
-                          videoCategoria: data['Categoria'], // Obtén el título del documento
+                          videoUrl: data['url'], // URL del video
+                          videoTitle: data['Titol'], // Título del video
+                          videoCategoria:
+                              data['Categoria'], // Categoría del video
                         );
                       }).toList(),
                     );

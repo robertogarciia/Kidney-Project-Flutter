@@ -41,17 +41,14 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.kidneyproject"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 23 // Aquí pones el valor que necesites, en este caso 23 como mínimo
+        targetSdkVersion 33 // Ajusta este valor al nivel de SDK que prefieras
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-                multiDexEnabled true
-
+        multiDexEnabled true
     }
+
 
     buildTypes {
         release {
