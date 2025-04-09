@@ -12,63 +12,114 @@ class graficaEstatAnim extends StatefulWidget {
   @override
   _graficaEstatAnimState createState() => _graficaEstatAnimState();
 }
-
 class _graficaEstatAnimState extends State<graficaEstatAnim> {
   late Map<String, int> moodData;
-  String selectedMonth = ''; // Inicialmente vacío
-  bool isLoading = true; // Indicador de carga
+  String selectedMonth = '';
+  bool isLoading = true;
+  bool isFamiliar = false; // Indicador de si el usuario es un familiar
+  String relatedPatientId = ''; // ID del paciente relacionado
 
-  // Lista de meses en catalán
   final List<String> months = [
-    'Gener',
-    'Febrer',
-    'Març',
-    'Abril',
-    'Maig',
-    'Juny',
-    'Juliol',
-    'Agost',
-    'Setembre',
-    'Octubre',
-    'Novembre',
-    'Desembre',
+    'Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost',
+    'Setembre', 'Octubre', 'Novembre', 'Desembre',
   ];
+
   @override
   void initState() {
     super.initState();
-
-    // Obtener el mes actual
     final DateTime now = DateTime.now();
-    selectedMonth = months[now.month - 1]; // Ajustar el mes para que coincida con el índice de la lista
-
+    selectedMonth = months[now.month - 1];
     moodData = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
-    fetchMoodData(selectedMonth); // Cargar datos al iniciar
+    _checkUserType();  // Verificar el tipo de usuario al iniciar
   }
 
-  // Función para obtener los datos de Firestore filtrados por mes
+  // Verificar el tipo de usuario
+  Future<void> _checkUserType() async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(widget.userId)
+        .collection('tipusDeUsuario')
+        .doc('tipus')
+        .get();
+
+    final userData = userDoc.data() as Map<String, dynamic>?;
+
+    if (userData == null) {
+      print("Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
+      return;
+    }
+
+    if (userData['tipo'] == 'Familiar') {
+      setState(() {
+        isFamiliar = true;
+      });
+
+      // Obtener el paciente relacionado con este familiar
+      final relatedPatientDocs = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('relacionFamiliarPaciente')
+          .get();
+
+      if (relatedPatientDocs.docs.isEmpty) {
+        print("Error: No se encontraron pacientes relacionados para este familiar.");
+      } else {
+        final relatedPatientData = relatedPatientDocs.docs.first.data();
+        final dniPaciente = relatedPatientData['DniPaciente'];
+        await _getPatientIdFromDNI(dniPaciente);
+      }
+    } else {
+      // Si es un paciente, podemos continuar sin hacer nada adicional
+      fetchMoodData(selectedMonth);
+    }
+  }
+
+  // Obtener el ID del paciente a partir del DNI
+  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
+    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
+
+    for (var userDoc in usersSnapshot.docs) {
+      final personalDataSnapshot = await userDoc.reference
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
+
+      if (personalDataSnapshot.exists) {
+        final personalData = personalDataSnapshot.data();
+        if (personalData?['Dni'] == dniPaciente) {
+          setState(() {
+            relatedPatientId = userDoc.id;
+          });
+          break;
+        }
+      }
+    }
+
+    // Una vez que tengamos el ID del paciente, podemos cargar los datos
+    fetchMoodData(selectedMonth);
+  }
+
+  // Función para obtener los datos del estado de ánimo del paciente o del usuario
   Future<void> fetchMoodData(String selectedMonth) async {
     setState(() {
-      isLoading = true; // Indicamos que estamos cargando
+      isLoading = true;
     });
 
     try {
-      // Define las fechas de inicio y fin del mes seleccionado
       DateTime startOfMonth = DateTime(2025, months.indexOf(selectedMonth) + 1, 1);
       DateTime endOfMonth = DateTime(2025, months.indexOf(selectedMonth) + 1 + 1, 0, 23, 59, 59);
 
       Timestamp startTimestamp = Timestamp.fromDate(startOfMonth);
       Timestamp endTimestamp = Timestamp.fromDate(endOfMonth);
 
-      // Obtener los datos de Firestore
       final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
-          .doc(widget.userId)
+          .doc(isFamiliar ? relatedPatientId : widget.userId)  // Usar el ID del paciente si es familiar
           .collection('estatAnim')
           .where('Data', isGreaterThanOrEqualTo: startTimestamp)
           .where('Data', isLessThanOrEqualTo: endTimestamp)
           .get();
 
-      // Procesar los datos obtenidos
       final moodCounts = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
 
       for (var doc in snapshot.docs) {
@@ -81,13 +132,13 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
       }
 
       setState(() {
-        moodData = moodCounts; // Actualiza los datos de la gráfica
-        isLoading = false; // Termina la carga
+        moodData = moodCounts;
+        isLoading = false;
       });
     } catch (e) {
       print('Error al obtener datos: $e');
       setState(() {
-        isLoading = false; // En caso de error también se detiene la carga
+        isLoading = false;
       });
     }
   }
@@ -95,12 +146,10 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // Navegar al menú principal usando Navigator
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -110,13 +159,12 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
           },
         ),
         title: Text(
-          'Estat d\'ànim',
+          'Estat d\'ànim del Pacient',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.pinkAccent,
         elevation: 5,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
@@ -124,22 +172,18 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Título dinámico con el mes actual
-
               Text(
                 'Estat del mes de $selectedMonth',
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
-
               SizedBox(height: 30),
-
-              // Dropdown para seleccionar el mes con ícono de calendario
+              // Dropdown per a seleccionar el mes amb ícono del calendari
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.pinkAccent, width: 2),
-                  color: Colors.pinkAccent.withOpacity(0.1), // Fondo suave
+                  color: Colors.pinkAccent.withOpacity(0.1),
                 ),
                 child: DropdownButton<String>(
                   value: selectedMonth,
@@ -148,8 +192,8 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                       value: month,
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today, color: Colors.black), // Ícono de calendario
-                          SizedBox(width: 10), // Espaciado
+                          Icon(Icons.calendar_today, color: Colors.black),
+                          SizedBox(width: 10),
                           Text(
                             month,
                             style: TextStyle(
@@ -165,30 +209,28 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   onChanged: (String? newValue) {
                     setState(() {
                       selectedMonth = newValue!;
-                      fetchMoodData(selectedMonth); // Recargar los datos con el mes seleccionado
+                      fetchMoodData(selectedMonth);
                     });
                   },
                   isExpanded: true,
                   dropdownColor: Colors.white,
-                  iconEnabledColor: Colors.black, // Color del icono
+                  iconEnabledColor: Colors.black,
                 ),
               ),
-
               SizedBox(height: 30),
-
               // Mostrar el gráfico o un indicador de carga
               isLoading
                   ? CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation(Colors.pinkAccent),
-              ) // Muestra un loading mientras se obtienen los datos
+              )
                   : (moodData['Content/a'] == 0 && moodData['Neutral'] == 0 && moodData['Trist/a'] == 0)
                   ? Text(
                 'No hi ha dades registrades',
                 style: TextStyle(fontSize: 18, color: Colors.pinkAccent, fontWeight: FontWeight.bold),
-              ) // Muestra un mensaje si no hay datos registrados
+              )
                   : Container(
-                height: 300, // Tamaño del gráfico
-                width: 300,  // Tamaño del gráfico
+                height: 300,
+                width: 300,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -200,44 +242,39 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                         color: Colors.green,
                         title: 'Content/a: ${moodData['Content/a'] ?? 0}',
                         titleStyle: TextStyle(color: Colors.white, fontSize: 15),
-                        radius: 80, // Tamaño del radio
+                        radius: 80,
                       ),
                       PieChartSectionData(
                         value: moodData['Neutral']?.toDouble() ?? 0.0,
                         color: Colors.orange,
                         title: 'Neutral: ${moodData['Neutral'] ?? 0}',
                         titleStyle: TextStyle(color: Colors.white, fontSize: 15),
-                        radius: 80, // Tamaño del radio
+                        radius: 80,
                       ),
                       PieChartSectionData(
                         value: moodData['Trist/a']?.toDouble() ?? 0.0,
                         color: Colors.red,
                         title: 'Trist/a: ${moodData['Trist/a'] ?? 0}',
                         titleStyle: TextStyle(color: Colors.white, fontSize: 15),
-                        radius: 80, // Tamaño del radio
+                        radius: 80,
                       ),
                     ],
                   ),
                 ),
               ),
-//hola
               SizedBox(height: 30),
-
-              // Sección con los íconos de las caras
-              //titulo leyenda centrado a la izquierda
               Text(
                 'Llegenda',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Column(
                     children: [
                       Image.asset(
-                        'lib/images/caraFeliz.png', // Asegúrate de que la ruta sea correcta
+                        'lib/images/caraFeliz.png',
                         height: 50,
                         width: 50,
                       ),
@@ -248,8 +285,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   Column(
                     children: [
                       Image.asset(
-                        'lib/images/caraNormal.png', // Asegúrate de que la ruta sea correcta
-                        height: 50,
+                        'lib/images/caraNormal.png',
                         width: 50,
                       ),
                       Text('Neutral', style: TextStyle(fontSize: 14)),
@@ -259,7 +295,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   Column(
                     children: [
                       Image.asset(
-                        'lib/images/caraTriste.png', // Asegúrate de que la ruta sea correcta
+                        'lib/images/caraTriste.png',
                         height: 50,
                         width: 50,
                       ),

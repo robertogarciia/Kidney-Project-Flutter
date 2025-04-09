@@ -37,7 +37,7 @@ class _crearDietesState extends State<crearDietes> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => CestaProvider(), // Proveedor para gestionar la cesta
+      create: (_) => CestaProvider(), // Proveedor per a gestionar la cistella
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Menú Dietes'),
@@ -50,8 +50,8 @@ class _crearDietesState extends State<crearDietes> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => cestaPage(
-                      userId: widget.userId, // Pasa el userId a la nueva página
-                      tipusC: widget.tipusC, // Pasa el tipusC a la nueva página
+                      userId: widget.userId, // Pasa el userId a la nova pàgina
+                      tipusC: widget.tipusC, // Pasa el tipusC a la nova pàgina
                     ),
                   ),
                 );
@@ -60,14 +60,13 @@ class _crearDietesState extends State<crearDietes> {
           ],
         ),
         body: SingleChildScrollView(
-          // Aseguramos que sea desplazable
           child: Center(
-            // Aquí aseguramos que el contenido esté centrado
+            // A segura que els elements estiguin centrats
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 mainAxisSize:
-                    MainAxisSize.min, // Evitar que se estire la columna
+                    MainAxisSize.min, // Evitar que se estiri la columna
                 children: [
                   _buildButton('Peix', () {
                     Navigator.push(
@@ -78,7 +77,7 @@ class _crearDietesState extends State<crearDietes> {
                   );
                   }),
                   _buildButton('Carns', () {
-                    // Acción al presionar "Carns"
+                    // Acció al presionar "Carns"
                     Navigator.push(
                       context,
                       MaterialPageRoute(

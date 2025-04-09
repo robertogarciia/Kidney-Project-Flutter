@@ -21,6 +21,7 @@ import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/trivial_game.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
 import 'package:kidneyproject/pages/graficaEstatAnim.dart';
+import 'package:kidneyproject/pages/noticiesPage.dart';
 
 class MenuPrincipal extends StatefulWidget {
   const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
@@ -143,7 +144,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'lib/images/vids.png',
                       onTap: () {
-                        navigateToPage(context, Videos());
+                        navigateToPage(context, Videos(userId: widget.userId));
                       },
                     )
                   ],
@@ -161,7 +162,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'lib/images/inf.png',
                       onTap: () {
-                        navigateToPage(context, Information());
+                        navigateToPage(context, noticiesPage(userId: widget.userId));
                       },
                     )
                   ],

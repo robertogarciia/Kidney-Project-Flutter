@@ -21,7 +21,7 @@ class resumDietesPage extends StatefulWidget {
   @override
   _resumDietesPageState createState() => _resumDietesPageState();
 }
-
+// funció per a la puntuació de la dieta
 class _resumDietesPageState extends State<resumDietesPage> {
   final TextEditingController _nombreController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -33,7 +33,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
     isMounted = false;
     super.dispose();
   }
-
+// funció per avaluar la dieta
   String _evaluarDieta() {
     if (widget.puntuacionTotal == 0) {
       return 'Enhorabona! La dieta creada és excel·lent.';
@@ -43,7 +43,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
       return 'Aquesta dieta no és recomanable. Hi han aliments que no són bons per a tu.';
     }
   }
-
+// funció per guardar el resum de la dieta
   Future<void> _guardarResumen() async {
     final String nombre = _nombreController.text.trim();
     if (nombre.isEmpty) {
@@ -69,7 +69,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
         'puntuacionTotal': widget.puntuacionTotal,
         'alimentos': widget.alimentos,
       });
-
+// missatge de dieta guardada correctament
       if (isMounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -83,7 +83,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
         if (cestaProvider != null) {
           cestaProvider.vaciarCesta();
         }
-
+// funció per anar a la pàgina de menú dietes
         if (isMounted) {
           Navigator.pushReplacement(
             context,
@@ -271,6 +271,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Botó per guardar la dieta
               ElevatedButton(
                 onPressed: _guardarResumen,
                 style: ElevatedButton.styleFrom(

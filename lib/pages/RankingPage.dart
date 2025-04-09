@@ -14,7 +14,7 @@ class RankingPage extends StatefulWidget {
 
 class _RankingPageState extends State<RankingPage> {
   List<Map<String, dynamic>> userInfo = [];
-
+// funció per obtenir la informació de l'usuari
   Future<void> _fetchUserInfo() async {
     try {
       QuerySnapshot snapshot =

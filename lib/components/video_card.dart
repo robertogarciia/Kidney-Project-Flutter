@@ -5,15 +5,15 @@ class VideoCard extends StatefulWidget {
   final String videoUrl;
   final String videoTitle;
   final String videoCategoria;
+  final Function(String) onMarkAsViewed;
 
   const VideoCard({
     Key? key,
     required this.videoUrl,
     required this.videoTitle,
     required this.videoCategoria,
+    required this.onMarkAsViewed,
   }) : super(key: key);
-
-  get category => null;
 
   @override
   _VideoCardState createState() => _VideoCardState();
@@ -21,7 +21,6 @@ class VideoCard extends StatefulWidget {
 
 class _VideoCardState extends State<VideoCard> {
   bool _isExpanded = false;
-
   late YoutubePlayerController _controller;
 
   @override
@@ -77,6 +76,30 @@ class _VideoCardState extends State<VideoCard> {
                 crossFadeState: _isExpanded
                     ? CrossFadeState.showSecond
                     : CrossFadeState.showFirst,
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  widget.onMarkAsViewed(widget.videoTitle); // Llamamos a la función
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Color(0xFFFF603D), backgroundColor: Colors.white, // Color del texto
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), // Borde redondeado
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check, color: Color(0xFFFF603D)), // Icono de check
+                    SizedBox(width: 10),
+                    Text(
+                      'Marcar com vist',
+                      style: TextStyle(color: Color(0xFFFF603D)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

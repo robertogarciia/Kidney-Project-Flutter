@@ -21,7 +21,7 @@ class Formulario3 extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Formulario(userId: userId), // Pasa el userId al widget Formulario
+      home: Formulario(userId: userId), // Pasa el userId al widget al Formulari
     );
   }
 }
@@ -34,7 +34,7 @@ class Formulario extends StatefulWidget {
   @override
   _FormularioState createState() => _FormularioState();
 }
-
+// Formulari per a recopilar dades mediques del usuari
 class _FormularioState extends State<Formulario> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _alcadaController = TextEditingController();
@@ -59,7 +59,7 @@ class _FormularioState extends State<Formulario> {
       String estat,
       String tipusC) async {
     try {
-      // Guardar los datos médicos dentro del documento 'dadesMediques'
+      // Guardar les dades mediques dins del document 'dadesMediques'
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(userId)
@@ -77,7 +77,7 @@ class _FormularioState extends State<Formulario> {
         'tipusC': _selectedTipusC,
       });
 
-      // Redirigir al menú principal después de guardar los datos
+      // Redirigir al menú principal después de guardar les dades
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => EstatAnim(userId: userId)),
@@ -87,7 +87,7 @@ class _FormularioState extends State<Formulario> {
       print('Error al guardar los datos médicos: $error');
     }
   }
-
+// Funció per a determinar el tipo de dieta en funció de los dades mèdiques
   void determinarTipusC() {
     double alcadaEnMetros =
         double.tryParse(_alcadaController.text.replaceAll(',', '.')) ?? 0;
@@ -318,41 +318,44 @@ class _FormularioState extends State<Formulario> {
                         ),
                       ),
                       SizedBox(height: 10),
-                        const Text(
-  "Estat",
-  style: TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-  ),
-),
-Container(
-  height: 60, 
-  width: 300, 
-  child: DropdownButtonFormField<String>(
-    value: _estatController,
-    decoration: InputDecoration(
-      hintText: 'Selecciona una opció',
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-    ),
-    items: <String>['Pre-Diàlisi', 'Diàlisi', 'Trasplantat']
-        .map((String value) => DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            ))
-        .toList(),
-    onChanged: (String? newValue) {
-      setState(() {
-        _estatController = newValue!;
-      });
-    },
-    validator: (value) => value == null
-        ? 'Si us plau, selecciona una opció'
-        : null,
-  ),
-),
-
+                      const Text(
+                        "Estat",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Container(
+                        height: 60,
+                        width: 300,
+                        child: DropdownButtonFormField<String>(
+                          value: _estatController,
+                          decoration: InputDecoration(
+                            hintText: 'Selecciona una opció',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          items: <String>[
+                            'Pre-Diàlisi',
+                            'Diàlisi',
+                            'Trasplantat'
+                          ]
+                              .map((String value) => DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  ))
+                              .toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _estatController = newValue!;
+                            });
+                          },
+                          validator: (value) => value == null
+                              ? 'Si us plau, selecciona una opció'
+                              : null,
+                        ),
+                      ),
                       SizedBox(height: 10),
                       const Text(
                         "Diabètic",
@@ -494,9 +497,10 @@ Container(
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
+                                // Validar el formulari
                                 if (_formKey.currentState!.validate()) {
                                   determinarTipusC();
-
+                                // Guardar les dades mèdiques en el Firestore
                                   guardarDatosMedicos(
                                       widget.userId,
                                       _selectedDiabetic ?? '',
@@ -508,19 +512,16 @@ Container(
                                       '${_pesController.text} kg',
                                       _estatController ?? '',
                                       _selectedTipusC ?? '');
-
-                                 
                                 }
                               },
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all(
-                                    Color.fromARGB(
-                                        197, 4, 0, 255)), 
+                                    Color.fromARGB(197, 4, 0, 255)),
                               ),
                               child: Text(
                                 'Enviar',
                                 style: TextStyle(
-                                  color: Colors.white, 
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:kidneyproject/pages/sign_in_page.dart';
-import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kidneyproject/components/video_card.dart';
+import 'package:kidneyproject/pages/videosPacient.dart';
 
 class Videos extends StatefulWidget {
-  const Videos({Key? key}) : super(key: key);
+  final String userId;
+
+  const Videos({Key? key, required this.userId}) : super(key: key);
 
   @override
   _VideosState createState() => _VideosState();
@@ -14,13 +16,100 @@ class Videos extends StatefulWidget {
 
 class _VideosState extends State<Videos> {
   String? selectedCategory;
-  String searchQuery = ''; // Para almacenar la consulta de búsqueda
+  String searchQuery = '';  // Per emmagatzemar la consulta de cerca
 
-  void resetFilter() {
-    setState(() {
-      selectedCategory = null;
-      searchQuery = ''; // Resetea el término de búsqueda también
-    });
+  bool isFamiliar = false;  // Per saber si l'usuari és un familia
+  String? relatedPatientId; // Per emmagatzemar l'ID del pacient relacionat
+
+  // Funció per verificar el tipus d'usuari
+  Future<void> _checkUserType() async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(widget.userId)
+        .collection('tipusDeUsuario')
+        .doc('tipus')
+        .get();
+
+    final userData = userDoc.data() as Map<String, dynamic>?;
+
+    if (userData == null) {
+      print("Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
+      return;
+    }
+
+    print("Tipo de usuario: ${userData['tipo']}");
+
+    if (userData['tipo'] == 'Familiar') {
+      setState(() {
+        isFamiliar = true;  // És un familiar, habilitar opcions
+      });
+      print("Familiar encontrado. Mostrando solo el botón adicional.");
+
+      // Obtenir el pacient relacionat amb aquest familiar
+      final relatedPatientDocs = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('relacionFamiliarPaciente')
+          .get();
+
+      if (relatedPatientDocs.docs.isEmpty) {
+        print("Error: No se encontraron pacientes relacionados para este familiar.");
+      } else {
+        final relatedPatientData = relatedPatientDocs.docs.first.data();
+        final dniPaciente = relatedPatientData['DniPaciente'];  // Obtenim el DNI del pacient
+        print("DNI del paciente relacionado: $dniPaciente");
+
+        // Ara, busquem l'ID del pacient a partir del DNI
+        await _getPatientIdFromDNI(dniPaciente);
+      }
+    }
+  }
+
+  // Funció per obtenir l'ID del pacient a partir del DNI
+  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
+    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
+
+    for (var userDoc in usersSnapshot.docs) {
+      // Buscar en 'dadesPersonals' per trobar el DNI del pacient
+      final personalDataSnapshot = await userDoc.reference
+          .collection('dadesPersonals')
+          .doc('dades')
+          .get();
+
+      if (personalDataSnapshot.exists) {
+        final personalData = personalDataSnapshot.data();
+        print("Datos personales encontrados en usuario ${userDoc.id}");
+
+        if (personalData?['Dni'] == dniPaciente) {
+          // Si es troba el DNI, obtenim l'ID de l'usuari
+          setState(() {
+            relatedPatientId = userDoc.id;   // Emmagatzemem l'ID del pacient
+          });
+          print("ID del paciente encontrado: ${userDoc.id}");
+          break;
+        }
+      }
+    }
+  }
+
+  // Funció per carregar els vídeos
+  Future<List<DocumentSnapshot>> _loadVideos() async {
+    final videosSnapshot = await FirebaseFirestore.instance
+        .collection('Videos')
+        .get();
+
+    if (videosSnapshot.docs.isNotEmpty) {
+      return videosSnapshot.docs;// Retorna tots els vídeos
+    }
+
+    print("Error: No se encontraron videos.");
+    return [];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserType();  // Verificar el tipus d'usuari quan es carrega la pantalla
   }
 
   @override
@@ -32,9 +121,36 @@ class _VideosState extends State<Videos> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navega hacia atrás
+            Navigator.pop(context); // Tornar enrere
           },
-        ),
+        ),actions: [
+        if (isFamiliar)
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (relatedPatientId != null) {
+                  // Imprimir el ID del paciente en la consola
+                  print('Ver videos de mi paciente con ID: $relatedPatientId');
+
+                  // Navegar a la página de videosPacient
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => videosPacient(relatedPatientId: relatedPatientId!),
+                    ),
+                  );
+                } else {
+                  // Imprimir un missatge si no se ha trobat el ID del pacient
+                  print('Aún no se ha encontrado el ID del paciente.');
+                }
+              },
+              child: Text('Veure vídeos del meu pacient'),
+            ),
+          ),
+      ],
+
+
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -75,7 +191,7 @@ class _VideosState extends State<Videos> {
                         });
                       },
                       decoration: InputDecoration(
-                        hintText: 'Buscar por título...',
+                        hintText: 'Buscar per títol...',
                         hintStyle: TextStyle(color: Colors.grey),
                         border: InputBorder.none,
                         prefixIcon: Icon(
@@ -83,14 +199,14 @@ class _VideosState extends State<Videos> {
                           color: Colors.blue,
                         ),
                         contentPadding:
-                            EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                        EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(height: 20),
 
-                // Filtros
+                // Filtres
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -111,34 +227,35 @@ class _VideosState extends State<Videos> {
                     ),
                     SizedBox(width: 20),
                     ElevatedButton(
-                      onPressed: resetFilter,
+                      onPressed: () {
+                        setState(() {
+                          selectedCategory = null;
+                          searchQuery = ''; // Reset filtres
+                        });
+                      },
                       child: Text('Restablir filtre'),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
 
-                // Mostrar los videos
-                StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('Videos')
-                      .snapshots(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                // Mostrar els videos
+                FutureBuilder<List<DocumentSnapshot>>(
+                  future: _loadVideos(), // Cargar els videos
+                  builder: (BuildContext context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return CircularProgressIndicator(); // Cargando datos
                     }
                     if (snapshot.hasError) {
-                      return Text(
-                          'Error: ${snapshot.error}'); // Manejo de errores
+                      return Text('Error: ${snapshot.error}'); // Manejo de errores
                     }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Text('No hay videos disponibles'); // No hay datos
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Text('No hi ha vídeos disponibles'); // No hay datos
                     }
 
                     // Filtrar los videos por categoría y búsqueda
                     List<DocumentSnapshot> filteredVideos =
-                        snapshot.data!.docs.where((doc) {
+                    snapshot.data!.where((doc) {
                       bool matchesCategory = selectedCategory == null ||
                           doc['Categoria'] == selectedCategory;
                       bool matchesSearch = doc['Titol'] != null &&
@@ -147,20 +264,19 @@ class _VideosState extends State<Videos> {
                     }).toList();
 
                     if (filteredVideos.isEmpty) {
-                      return Text(
-                          'No se encontraron videos con los filtros aplicados.');
+                      return Text('No se encontraron videos con los filtros aplicados.');
                     }
 
                     return Column(
                       children: filteredVideos.map((DocumentSnapshot document) {
                         Map<String, dynamic> data =
-                            document.data() as Map<String, dynamic>;
+                        document.data() as Map<String, dynamic>;
 
                         return VideoCard(
                           videoUrl: data['url'], // URL del video
-                          videoTitle: data['Titol'], // Título del video
-                          videoCategoria:
-                              data['Categoria'], // Categoría del video
+                          videoTitle: data['Titol'], // Títul del video
+                          videoCategoria: data['Categoria'], // Categorí del video
+                          onMarkAsViewed: marcarComoVisto, // Pasamos la función al VideoCard
                         );
                       }).toList(),
                     );
@@ -172,5 +288,40 @@ class _VideosState extends State<Videos> {
         ),
       ),
     );
+  }
+
+  // Funció per guardar el estat de "video visto" en la base de dades
+  Future<void> marcarComoVisto(String videoTitle) async {
+    try {
+      print('Widget ID: ${widget.userId}');
+
+      // Verificar si el video ja esta marcat com a vist
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('videosVistos')
+          .doc(videoTitle)
+          .get();
+
+      // Si el video no esta marcat com a vist, el guardem
+      if (!snapshot.exists) {
+        await FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(widget.userId)
+            .collection('videosVistos')
+            .doc(videoTitle)
+            .set({
+          'Titol': videoTitle,
+          'visto': true,
+          'timestampVisto': FieldValue.serverTimestamp(),
+        });
+
+        print('Estado del video "$videoTitle" guardado en "videosVistos"');
+      } else {
+        print('El video "$videoTitle" ya está marcado como visto.');
+      }
+    } catch (e) {
+      print('Error al guardar el estado del video: $e');
+    }
   }
 }

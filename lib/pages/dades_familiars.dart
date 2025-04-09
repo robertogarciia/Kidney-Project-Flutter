@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kidneyproject/components/btn_general.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
-
 class DadesFamiliars extends StatefulWidget {
   final String userId;
 
@@ -16,6 +15,7 @@ class DadesFamiliars extends StatefulWidget {
 }
 
 class _DadesFamiliarsState extends State<DadesFamiliars> {
+  // Controladors per a cada camp de text
   TextEditingController _dataNaixementController = TextEditingController();
   TextEditingController _DniPacientContoller = TextEditingController();
   TextEditingController _telefonController = TextEditingController();
@@ -28,10 +28,10 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   bool _dniExiste = false;
   Timer? _debounce;
 
-  // Función para imprimir todos los DNI de los pacientes en la consola
+  // Funció per imprimir tots els DNI dels pacients a la consola
   Future<void> imprimirDnisPacientes() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
+    await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in querySnapshot.docs) {
       var personalDataSnapshot = await FirebaseFirestore.instance
@@ -44,12 +44,13 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
       if (personalDataSnapshot.exists) {
         var data = personalDataSnapshot.data() as Map<String, dynamic>;
         if (data.containsKey('Dni')) {
-          print('DNI del paciente ${userDoc.id}: ${data['Dni']}');
+          print('DNI del pacient ${userDoc.id}: ${data['Dni']}');
         }
       }
     }
   }
 
+  // Funció per seleccionar la data de naixement
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -66,20 +67,20 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     }
   }
 
-  // Método para validar que el DNI es válido
+  // Mètode per validar que el DNI és vàlid
   bool validarDni(String dni) {
-    if (dni.length != 9) return false;
+    if (dni.length != 9) return false; // El DNI ha de tenir 9 caràcters
     String numerosDni = dni.substring(0, 8);
     if (!numerosDni.runes.every((char) => char >= 48 && char <= 57))
-      return false;
+      return false; // Comprova que els 8 primers caràcters siguin números
     String letraDni = dni.substring(8);
-    return letraDni.runes.every((char) => char >= 65 && char <= 90);
+    return letraDni.runes.every((char) => char >= 65 && char <= 90); // Comprova que l'últim caràcter sigui una lletra
   }
 
-  // Verificar si existe un paciente con el DNI
+  // Verificar si existeix un pacient amb el DNI
   Future<bool> existePacienteConDNI(String Dni) async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
+    await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in querySnapshot.docs) {
       var personalDataSnapshot = await FirebaseFirestore.instance
@@ -92,21 +93,20 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
       if (personalDataSnapshot.exists) {
         var data = personalDataSnapshot.data() as Map<String, dynamic>;
         if (data['Dni'] == Dni) {
-          return true; // Paciente encontrado
+          return true; // Pacient trobat
         }
       }
     }
-    return false; // No se encontró el paciente con el DNI
+    return false; // No s'ha trobat el pacient amb el DNI
   }
 
+  // Validació del DNI en temps real (després d'un retard per evitar consultes excessives)
   Future<void> validarDniEnTiempoReal(String dni) async {
-    // Cancela la solicitud anterior si el usuario sigue escribiendo
-    _debounce?.cancel();
+    _debounce?.cancel(); // Cancela la sol·licitud anterior si l'usuari segueix escrivint
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       bool existe = await existePacienteConDNI(dni);
       if (dni == _DniPacientContoller.text) {
-        // Evita actualizaciones si el usuario sigue escribiendo
         setState(() {
           _dniExiste = existe;
         });
@@ -114,18 +114,20 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     });
   }
 
+  // Funció per guardar les dades familiars
   Future<void> guardarDatosFamiliares(
-    BuildContext context,
-    String userId,
-    String dataNaixement,
-    String DniPacient,
-    String familiar,
-    String telefon,
-    String adreca,
-    String poblacio,
-    String codiPostal,
-    String DniFamiliar, // nuevo parámetro para el DNI del familiar
-  ) async {
+      BuildContext context,
+      String userId,
+      String dataNaixement,
+      String DniPacient,
+      String familiar,
+      String telefon,
+      String adreca,
+      String poblacio,
+      String codiPostal,
+      String DniFamiliar,
+      ) async {
+    // Comprova si algun camp obligatori està buit
     if (dataNaixement.isEmpty ||
         DniPacient.isEmpty ||
         _selectedFamiliar == null ||
@@ -137,21 +139,25 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
       _mostrarAlerta(context, "Campos obligatorios",
           "Por favor, complete todos los campos.");
     } else if (telefon.length != 9) {
+      // Comprova si el número de telèfon és vàlid
       _mostrarAlerta(context, "Teléfono inválido",
           "Por favor, introduzca un número de teléfono válido de 9 dígitos.");
     } else if (!validarDni(DniPacient) || !validarDni(DniFamiliar)) {
+      // Comprova si els DNI són vàlids
       _mostrarAlerta(
           context, "DNI inválido", "Por favor, introduzca un DNI válido.");
     } else {
       bool pacienteExiste = await existePacienteConDNI(DniPacient);
       if (!pacienteExiste) {
+        // Si el pacient no existeix, mostrar alerta
         _mostrarAlerta(context, "DNI no encontrado",
             "No se encontró ningún paciente con el DNI ingresado.");
       } else {
+        // Si el pacient existeix, mostrar alerta confirmant-ho
         _mostrarAlerta(context, "DNI ENCONTRADO",
             "se encontró paciente con el DNI ingresado.");
         try {
-          // Guardar los datos familiares
+          // Guardar les dades familiars a Firestore
           await FirebaseFirestore.instance
               .collection('Usuarios')
               .doc(userId)
@@ -168,9 +174,9 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
             'DniFamiliar': DniFamiliar,
           });
 
-          print("dades familiars guardades correctamente.");
+          print("dades familiars guardades correctament.");
 
-          // Crear la relación entre el paciente y el familiar en la colección 'relacionFamiliarPaciente'
+          // Crear la relació entre el pacient i el familiar
           await FirebaseFirestore.instance
               .collection('Usuarios')
               .doc(userId)
@@ -181,9 +187,9 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
             'familiar': familiar,
           });
 
-          print("Relació pacient-familiar guardada correctamente.");
+          print("Relació pacient-familiar guardada correctament.");
 
-          // Redirigir a la siguiente pantalla
+          // Redirigir a la pantalla següent
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -196,6 +202,7 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
     }
   }
 
+  // Funció per mostrar alertes d'error o èxit
   void _mostrarAlerta(BuildContext context, String title, String message) {
     showDialog(
       context: context,
@@ -219,8 +226,10 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
   @override
   void initState() {
     super.initState();
-    imprimirDnisPacientes();
+    imprimirDnisPacientes(); // Crida per imprimir els DNIs dels pacients
   }
+
+
 
   @override
   Widget build(BuildContext context) {

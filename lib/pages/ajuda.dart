@@ -19,6 +19,7 @@ class _AjudaState extends State<Ajuda> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
+            // Quan es prem el botó enrere, es redirigeix a la pàgina principal
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -38,12 +39,15 @@ class _AjudaState extends State<Ajuda> {
       body: Container(
         padding: const EdgeInsets.all(16.0),
         child: StreamBuilder<QuerySnapshot>(
+          // Escolta en temps real els documents de la col·lecció "Ajuda" a Firestore
           stream: FirebaseFirestore.instance.collection('Ajuda').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
+              // Mostra un indicador de càrrega mentre s'obtenen les dades
               return const Center(child: CircularProgressIndicator());
             }
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              // Si no hi ha dades disponibles, mostra un missatge d'avís
               return const Center(
                 child: Text("No hi ha dades disponibles",
                     style: TextStyle(fontSize: 18, color: Colors.grey)),
@@ -63,7 +67,7 @@ class _AjudaState extends State<Ajuda> {
                     tilePadding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 8.0),
                     title: Text(
-                      doc['Titol'],
+                      doc['Titol'], // Mostra el títol de l'ajuda
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -75,7 +79,7 @@ class _AjudaState extends State<Ajuda> {
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
-                          doc['Explicació'],
+                          doc['Explicació'], // Mostra l'explicació de l'ajuda
                           style: const TextStyle(
                               fontSize: 16, color: Colors.black87),
                         ),
