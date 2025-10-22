@@ -186,7 +186,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: () => navigateToRegistrationPage(context),
                       child: Text(
-                        'Si no tens un compte, registra\t!',
+                        'Si no tens un compte, registra\'t!',
                         style: TextStyle(color: Colors.grey[800], decoration: TextDecoration.underline),
                       ),
                     ),

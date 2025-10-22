@@ -15,6 +15,7 @@ import 'package:kidneyproject/pages/pagePeix.dart';
 import 'package:kidneyproject/pages/pageTubercles.dart';
 import 'package:kidneyproject/pages/pageVerdures.dart';
 import 'package:provider/provider.dart';
+import 'package:kidneyproject/pages/menuDietes.dart';
 
 class crearDietes extends StatefulWidget {
   final String userId;
@@ -42,6 +43,19 @@ class _crearDietesState extends State<crearDietes> {
         appBar: AppBar(
           title: const Text('Menú Dietes'),
           backgroundColor: Colors.greenAccent,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MenuDietes(
+                    userId: widget.userId, // Pasa el userId a la nova pàgina
+                  ),
+                ),
+              );
+            },
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.shopping_cart), // Icono de cesta

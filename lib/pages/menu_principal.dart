@@ -55,7 +55,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
 
       if (tipoUsuario == 'Pacient') {
         print('Temporizador iniciat');
-        _timer = Timer.periodic(Duration(minutes: 30), (timer) {
+        _timer = Timer.periodic(Duration(minutes: 10), (timer) {
           if (!_isCheckingMood) {
             _isCheckingMood = true;
             print('Navegant a EstatAnim...');
@@ -199,14 +199,14 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       height: 155,
                       width: 155,
                       onTap: () {
-                        navigateToPage(context, Comunities());
+                        navigateToPage(context, Comunities(userId: widget.userId));
                       },
                     ),
                     const SizedBox(width: 5),
                     MidleImgs(
-                      imagePath: 'lib/images/dietas.png',
+                      imagePath: 'lib/images/imatgeDietes.png',
                       height: 155,
-                      width: 155,
+                      width: 150,
                       onTap: () {
                         navigateToPage(
                             context, MenuDietes(userId: widget.userId));

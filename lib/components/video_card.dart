@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -6,12 +7,13 @@ class VideoCard extends StatefulWidget {
   final String videoTitle;
   final String videoCategoria;
   final Function(String) onMarkAsViewed;
-
+  final String userId;
   const VideoCard({
     Key? key,
     required this.videoUrl,
     required this.videoTitle,
     required this.videoCategoria,
+    required this.userId,
     required this.onMarkAsViewed,
   }) : super(key: key);
 
@@ -22,7 +24,7 @@ class VideoCard extends StatefulWidget {
 class _VideoCardState extends State<VideoCard> {
   bool _isExpanded = false;
   late YoutubePlayerController _controller;
-
+  bool _isViewed = false;
   @override
   void initState() {
     super.initState();
@@ -33,8 +35,22 @@ class _VideoCardState extends State<VideoCard> {
         mute: false,
       ),
     );
+    _checkIfViewed();
   }
+  Future<void> _checkIfViewed() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(widget.userId)
+        .collection('videosVistos')
+        .doc(widget.videoTitle)
+        .get();
 
+    if (doc.exists) {
+      setState(() {
+        _isViewed = true; // si existe en Firestore, marcamos como visto
+      });
+    }
+  }
   @override
   void dispose() {
     _controller.dispose();
@@ -79,28 +95,34 @@ class _VideoCardState extends State<VideoCard> {
               ),
               SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  widget.onMarkAsViewed(widget.videoTitle); // Llamamos a la función
+                onPressed: _isViewed
+                    ? null // si ya fue visto, desactiva el botón
+                    : () async {
+                  await widget.onMarkAsViewed(widget.videoTitle);
+                  setState(() {
+                    _isViewed = true; // cambia el estado local para actualizar UI
+                  });
                 },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Color(0xFFFF603D), backgroundColor: Colors.white, // Color del texto
+                  backgroundColor: _isViewed ? Colors.green : Colors.white,
+                  foregroundColor: _isViewed ? Colors.white : Color(0xFFFF603D),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // Borde redondeado
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check, color: Color(0xFFFF603D)), // Icono de check
+                    Icon(Icons.check, color: _isViewed ? Colors.white : Color(0xFFFF603D)),
                     SizedBox(width: 10),
                     Text(
-                      'Marcar com vist',
-                      style: TextStyle(color: Color(0xFFFF603D)),
+                      _isViewed ? 'Vist' : 'Marcar com vist',
+                      style: TextStyle(color: _isViewed ? Colors.white : Color(0xFFFF603D)),
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
         ),

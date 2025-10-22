@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kidneyproject/pages/crearDietes.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/cestaProvider.dart';
@@ -37,11 +38,26 @@ class cestaPage extends StatelessWidget {
     final cestaProvider = Provider.of<CestaProvider>(context); // Obtenim el proveïdor de la cistella
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cistella'),
-        backgroundColor: Colors.greenAccent,
-        centerTitle: true,
-      ),
+        appBar: AppBar(
+          title: const Text('Cistella'),
+          backgroundColor: Colors.greenAccent,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => crearDietes(
+                    userId: userId,
+                    tipusC: tipusC,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
       body: cestaProvider.cestaItems.isEmpty // Si la cistella està buida
           ? Center(
         child: Padding(
@@ -72,12 +88,75 @@ class cestaPage extends StatelessWidget {
                           horizontal: 16.0, vertical: 12.0),
                       title: Text(item['item'],
                           style: TextStyle(fontSize: 18)),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          cestaProvider.eliminarItem(item['item']); // Eliminar l'element seleccionat
-                        },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              final itemActual = item['item'];
+
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Editar aliment'),
+                                  content: Text('Estàs segur que vols editar aquest aliment?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('Cancel·lar'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        cestaProvider.eliminarItem(itemActual);
+                                        Navigator.pop(context); // Tanca el diàleg
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => crearDietes(
+                                              userId: userId,
+                                              tipusC: tipusC,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text('Sí, editar'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Eliminar aliment'),
+                                  content: Text('Estàs segur que vols eliminar aquest aliment de la cistella?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('Cancel·lar'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        cestaProvider.eliminarItem(item['item']);
+                                        Navigator.pop(context); // Tanca el diàleg
+                                      },
+                                      child: Text('Sí, eliminar'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
+
+
                     ),
                   );
                 },

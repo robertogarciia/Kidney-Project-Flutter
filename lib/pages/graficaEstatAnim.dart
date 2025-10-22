@@ -12,28 +12,30 @@ class graficaEstatAnim extends StatefulWidget {
   @override
   _graficaEstatAnimState createState() => _graficaEstatAnimState();
 }
+
 class _graficaEstatAnimState extends State<graficaEstatAnim> {
   late Map<String, int> moodData;
   String selectedMonth = '';
+  final List<int> years = List<int>.generate(10, (index) => 2023 + index);
+  int selectedYear = DateTime.now().year;
   bool isLoading = true;
-  bool isFamiliar = false; // Indicador de si el usuario es un familiar
-  String relatedPatientId = ''; // ID del paciente relacionado
+  bool isFamiliar = false;
+  String relatedPatientId = '';
 
   final List<String> months = [
-    'Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost',
-    'Setembre', 'Octubre', 'Novembre', 'Desembre',
+    'Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
+    'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre',
   ];
 
   @override
   void initState() {
     super.initState();
-    final DateTime now = DateTime.now();
+    final now = DateTime.now();
     selectedMonth = months[now.month - 1];
     moodData = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
-    _checkUserType();  // Verificar el tipo de usuario al iniciar
+    _checkUserType();
   }
 
-  // Verificar el tipo de usuario
   Future<void> _checkUserType() async {
     final userDoc = await FirebaseFirestore.instance
         .collection('Usuarios')
@@ -42,10 +44,9 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
         .doc('tipus')
         .get();
 
-    final userData = userDoc.data() as Map<String, dynamic>?;
-
+    final userData = userDoc.data();
     if (userData == null) {
-      print("Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
+      print("Error: No se encontró el tipo de usuario.");
       return;
     }
 
@@ -54,39 +55,36 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
         isFamiliar = true;
       });
 
-      // Obtener el paciente relacionado con este familiar
-      final relatedPatientDocs = await FirebaseFirestore.instance
+      final relatedDocs = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
           .collection('relacionFamiliarPaciente')
           .get();
 
-      if (relatedPatientDocs.docs.isEmpty) {
-        print("Error: No se encontraron pacientes relacionados para este familiar.");
-      } else {
-        final relatedPatientData = relatedPatientDocs.docs.first.data();
-        final dniPaciente = relatedPatientData['DniPaciente'];
-        await _getPatientIdFromDNI(dniPaciente);
+      if (relatedDocs.docs.isEmpty) {
+        print("Error: No hay relación con paciente.");
+        return;
       }
+
+      final dniPaciente = relatedDocs.docs.first.data()['DniPaciente'];
+      await _getPatientIdFromDNI(dniPaciente);
     } else {
-      // Si es un paciente, podemos continuar sin hacer nada adicional
       fetchMoodData(selectedMonth);
     }
   }
 
-  // Obtener el ID del paciente a partir del DNI
   Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
+    final snapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
 
-    for (var userDoc in usersSnapshot.docs) {
+    for (var userDoc in snapshot.docs) {
       final personalDataSnapshot = await userDoc.reference
           .collection('dadesPersonals')
           .doc('dades')
           .get();
 
       if (personalDataSnapshot.exists) {
-        final personalData = personalDataSnapshot.data();
-        if (personalData?['Dni'] == dniPaciente) {
+        final data = personalDataSnapshot.data();
+        if (data?['Dni'] == dniPaciente) {
           setState(() {
             relatedPatientId = userDoc.id;
           });
@@ -95,51 +93,40 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
       }
     }
 
-    // Una vez que tengamos el ID del paciente, podemos cargar los datos
     fetchMoodData(selectedMonth);
   }
 
-  // Función para obtener los datos del estado de ánimo del paciente o del usuario
-  Future<void> fetchMoodData(String selectedMonth) async {
-    setState(() {
-      isLoading = true;
-    });
+  Future<void> fetchMoodData(String month) async {
+    setState(() => isLoading = true);
 
     try {
-      DateTime startOfMonth = DateTime(2025, months.indexOf(selectedMonth) + 1, 1);
-      DateTime endOfMonth = DateTime(2025, months.indexOf(selectedMonth) + 1 + 1, 0, 23, 59, 59);
-
-      Timestamp startTimestamp = Timestamp.fromDate(startOfMonth);
-      Timestamp endTimestamp = Timestamp.fromDate(endOfMonth);
+      final start = DateTime(selectedYear, months.indexOf(month) + 1, 1);
+      final end = DateTime(selectedYear, months.indexOf(month) + 2, 0, 23, 59, 59);
 
       final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
-          .doc(isFamiliar ? relatedPatientId : widget.userId)  // Usar el ID del paciente si es familiar
+          .doc(isFamiliar ? relatedPatientId : widget.userId)
           .collection('estatAnim')
-          .where('Data', isGreaterThanOrEqualTo: startTimestamp)
-          .where('Data', isLessThanOrEqualTo: endTimestamp)
+          .where('Data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('Data', isLessThanOrEqualTo: Timestamp.fromDate(end))
           .get();
 
-      final moodCounts = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
+      final counts = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
 
       for (var doc in snapshot.docs) {
-        if (doc.data().containsKey('Estat')) {
-          String mood = doc['Estat'];
-          if (moodCounts.containsKey(mood)) {
-            moodCounts[mood] = moodCounts[mood]! + 1;
-          }
+        final mood = doc['Estat'];
+        if (counts.containsKey(mood)) {
+          counts[mood] = counts[mood]! + 1;
         }
       }
 
       setState(() {
-        moodData = moodCounts;
+        moodData = counts;
         isLoading = false;
       });
     } catch (e) {
       print('Error al obtener datos: $e');
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
@@ -152,13 +139,11 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) => MenuPrincipal(userId: widget.userId),
-              ),
+              MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
             );
           },
         ),
-        title: Text(
+        title: const Text(
           'Estat d\'ànim del Pacient',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -169,17 +154,16 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
         padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
+            children: [
               Text(
-                'Estat del mes de $selectedMonth',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                'Estat de $selectedMonth $selectedYear',
+                style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 30),
-              // Dropdown per a seleccionar el mes amb ícono del calendari
+              const SizedBox(height: 20),
+
+              // Selector de mes
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.pinkAccent, width: 2),
@@ -188,25 +172,18 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                 child: DropdownButton<String>(
                   value: selectedMonth,
                   items: months.map((month) {
-                    return DropdownMenuItem<String>(
+                    return DropdownMenuItem(
                       value: month,
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today, color: Colors.black),
-                          SizedBox(width: 10),
-                          Text(
-                            month,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          const Icon(Icons.calendar_month, color: Colors.black),
+                          const SizedBox(width: 10),
+                          Text(month, style: const TextStyle(fontSize: 18)),
                         ],
                       ),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
+                  onChanged: (newValue) {
                     setState(() {
                       selectedMonth = newValue!;
                       fetchMoodData(selectedMonth);
@@ -217,97 +194,111 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   iconEnabledColor: Colors.black,
                 ),
               ),
-              SizedBox(height: 30),
-              // Mostrar el gráfico o un indicador de carga
+
+              const SizedBox(height: 20),
+
+              // Selector de año
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.pinkAccent, width: 2),
+                  color: Colors.pinkAccent.withOpacity(0.1),
+                ),
+                child: DropdownButton<int>(
+                  value: selectedYear,
+                  items: years.map((year) {
+                    return DropdownMenuItem(
+                      value: year,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: Colors.black),
+                          const SizedBox(width: 10),
+                          Text('$year', style: const TextStyle(fontSize: 18)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedYear = newValue!;
+                      fetchMoodData(selectedMonth);
+                    });
+                  },
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  iconEnabledColor: Colors.black,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
               isLoading
-                  ? CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(Colors.pinkAccent),
-              )
-                  : (moodData['Content/a'] == 0 && moodData['Neutral'] == 0 && moodData['Trist/a'] == 0)
-                  ? Text(
+                  ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.pinkAccent))
+                  : (moodData.values.every((count) => count == 0))
+                  ? const Text(
                 'No hi ha dades registrades',
                 style: TextStyle(fontSize: 18, color: Colors.pinkAccent, fontWeight: FontWeight.bold),
               )
                   : Container(
                 height: 300,
                 width: 300,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: PieChart(
                   PieChartData(
                     sections: [
                       PieChartSectionData(
-                        value: moodData['Content/a']?.toDouble() ?? 0.0,
+                        value: moodData['Content/a']!.toDouble(),
                         color: Colors.green,
-                        title: 'Content/a: ${moodData['Content/a'] ?? 0}',
-                        titleStyle: TextStyle(color: Colors.white, fontSize: 15),
+                        title: 'Content/a: ${moodData['Content/a']}',
+                        titleStyle: const TextStyle(color: Colors.white, fontSize: 15),
                         radius: 80,
                       ),
                       PieChartSectionData(
-                        value: moodData['Neutral']?.toDouble() ?? 0.0,
+                        value: moodData['Neutral']!.toDouble(),
                         color: Colors.orange,
-                        title: 'Neutral: ${moodData['Neutral'] ?? 0}',
-                        titleStyle: TextStyle(color: Colors.white, fontSize: 15),
+                        title: 'Neutral: ${moodData['Neutral']}',
+                        titleStyle: const TextStyle(color: Colors.white, fontSize: 15),
                         radius: 80,
                       ),
                       PieChartSectionData(
-                        value: moodData['Trist/a']?.toDouble() ?? 0.0,
+                        value: moodData['Trist/a']!.toDouble(),
                         color: Colors.red,
-                        title: 'Trist/a: ${moodData['Trist/a'] ?? 0}',
-                        titleStyle: TextStyle(color: Colors.white, fontSize: 15),
+                        title: 'Trist/a: ${moodData['Trist/a']}',
+                        titleStyle: const TextStyle(color: Colors.white, fontSize: 15),
                         radius: 80,
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 30),
-              Text(
-                'Llegenda',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
+
+              const SizedBox(height: 30),
+
+              const Text('Llegenda', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Column(
-                    children: [
-                      Image.asset(
-                        'lib/images/caraFeliz.png',
-                        height: 50,
-                        width: 50,
-                      ),
-                      Text('Content/a', style: TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  SizedBox(width: 30),
-                  Column(
-                    children: [
-                      Image.asset(
-                        'lib/images/caraNormal.png',
-                        width: 50,
-                      ),
-                      Text('Neutral', style: TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  SizedBox(width: 30),
-                  Column(
-                    children: [
-                      Image.asset(
-                        'lib/images/caraTriste.png',
-                        height: 50,
-                        width: 50,
-                      ),
-                      Text('Trist/a', style: TextStyle(fontSize: 14)),
-                    ],
-                  ),
+                children: [
+                  _buildLegendItem('lib/images/caraFeliz.png', 'Content/a'),
+                  const SizedBox(width: 30),
+                  _buildLegendItem('lib/images/caraNormal.png', 'Neutral'),
+                  const SizedBox(width: 30),
+                  _buildLegendItem('lib/images/caraTriste.png', 'Trist/a'),
                 ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem(String imagePath, String label) {
+    return Column(
+      children: [
+        Image.asset(imagePath, height: 50, width: 50),
+        Text(label, style: const TextStyle(fontSize: 14)),
+      ],
     );
   }
 }

@@ -20,6 +20,7 @@ class _VideosState extends State<Videos> {
 
   bool isFamiliar = false;  // Per saber si l'usuari és un familia
   String? relatedPatientId; // Per emmagatzemar l'ID del pacient relacionat
+  bool mostrarImagen = false;
 
   // Funció per verificar el tipus d'usuari
   Future<void> _checkUserType() async {
@@ -152,150 +153,163 @@ class _VideosState extends State<Videos> {
 
 
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                SizedBox(height: 20),
-                // Título de la página
-                Text(
-                  'Vídeos',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                // Buscador
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 5,
-                          blurRadius: 15,
-                          offset: Offset(0, 3),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 20),
+                    Text(
+                      'Vídeos',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 5,
+                              blurRadius: 15,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              searchQuery = value.toLowerCase();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Buscar per títol...',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            prefixIcon: Icon(Icons.search, color: Colors.blue),
+                            contentPadding:
+                            EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<String>(
+                          hint: Text('Seleccionar categoría'),
+                          value: selectedCategory,
+                          items: ['Diàlisis', 'Nutrició'].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? value) {
+                            setState(() {
+                              selectedCategory = value;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = null;
+                              searchQuery = '';
+                            });
+                          },
+                          child: Text('Restablir filtre'),
                         ),
                       ],
                     ),
-                    child: TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          searchQuery = value.toLowerCase();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Buscar per títol...',
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.blue,
-                        ),
-                        contentPadding:
-                        EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
+                    SizedBox(height: 20),
+                    FutureBuilder<List<DocumentSnapshot>>(
+                      future: _loadVideos(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Text('No hi ha vídeos disponibles');
+                        }
 
-                // Filtres
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DropdownButton<String>(
-                      hint: Text('Seleccionar categoría'),
-                      value: selectedCategory,
-                      items: ['Diàlisis', 'Nutrició'].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
+                        List<DocumentSnapshot> filteredVideos = snapshot.data!.where((doc) {
+                          bool matchesCategory = selectedCategory == null ||
+                              doc['Categoria'] == selectedCategory;
+                          bool matchesSearch = doc['Titol'] != null &&
+                              doc['Titol'].toLowerCase().contains(searchQuery);
+                          return matchesCategory && matchesSearch;
+                        }).toList();
+
+                        if (filteredVideos.isEmpty) {
+                          return Text(
+                              'No se encontraron videos con los filtros aplicados.');
+                        }
+
+                        return Column(
+                          children: filteredVideos.map((DocumentSnapshot document) {
+                            Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+
+                            return VideoCard(
+                              videoUrl: data['url'],
+                              videoTitle: data['Titol'],
+                              videoCategoria: data['Categoria'],
+                              userId: widget.userId,
+                              onMarkAsViewed: marcarComoVisto,
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          selectedCategory = value;
-                        });
                       },
-                    ),
-                    SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedCategory = null;
-                          searchQuery = ''; // Reset filtres
-                        });
-                      },
-                      child: Text('Restablir filtre'),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-
-                // Mostrar els videos
-                FutureBuilder<List<DocumentSnapshot>>(
-                  future: _loadVideos(), // Cargar els videos
-                  builder: (BuildContext context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // Cargando datos
-                    }
-                    if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}'); // Manejo de errores
-                    }
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('No hi ha vídeos disponibles'); // No hay datos
-                    }
-
-                    // Filtrar los videos por categoría y búsqueda
-                    List<DocumentSnapshot> filteredVideos =
-                    snapshot.data!.where((doc) {
-                      bool matchesCategory = selectedCategory == null ||
-                          doc['Categoria'] == selectedCategory;
-                      bool matchesSearch = doc['Titol'] != null &&
-                          doc['Titol'].toLowerCase().contains(searchQuery);
-                      return matchesCategory && matchesSearch;
-                    }).toList();
-
-                    if (filteredVideos.isEmpty) {
-                      return Text('No se encontraron videos con los filtros aplicados.');
-                    }
-
-                    return Column(
-                      children: filteredVideos.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data =
-                        document.data() as Map<String, dynamic>;
-
-                        return VideoCard(
-                          videoUrl: data['url'], // URL del video
-                          videoTitle: data['Titol'], // Títul del video
-                          videoCategoria: data['Categoria'], // Categorí del video
-                          onMarkAsViewed: marcarComoVisto, // Pasamos la función al VideoCard
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+
+          AnimatedOpacity(
+            opacity: mostrarImagen ? 1.0 : 0.0,
+            duration: Duration(milliseconds: 300),
+            child: Visibility(
+              visible: mostrarImagen,
+              child: Container(
+                color: Colors.black.withOpacity(0.5), // Fondo oscuro opcional
+                child: Center(
+                  child: Image.asset(
+                    'lib/images/+10Puntos.png',
+                    width: 250,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
+
+
     );
   }
 
-  // Funció per guardar el estat de "video visto" en la base de dades
   Future<void> marcarComoVisto(String videoTitle) async {
     try {
       print('Widget ID: ${widget.userId}');
 
-      // Verificar si el video ja esta marcat com a vist
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
@@ -303,8 +317,8 @@ class _VideosState extends State<Videos> {
           .doc(videoTitle)
           .get();
 
-      // Si el video no esta marcat com a vist, el guardem
       if (!snapshot.exists) {
+        // Guardar com a vist
         await FirebaseFirestore.instance
             .collection('Usuarios')
             .doc(widget.userId)
@@ -316,12 +330,40 @@ class _VideosState extends State<Videos> {
           'timestampVisto': FieldValue.serverTimestamp(),
         });
 
-        print('Estado del video "$videoTitle" guardado en "videosVistos"');
+        // Sumar coins
+        DocumentReference datosRef = FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(widget.userId)
+            .collection('trivial')
+            .doc('datos');
+
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          DocumentSnapshot datosSnapshot = await transaction.get(datosRef);
+
+          if (!datosSnapshot.exists) {
+            transaction.set(datosRef, {'coins': 10});
+          } else {
+            int coinsActuales = datosSnapshot.get('coins') ?? 0;
+            transaction.update(datosRef, {'coins': coinsActuales + 10});
+          }
+        });
+
+        setState(() {
+          mostrarImagen = true;
+        });
+        await Future.delayed(Duration(seconds: 1));
+
+        Future.delayed(Duration(seconds: 1), () {
+          setState(() {
+            mostrarImagen = false;
+          });
+        });
       } else {
         print('El video "$videoTitle" ya está marcado como visto.');
       }
     } catch (e) {
-      print('Error al guardar el estado del video: $e');
+      print('Error al guardar el estado del video o añadir coins: $e');
     }
   }
+
 }

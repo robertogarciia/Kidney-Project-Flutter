@@ -25,6 +25,8 @@ class resumDietesPage extends StatefulWidget {
 class _resumDietesPageState extends State<resumDietesPage> {
   final TextEditingController _nombreController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool mostrarImagen = false;
+  String? rutaImagen;
 
   bool isMounted = true;
 
@@ -44,6 +46,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
     }
   }
 // funció per guardar el resum de la dieta
+
   Future<void> _guardarResumen() async {
     final String nombre = _nombreController.text.trim();
     if (nombre.isEmpty) {
@@ -59,6 +62,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
     final Timestamp fechaCreacion = Timestamp.now();
 
     try {
+      // Guardar dieta
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
@@ -66,11 +70,55 @@ class _resumDietesPageState extends State<resumDietesPage> {
           .add({
         'nombre': nombre,
         'fechaCreacion': fechaCreacion,
+        'favorito': false,
         'puntuacionTotal': widget.puntuacionTotal,
         'alimentos': widget.alimentos,
       });
-// missatge de dieta guardada correctament
-      if (isMounted) {
+
+      // Coins segons puntuació
+      int coinsToAdd = 0;
+      if (widget.puntuacionTotal == 0) {
+        coinsToAdd = 50;
+      } else if (widget.puntuacionTotal == 1) {
+        coinsToAdd = 20;
+      } else if (widget.puntuacionTotal == 2) {
+        coinsToAdd = -10;
+      }
+
+      final datosRef = FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .collection('trivial')
+          .doc('datos');
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final datosSnapshot = await transaction.get(datosRef);
+
+        if (!datosSnapshot.exists) {
+          transaction.set(datosRef, {'coins': coinsToAdd});
+        } else {
+          int coinsActuales = datosSnapshot.get('coins') ?? 0;
+          transaction.update(datosRef, {'coins': coinsActuales + coinsToAdd});
+        }
+      });
+
+      // Mostrar imagen después de guardar la dieta
+      setState(() {
+        rutaImagen = puntuacionImagePath(widget.puntuacionTotal);
+        mostrarImagen = true;
+      });
+
+      // Esperar 1 segundo antes de ocultar la imagen
+      await Future.delayed(Duration(seconds: 2));
+
+      if (mounted) {
+        setState(() {
+          mostrarImagen = false;
+        });
+      }
+
+      // Mostrar el mensaje de confirmación
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Dieta guardada correctamente.'),
@@ -78,23 +126,18 @@ class _resumDietesPageState extends State<resumDietesPage> {
           ),
         );
 
-        final cestaProvider =
-            Provider.of<CestaProvider>(context, listen: false);
-        if (cestaProvider != null) {
-          cestaProvider.vaciarCesta();
-        }
-// funció per anar a la pàgina de menú dietes
-        if (isMounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MenuDietes(userId: widget.userId),
-            ),
-          );
-        }
+        final cestaProvider = Provider.of<CestaProvider>(context, listen: false);
+        cestaProvider.vaciarCesta();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MenuDietes(userId: widget.userId),
+          ),
+        );
       }
     } catch (e) {
-      if (isMounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al guardar la dieta: $e'),
@@ -105,6 +148,15 @@ class _resumDietesPageState extends State<resumDietesPage> {
     }
   }
 
+  String puntuacionImagePath(int puntuacionTotal) {
+    if (puntuacionTotal == 0) {
+      return 'lib/images/+50Puntos.png';
+    } else if (puntuacionTotal == 1) {
+      return 'lib/images/+10Puntos.png';
+    } else {
+      return 'lib/images/-10puntos.png';
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final String mensajeEvaluacion = _evaluarDieta();
@@ -115,179 +167,199 @@ class _resumDietesPageState extends State<resumDietesPage> {
         backgroundColor: Colors.greenAccent,
         elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.greenAccent, Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Introdueix un nom per a la dieta',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _nombreController,
-                      decoration: InputDecoration(
-                        labelText: 'Nom de la dieta',
-                        labelStyle: TextStyle(
-                            color: const Color.fromARGB(255, 0, 0, 0)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                      style: TextStyle(fontSize: 18),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El nombre no puede estar vacío';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.greenAccent, Colors.white],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              for (var alimento in widget.alimentos)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: alimento['puntuacion'] == 0
-                        ? Colors.green.withOpacity(0.8)
-                        : (alimento['puntuacion'] == 1
-                            ? Colors.orange.withOpacity(0.8)
-                            : Colors.red.withOpacity(0.8)),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white, 
-                          borderRadius:
-                              BorderRadius.circular(8), 
+            ),
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    margin: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
-                        padding: EdgeInsets.all(
-                            5),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            alimento['imageUrl'],
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Introdueix un nom per a la dieta',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Puntuación: ${alimento['puntuacion']}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromARGB(255, 255, 255, 255)),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nombreController,
+                          decoration: InputDecoration(
+                            labelText: 'Nom de la dieta',
+                            labelStyle: TextStyle(color: Colors.black),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          ],
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          style: TextStyle(fontSize: 18),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'El nombre no puede estar vacío';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
+                  for (var alimento in widget.alimentos)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: alimento['puntuacion'] == 0
+                            ? Colors.green.withOpacity(0.8)
+                            : (alimento['puntuacion'] == 1
+                            ? Colors.orange.withOpacity(0.8)
+                            : Colors.red.withOpacity(0.8)),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: EdgeInsets.all(5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                alimento['imageUrl'],
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Puntuación: ${alimento['puntuacion']}',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Puntuació Total: ${widget.puntuacionTotal}',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      mensajeEvaluacion,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: widget.puntuacionTotal == 0
-                            ? Colors.green
-                            : (widget.puntuacionTotal == 1
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Puntuació Total: ${widget.puntuacionTotal}',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          mensajeEvaluacion,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: widget.puntuacionTotal == 0
+                                ? Colors.green
+                                : (widget.puntuacionTotal == 1
                                 ? Colors.orange
                                 : Colors.red),
-                      ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Botó per guardar la dieta
-              ElevatedButton(
-                onPressed: _guardarResumen,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.greenAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
                   ),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-                child: Text('Guardar Dieta'),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _guardarResumen,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.greenAccent,
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      textStyle: TextStyle(fontSize: 18),
+                    ),
+                    child: Text('Guardar Dieta'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Imagen superpuesta que aparece durante 1 segundo
+          if (mostrarImagen && rutaImagen != null)
+            AnimatedOpacity(
+              opacity: mostrarImagen ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 200),
+              child: Center(
+                child: Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: Image.asset(
+                      rutaImagen!,
+                      width: 250,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
+
 }

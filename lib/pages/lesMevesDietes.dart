@@ -21,6 +21,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
   List<QueryDocumentSnapshot> _dietes = [];
   late Future<List<DocumentSnapshot>> _userData;
   String _userType = ''; // Variable para almacenar el tipo de usuario
+  bool _mostrarFavorits = false;
 
 
   @override
@@ -156,16 +157,15 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
     if (_currentFilter == 'today') {
       query = query
           .where('fechaCreacion',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(
-              DateTime(today.year, today.month, today.day)))
+          isGreaterThanOrEqualTo:
+          Timestamp.fromDate(DateTime(today.year, today.month, today.day)))
           .where('fechaCreacion',
-          isLessThan: Timestamp.fromDate(
-              DateTime(today.year, today.month, today.day + 1)));
+          isLessThan:
+          Timestamp.fromDate(DateTime(today.year, today.month, today.day + 1)));
     } else if (_currentFilter == 'calendar' && _selectedDate != null) {
-      final DateTime selectedDateStart = DateTime(
-          _selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
-      final DateTime selectedDateEnd =
-      selectedDateStart.add(const Duration(days: 1));
+      final DateTime selectedDateStart =
+      DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
+      final DateTime selectedDateEnd = selectedDateStart.add(const Duration(days: 1));
       query = query
           .where('fechaCreacion',
           isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDateStart))
@@ -174,10 +174,17 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
     }
 
     final snapshot = await query.get();
+    List<QueryDocumentSnapshot> dietes = snapshot.docs;
+
+    if (_mostrarFavorits) {
+      dietes = dietes.where((dieta) => dieta['favorito'] == true).toList();
+    }
+
     setState(() {
-      _dietes = snapshot.docs;
+      _dietes = dietes;
     });
   }
+
 // funció per ordenar les dietes
   void _sortDietes() {
     _dietes.sort((a, b) {
@@ -275,16 +282,13 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 6, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _isDescending
-                                    ? Icons.arrow_downward
-                                    : Icons.arrow_upward,
+                                _isDescending ? Icons.arrow_downward : Icons.arrow_upward,
                                 color: Colors.white,
                               ),
                               const SizedBox(width: 8),
@@ -292,8 +296,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                                 _isDescending
                                     ? 'Puntuació Descendent'
                                     : 'Puntuació Ascendent',
-                                style: const TextStyle(
-                                    fontSize: 14, color: Colors.white),
+                                style: const TextStyle(fontSize: 14, color: Colors.white),
                               ),
                             ],
                           ),
@@ -304,6 +307,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                               _currentFilter = 'today';
                               _selectedDate = null;
                               _dietes = [];
+                              _mostrarFavorits = false; // Reiniciar el filtro
                             });
                             _fetchDietes();
                           },
@@ -312,8 +316,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 6, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                           ),
                           child: const Text(
                             'Restablir filtres',
@@ -323,25 +326,65 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: _showDatePicker,
-                      icon: const Icon(Icons.calendar_today, color: Colors.white),
-                      label: const Text(
-                        'Selecciona una data',
-                        style: TextStyle(color: Colors.white, fontSize: 15),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.greenAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _showDatePicker,
+                          icon: const Icon(Icons.calendar_today, color: Colors.white),
+                          label: const Text(
+                            'Selecciona una data',
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.greenAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          ),
                         ),
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.amber, width: 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.star, color: Colors.amber),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Favorits',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Switch(
+                                    value: _mostrarFavorits,
+                                    activeColor: Colors.amber,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _mostrarFavorits = value;
+                                      });
+                                      _fetchDietes();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                      ],
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
-                const SizedBox(height: 16),
+
                 Text(
                   _currentFilter == 'today'
                       ? 'Dietes d\'Avui'
@@ -404,9 +447,11 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => laMevaDietaDetall(
+                                  userId: widget.userId,
                                   nombre: nombre,
                                   fechaCreacion: fechaCreacion,
                                   puntuacionTotal: puntuacionTotal,
+                                  esFavorito: dieta['favorito'] ?? false,
                                   alimentos: dieta['alimentos'] ?? [],
                                   dietaId: dieta.id,
                                   onDelete: (String dietaId) async {
@@ -414,6 +459,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                                   },
                                 ),
                               ),
+
                             );
                           },
                         ),

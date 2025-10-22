@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/crearDietes.dart';
 import 'package:kidneyproject/pages/lesMevesDietes.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
+import 'package:provider/provider.dart';
+import 'cestaProvider.dart';
 
 class MenuDietes extends StatefulWidget {
   final String userId;
@@ -84,6 +86,9 @@ class _MenuDietesState extends State<MenuDietes> {
 
   @override
   Widget build(BuildContext context) {
+    // Accede al CestaProvider
+    final cestaProvider = Provider.of<CestaProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Menú Dietes'),
@@ -91,12 +96,45 @@ class _MenuDietesState extends State<MenuDietes> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MenuPrincipal(userId: widget.userId),
-              ),
-            );
+            // Comprobamos si hay elementos en la cesta
+            if (cestaProvider.cestaItems.isNotEmpty) { // Usa cestaProvider aquí
+              // Si la cesta tiene elementos, mostramos un dialog de confirmación
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Alerta'),
+                  content: Text('Tens elements en la cistella. Segur que et vols dirigir al menú principal?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Cerrar el dialog
+                      },
+                      child: Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Cerrar el dialog
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MenuPrincipal(userId: widget.userId),
+                          ),
+                        );
+                      },
+                      child: Text('Sí, vull continuar'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              // Si no hay elementos en la cesta, simplemente navegar
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MenuPrincipal(userId: widget.userId),
+                ),
+              );
+            }
           },
         ),
       ),
@@ -160,4 +198,6 @@ class _MenuDietesState extends State<MenuDietes> {
       ),
     );
   }
+
+
 }

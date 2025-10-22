@@ -1,0 +1,2 @@
+C:/Programacion/VisualStudio/Kidney-Project-Flutter/android/app/.cxx/Debug/5g6f2lb4/x86/CMakeFiles/edit_cache.dir
+C:/Programacion/VisualStudio/Kidney-Project-Flutter/android/app/.cxx/Debug/5g6f2lb4/x86/CMakeFiles/rebuild_cache.dir

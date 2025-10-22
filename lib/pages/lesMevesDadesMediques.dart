@@ -26,6 +26,15 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
     // Carregar les dades de l'usuari quan s'inicia l'estat
     _userData = _loadUserData();
   }
+  String _formatValue(String field, String value) {
+    final cleaned = value.replaceAll(RegExp(r'[^\d.]'), '');
+    if (field == 'pes') {
+      return '$cleaned kg';
+    } else if (field == 'alcada') {
+      return '$cleaned m';
+    }
+    return cleaned;
+  }
 
   // Funció per carregar les dades de l'usuari des de Firestore
   Future<List<DocumentSnapshot>> _loadUserData() async {
@@ -138,7 +147,7 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
   // Funció per desar els canvis realitzats en els camps d'entrada
   Future<void> _saveChanges(String field, String value) async {
     try {
-      // Actualitzar el document amb les dades modificades
+      // Guardar el valor en Firestore
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
@@ -146,31 +155,131 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
           .doc('datos')
           .update({field: value});
 
-      // Actualitzar l'estat per reflectir els canvis
+      // Actualizar el estado de la UI
       setState(() {
         _isEditing[field] = false;
-        _userData = _loadUserData();
+        // Recargar los datos después de la actualización
+        _userData = _loadUserData(); // Asegúrate de que esta función recarga los datos correctamente
       });
 
-      // Mostrar missatge de confirmació
+      // Si el campo es relevante para recalcular el tipusC, llamamos al método de recalculación
+      if (['pes', 'alcada', 'estat', 'activitatFisica', 'diabetic'].contains(field)) {
+        await _recalculaITipusC();
+      }
+
+      // Mostrar mensaje de éxito
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Dades actualitzades correctament.')),
       );
     } catch (e) {
-      // Mostrar missatge d'error
+      // Manejo de errores
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al actualitzar les dades.')),
       );
     }
   }
 
+
+
+
   // Funció per obtenir el controlador per un camp concret
-  TextEditingController _getController(String field, String value) {
-    // Si no existeix el controlador, crear-lo amb el valor inicial
+  TextEditingController _getController(String field, [String? initialValue]) {
     if (!_controllers.containsKey(field)) {
-      _controllers[field] = TextEditingController(text: value);
+      // Solo el número, sin sufijos
+      final cleaned = initialValue?.replaceAll(RegExp(r'[^\d.]'), '') ?? '';
+      _controllers[field] = TextEditingController(text: cleaned);
     }
     return _controllers[field]!;
+  }
+
+
+  Future<void> _recalculaITipusC() async {
+    final docRef = FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(widget.userId)
+        .collection('dadesMediques')
+        .doc('datos');
+
+    try {
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) {
+        print('[DEBUG] El document no existeix');
+        return;
+      }
+
+      final data = snapshot.data()!;
+      print('[DEBUG] Dades obtingudes: $data');
+
+      // Traiem les unitats de pes i alçada abans de convertir-los en números
+      final String pesString = data['pes']?.toString() ?? '';
+      final String alcadaString = data['alcada']?.toString() ?? '';
+
+      // Traiem les unitats "kg" de pes i "m" d'alçada
+      final double? pes = double.tryParse(pesString.replaceAll(RegExp(r'[^0-9.]'), ''));
+      final double? alcadaCm = double.tryParse(alcadaString.replaceAll(RegExp(r'[^0-9.]'), ''));
+
+      final String estat = data['estat'] ?? '';
+      final String activitat = data['activitatFisica'] ?? 'No';
+      final String diabetic = data['diabetic'] ?? 'No';
+
+      if (pes == null || alcadaCm == null || alcadaCm == 0) {
+        print('[DEBUG] Pes o alçada no vàlids. Pes: $pes, Alcada: $alcadaCm');
+        return;
+      }
+
+      final double alcada = alcadaCm / 100; // Convertim l'alçada a metres
+      final double imc = pes / (alcada * alcada);
+      print('[DEBUG] IMC calculat: $imc');
+
+      String categoriaIMC;
+      if (imc < 18.5) {
+        categoriaIMC = 'Desnodrit';
+      } else if (imc >= 25) {
+        categoriaIMC = 'Obès';
+      } else {
+        categoriaIMC = 'Normal';
+      }
+      print('[DEBUG] Categoria IMC: $categoriaIMC');
+
+      String tipusC = 'No Determinat';
+
+      final bool actSi = activitat == 'Sí';
+      final bool diaSi = diabetic == 'Sí';
+
+      // Lògica per assignar tipusC
+      if (categoriaIMC == 'Normal' && actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C1';
+      else if (categoriaIMC == 'Normal' && actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C2';
+      else if (categoriaIMC == 'Normal' && actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C3';
+      else if (categoriaIMC == 'Normal' && actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C4';
+      else if (categoriaIMC == 'Normal' && !actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C5';
+      else if (categoriaIMC == 'Normal' && !actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C6';
+      else if (categoriaIMC == 'Normal' && !actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C7';
+      else if (categoriaIMC == 'Normal' && !actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C8';
+      else if (categoriaIMC == 'Desnodrit' && actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C9';
+      else if (categoriaIMC == 'Desnodrit' && actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C10';
+      else if (categoriaIMC == 'Desnodrit' && actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C11';
+      else if (categoriaIMC == 'Desnodrit' && actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C12';
+      else if (categoriaIMC == 'Desnodrit' && !actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C13';
+      else if (categoriaIMC == 'Desnodrit' && !actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C14';
+      else if (categoriaIMC == 'Desnodrit' && !actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C15';
+      else if (categoriaIMC == 'Desnodrit' && !actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C16';
+      else if (categoriaIMC == 'Obès' && actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C17';
+      else if (categoriaIMC == 'Obès' && actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C18';
+      else if (categoriaIMC == 'Obès' && actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C19';
+      else if (categoriaIMC == 'Obès' && actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C20';
+      else if (categoriaIMC == 'Obès' && !actSi && estat == 'Pre-Diàlisi' && !diaSi) tipusC = 'C21';
+      else if (categoriaIMC == 'Obès' && !actSi && estat == 'Pre-Diàlisi' && diaSi) tipusC = 'C22';
+      else if (categoriaIMC == 'Obès' && !actSi && estat == 'Diàlisi' && !diaSi) tipusC = 'C23';
+      else if (categoriaIMC == 'Obès' && !actSi && estat == 'Diàlisi' && diaSi) tipusC = 'C24';
+
+      print('[DEBUG] tipusC a guardar: $tipusC');
+
+      await docRef.update({'tipusC': tipusC});
+      print('[DEBUG] tipusC actualitzat correctament a Firestore');
+
+    } catch (e) {
+      print('[ERROR] Error en recalculaITipusC: $e');
+    }
   }
 
 
@@ -268,6 +377,167 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
     );
   }
 // funció per canviar la informació
+ /* Widget _buildInfoTile(String title, String value, String field) {
+    bool isSwitchField = ['activitatFisica', 'hipertens', 'pacientExpert', 'diabetic'].contains(field);
+    bool isEstadioField = field == 'estadio';  // Comprobar si el campo es 'estadio'
+    bool isEstatField = field == 'estat';  // Comprobar si el campo es 'estat'
+
+    String? originalValue = _controllers[field]?.text ?? value;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        padding: const EdgeInsets.all(15.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _isEditing[field] == true
+                      ? isSwitchField
+                      ? DropdownButton<String>(
+                    value: _controllers[field]?.text.isNotEmpty ?? false
+                        ? _controllers[field]?.text
+                        : value, // Se asegura de que se use el valor actual
+                    items: ['Si', 'No']
+                        .map((String option) => DropdownMenuItem<String>(
+                      value: option,
+                      child: Text(option),
+                    ))
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != _controllers[field]?.text) {
+                        setState(() {
+                          _controllers[field] = TextEditingController(text: newValue);
+                        });
+                      }
+                    },
+                  )
+                      : isEstadioField
+                      ? DropdownButton<String>(
+                    value: _controllers[field]?.text.isNotEmpty ?? false
+                        ? _controllers[field]?.text
+                        : value, // Se asegura de que se use el valor actual
+                    items: List.generate(5, (index) {
+                      return DropdownMenuItem<String>(
+                        value: (index + 1).toString(),
+                        child: Text((index + 1).toString()),
+                      );
+                    }),
+                    onChanged: (String? newValue) {
+                      if (newValue != _controllers[field]?.text) {
+                        setState(() {
+                          _controllers[field] = TextEditingController(text: newValue);
+                        });
+                      }
+                    },
+                  )
+                      : isEstatField
+                      ? DropdownButton<String>(
+                    value: _controllers[field]?.text.isNotEmpty ?? false
+                        ? _controllers[field]?.text
+                        : value, // Se asegura de que se use el valor actual
+                    items: ['Pre-Diàlisi', 'Diàlisi', 'Trasplantat']
+                        .map((String option) => DropdownMenuItem<String>(
+                      value: option,
+                      child: Text(option),
+                    ))
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != _controllers[field]?.text) {
+                        setState(() {
+                          _controllers[field] = TextEditingController(text: newValue);
+                        });
+                      }
+                    },
+                  )
+                      : TextField(
+                    controller: _getController(field),
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Introdueix un valor',
+                    ),
+                    onChanged: (text) {
+                      final cleaned = text.replaceAll(RegExp(r'[^\d.]'), '');
+                      String formatted = cleaned;
+                      if (field == 'pes') {
+                        formatted = '$cleaned kg';
+                      } else if (field == 'alcada') {
+                        formatted = '$cleaned m';
+                      }
+                      // Actualitza el text amb el format i posiciona el cursor correctament
+                      _controllers[field]?.text = formatted;
+                      _controllers[field]?.selection = TextSelection.fromPosition(
+                        TextPosition(offset: formatted.length),
+                      );
+                    },
+                  )
+                      : Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Botón de edición
+            IconButton(
+              icon: Icon(
+                _isEditing[field] == true ? Icons.save : Icons.edit,
+                color: Colors.blueAccent,
+              ),
+              onPressed: () async {
+                if (_isEditing[field] == true) {
+                  String finalValue = _controllers[field]?.text ?? originalValue;
+
+                  // Solo se guarda si el valor ha cambiado
+                  if (finalValue != originalValue) {
+                    await _saveChanges(field, finalValue); // Guarda el cambio solo al presionar el botón
+
+                    // Actualiza la UI después de guardar el cambio
+                    setState(() {
+                      _isEditing[field] = false;  // Desactiva el modo de edición después de guardar
+                    });
+                  }
+                } else {
+                  setState(() {
+                    _isEditing[field] = true;  // Activa el modo de edición
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }*/
+
   Widget _buildInfoTile(String title, String value, String field) {
     bool isSwitchField = ['activitatFisica', 'hipertens', 'pacientExpert', 'diabetic'].contains(field);
     bool isEstadioField = field == 'estadio';  // Comprobar si el campo es 'estadio'
@@ -322,6 +592,7 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
                         setState(() {
                           _controllers[field] = TextEditingController(text: newValue);
                         });
+                        _saveChanges(field, newValue!);  // Guardar automáticamente
                       }
                     },
                   )
@@ -339,6 +610,7 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
                         setState(() {
                           _controllers[field] = TextEditingController(text: newValue);
                         });
+                        _saveChanges(field, newValue!);  // Guardar automáticamente
                       }
                     },
                   )
@@ -356,16 +628,33 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
                         setState(() {
                           _controllers[field] = TextEditingController(text: newValue);
                         });
+                        _saveChanges(field, newValue!);  // Guardar automáticamente
                       }
                     },
                   )
                       : TextField(
-                    controller: _getController(field, value),
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      hintText: 'Introduiex un valor',
+                    controller: _getController(field),
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Introdueix un valor',
                     ),
-                    onSubmitted: (_) => _saveChanges(field, _controllers[field]?.text ?? ''),
+                    onChanged: (text) {
+                      final cleaned = text.replaceAll(RegExp(r'[^\d.]'), '');
+                      String formatted = cleaned;
+                      if (field == 'pes') {
+                        formatted = '$cleaned kg';
+                      } else if (field == 'alcada') {
+                        formatted = '$cleaned m';
+                      }
+                      // Actualitza el text amb el format i posiciona el cursor correctament
+                      setState(() {
+                        _controllers[field]?.text = formatted;
+                        _controllers[field]?.selection = TextSelection.fromPosition(
+                          TextPosition(offset: formatted.length),
+                        );
+                      });
+                    },
                   )
                       : Text(
                     value,
@@ -377,25 +666,32 @@ class _LesMevesDadesMediquesState extends State<LesMevesDadesMediques> {
                 ],
               ),
             ),
-            // boto de edició
+            // Botón de edición
             IconButton(
               icon: Icon(
                 _isEditing[field] == true ? Icons.save : Icons.edit,
                 color: Colors.blueAccent,
               ),
-              // si es prem el boto de edició es guarda el canvi
               onPressed: () {
                 if (_isEditing[field] == true) {
                   String finalValue = _controllers[field]?.text ?? originalValue;
 
-                  if (['Si', 'No'].contains(finalValue) || List.generate(5, (index) => (index + 1).toString()).contains(finalValue) || ['Pre-Diàlisi', 'Diàlisi', 'Trasplantat'].contains(finalValue)) {
-                    _saveChanges(field, finalValue);
+                  // Verifica si el valor final es uno de los valores esperados
+                  if (['Si', 'No'].contains(finalValue) ||
+                      List.generate(5, (index) => (index + 1).toString()).contains(finalValue) ||
+                      ['Pre-Diàlisi', 'Diàlisi', 'Trasplantat'].contains(finalValue)) {
+                    _saveChanges(field, finalValue);  // Guardar automáticamente si el valor es válido
                   } else {
-                    _saveChanges(field, originalValue);
+                    _saveChanges(field, originalValue);  // Si no, guardamos el valor original
                   }
+
+                  // Después de guardar, desactivar la edición
+                  setState(() {
+                    _isEditing[field] = false;
+                  });
                 } else {
                   setState(() {
-                    _isEditing[field] = true;
+                    _isEditing[field] = true;  // Activa el modo de edición
                   });
                 }
               },

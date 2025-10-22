@@ -5,12 +5,16 @@ class InfoCard extends StatelessWidget {
   final String infoUrl;
   final String infoTitle;
   final String infoDescription;
+  final bool isVisto;
+  final Function onMarkAsVisto;
 
   const InfoCard({
     Key? key,
     required this.infoUrl,
     required this.infoTitle,
     required this.infoDescription,
+    required this.isVisto,
+    required this.onMarkAsVisto,
   }) : super(key: key);
 
   void _launchURL(BuildContext context) async {
@@ -71,6 +75,16 @@ class InfoCard extends StatelessWidget {
                   child: Text("Obrir enllaç"),
                 ),
               ],
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isVisto ? null : () => onMarkAsVisto(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isVisto ? Colors.grey : Colors.white,
+                ),
+                child: Text(isVisto ? 'Vist' : 'Marcar com a vist'),
+              ),
             ),
           ],
         ),
