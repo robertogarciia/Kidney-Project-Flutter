@@ -3,20 +3,26 @@ import 'package:flutter/material.dart';
 class BtnGeneral extends StatelessWidget {
   final String buttonText;
   final Function()? onTap;
+  final Color buttonColor; // New parameter for button color
 
-  const BtnGeneral({Key? key, required this.buttonText, required this.onTap}) : super(key: key);
+  const BtnGeneral({
+    Key? key,
+    required this.buttonText,
+    required this.onTap,
+    this.buttonColor = const Color(0xFF403DF3), // Default color is the original blue
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: double.infinity, // Ancho máximo igual al ancho de la pantalla
+        width: double.infinity, // Full width of the screen
         child: Container(
           padding: const EdgeInsets.all(15),
           margin: const EdgeInsets.symmetric(horizontal: 25),
           decoration: BoxDecoration(
-            color: const Color(0xFF403DF3),
+            color: buttonColor, // Use the button color passed in
             borderRadius: BorderRadius.circular(20),
           ),
           child: Center(

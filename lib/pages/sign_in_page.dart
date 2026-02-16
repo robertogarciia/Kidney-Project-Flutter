@@ -1,61 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:kidneyproject/components/btn_iniciSessio.dart';
-import 'package:kidneyproject/components/textfield.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+
+import 'package:kidneyproject/components/btn_iniciSessio.dart';
+import 'package:kidneyproject/pages/login_page.dart';
+import 'package:kidneyproject/pages/menu_principal.dart';
+import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:kidneyproject/pages/tipus_usuari.dart';
 
-
-class SignIn extends StatelessWidget {
+class SignIn extends StatefulWidget {
   SignIn({Key? key}) : super(key: key);
 
+  @override
+  _SignInState createState() => _SignInState();
+}
+
+class _SignInState extends State<SignIn> with WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _contrasenyaController = TextEditingController();
+  bool _isObscured = true;
 
-  Future<List<Map<String, dynamic>>> getUsuarios() async {
-    List<Map<String, dynamic>> usuarios = [];
-    QuerySnapshot query = await FirebaseFirestore.instance.collection('Usuarios').get();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
-    for (QueryDocumentSnapshot documento in query.docs) {
-      usuarios.add(documento.data() as Map<String, dynamic>);
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Detecta cuando la app vuelve al primer plano y reinicia la página
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SignIn()),
+      );
     }
-
-    return usuarios;
   }
 
   Future<void> signUserIn(BuildContext context) async {
-    final usuarios = await getUsuarios();
+    final QuerySnapshot<Map<String, dynamic>> query =
+    await FirebaseFirestore.instance.collection('Usuarios').get();
 
-    // Encripta la contrasenya i comparara amb contrasenyas almacenades
     var bytes = utf8.encode(_contrasenyaController.text);
     var digest = sha256.convert(bytes);
     var hashedPasswordToCheck = digest.toString();
 
-    // Verificar si existeix un usuario amb el correu i la contrasenya 
     bool credentialsMatch = false;
-    for (Map<String, dynamic> usuario in usuarios) {
-      if (usuario['Email'] == _emailController.text && usuario['Contrasenya'] == hashedPasswordToCheck) {
+    String userId = '';
+
+    for (QueryDocumentSnapshot<Map<String, dynamic>> documento in query.docs) {
+      Map<String, dynamic> usuario = documento.data();
+      if (usuario['Email'] == _emailController.text &&
+          usuario['Contrasenya'] == hashedPasswordToCheck) {
         credentialsMatch = true;
+        userId = documento.id;
         break;
       }
     }
 
     if (credentialsMatch) {
-      // Inici de sessió exitos
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inici de Sessió Exitos'),
-            content: Text('Benvingut!'),
+            title: Text('Inici de sessió exitós'),
+            content: Text('Benvingut/da!'),
             actions: <Widget>[
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
-                  navigateToTipusUsuari(context); // Llamada a la función al presionar OK
+                  var userDoc = FirebaseFirestore.instance.collection('Usuarios').doc(userId);
+                  var documentSnapshot = await userDoc.collection('tipusDeUsuario').doc('tipus').get();
+
+                  if (documentSnapshot.exists && documentSnapshot['tipo'] != null) {
+                    String tipo = documentSnapshot['tipo'];
+                    Widget targetPage = (tipo == 'Pacient' || tipo == 'Familiar')
+                        ? MenuPrincipal(userId: userId)
+                        : TipusUsuari(userId: userId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => targetPage),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TipusUsuari(userId: userId)),
+                    );
+                  }
                 },
                 child: Text('OK'),
               ),
@@ -64,18 +102,15 @@ class SignIn extends StatelessWidget {
         },
       );
     } else {
-      // Error: Credencials incorrectas
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inici de Sessió Fallit'),
-            content: Text('El correu electrònic o la contrasenya són incorrectes. Per favor, torna a intentar-ho.'),
+            title: Text('Inici de sessió fallit'),
+            content: Text('El correu electrònic o la contrasenya són incorrectes.'),
             actions: <Widget>[
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () => Navigator.of(context).pop(),
                 child: Text('OK'),
               ),
             ],
@@ -85,88 +120,80 @@ class SignIn extends StatelessWidget {
     }
   }
 
-  void navigateToTipusUsuari(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TipusUsuari()),
-    );
-  }
-
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignUpChoose()),
+      MaterialPageRoute(builder: (context) => SignUpTypePage()),
     );
+  }
+
+  Future<bool> _onWillPop() async {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+    return Future.value(false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(
-                height: 30,
-              ),
-              const Text(
-                'Inici de sessió',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.grey[300],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(height: 30),
+                    const Text(
+                      'Inicia sessió',
+                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                    ),
+                    Image.asset('lib/images/logoKNP_WT.png', height: 300),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: 'Correu Electrònic',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: _contrasenyaController,
+                      obscureText: _isObscured,
+                      decoration: InputDecoration(
+                        hintText: 'Contrasenya',
+                        border: OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(_isObscured ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () {
+                            setState(() {
+                              _isObscured = !_isObscured;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    BtnIniciSessio(onTap: () => signUserIn(context)),
+                    const SizedBox(height: 15),
+                    GestureDetector(
+                      onTap: () => navigateToRegistrationPage(context),
+                      child: Text(
+                        'Si no tens un compte, registra\'t!',
+                        style: TextStyle(color: Colors.grey[800], decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              Image.asset(
-                'lib/images/logoKNP_WT.png',
-                height: 300,
-              ),
-
-              TextFieldWidget(
-                controller: _emailController,
-                hintText: 'Correu Electrònic',
-                obscureText: false,
-              ),
-              const SizedBox(height: 15),
-
-              TextFieldWidget(
-                controller: _contrasenyaController,
-                hintText: 'Contrasenya',
-                obscureText: true,
-              ),
-
-              const SizedBox(height: 15),
-              
-              Text(
-                'Has oblidat la contrasenya?',
-                style: TextStyle(color: Colors.grey[800]),
-              ),
-
-              const SizedBox(height: 15),
-
-              BtnIniciSessio(
-                onTap: () => signUserIn(context),
-
-              ),
-              
-              
-
-              const SizedBox(height: 15),
-
-              GestureDetector(
-                onTap: () {
-                  navigateToRegistrationPage(context);
-                },
-                child: Text(
-                  'No tens compte? Registrat',
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
