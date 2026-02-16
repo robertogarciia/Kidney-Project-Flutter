@@ -18,7 +18,9 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
   int currentQuestionIndex = 0;
   int correctAnswersCount = 0;
   int coins = 0;
- // bool _isExplanationVisible = true; // Boolean to toggle explanation visibility
+  bool mostrarImagen = false;
+
+  // bool _isExplanationVisible = true; // Boolean to toggle explanation visibility
 
   List<Map<String, dynamic>> questionsAndAnswers = [];
 
@@ -191,11 +193,14 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
   void checkAnswer(
       String selectedAnswer, BuildContext context, int buttonIndex) {
     String correctAnswer =
-        questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
+    questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
     bool isCorrect = selectedAnswer.trim() == correctAnswer;
 
     setState(() {
       buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
+      if (isCorrect) {
+        mostrarImagen = true; // Hacer visible la imagen si la respuesta es correcta
+      }
     });
 
     showDialog(
@@ -203,9 +208,25 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
-          content: Text(isCorrect
-              ? '¡Oleeee! La resposta és $correctAnswer.'
-              : 'Ohhh, la resposta correcta és $correctAnswer.'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isCorrect
+                    ? '¡Oleeee! La resposta és $correctAnswer.'
+                    : 'Ohhh, la resposta correcta és $correctAnswer.',
+              ),
+              // Mostrar la imagen solo si la respuesta es correcta y mostrarImagen es true
+              if (isCorrect && mostrarImagen)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Image.asset(
+                    'lib/images/+50Puntos.png',
+                    width: 150,
+                  ),
+                ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -214,6 +235,7 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
                   setState(() {
                     correctAnswersCount++;
                     _addCoins(50);
+                    mostrarImagen = false; // Restablecer la imagen para no mostrarla nuevamente
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
                       incorrectAnswerDiscarded = false;
@@ -224,8 +246,6 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
                   });
                 } else {
                   setState(() {
-                    buttonColors[buttonIndex] = Colors.red;
-                   // _discardIncorrectAnswer();
                     // Avanzar a la siguiente pregunta si la respuesta es incorrecta
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
@@ -242,6 +262,7 @@ class _TrivialPageNoHabilitatsState extends State<TrivialPageNoHabilitats> {
     );
   }
 
+
 void saveGameData(String userId, int pointsNoHabilitats, int coins) async {
   try {
     DocumentReference userRef = FirebaseFirestore.instance
@@ -255,7 +276,7 @@ void saveGameData(String userId, int pointsNoHabilitats, int coins) async {
     DocumentSnapshot userDoc = await userRef.get();
 
     if (userDoc.exists) {
-      int currentMaxScoreNoHabilitats = 0; 
+      int currentMaxScoreNoHabilitats = 0;
 
       if (userDoc.data() != null && (userDoc.data() as Map<String, dynamic>).containsKey('maxPuntuacionNoHabilitats')) {
         currentMaxScoreNoHabilitats = userDoc['maxPuntuacionNoHabilitats'] ?? 0;
@@ -266,17 +287,17 @@ void saveGameData(String userId, int pointsNoHabilitats, int coins) async {
       int newMaxScoreNoHabilitats = pointsNoHabilitats > currentMaxScoreNoHabilitats ? pointsNoHabilitats : currentMaxScoreNoHabilitats;
 
       await userRef.set({
-        'pointsNoHabilitats': pointsNoHabilitats,  
+        'pointsNoHabilitats': pointsNoHabilitats,
         'coins': coins,
-        'maxPuntuacionNoHabilitats': newMaxScoreNoHabilitats,  
-      }, SetOptions(merge: true));  
+        'maxPuntuacionNoHabilitats': newMaxScoreNoHabilitats,
+      }, SetOptions(merge: true));
 
       print('Datos guardados correctamente, maxPuntuacion actualizada si corresponde');
     } else {
       await userRef.set({
         'pointsNoHabilitats': pointsNoHabilitats,
         'coins': coins,
-        'maxPuntuacionNoHabilitats': pointsNoHabilitats,  
+        'maxPuntuacionNoHabilitats': pointsNoHabilitats,
       });
 
       print('Nuevo documento de usuario creado con maxPuntuacion: $pointsNoHabilitats');

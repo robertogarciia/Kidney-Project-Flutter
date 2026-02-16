@@ -13,7 +13,7 @@ class DadesPersonals extends StatefulWidget {
   @override
   _DadesPersonalsState createState() => _DadesPersonalsState();
 }
-
+//varibles per a guardar les dades personals
 class _DadesPersonalsState extends State<DadesPersonals> {
   TextEditingController _dataNaixementController = TextEditingController();
   TextEditingController _DniContoller = TextEditingController();
@@ -21,9 +21,10 @@ class _DadesPersonalsState extends State<DadesPersonals> {
   TextEditingController _adrecaController = TextEditingController();
   TextEditingController _poblacioController = TextEditingController();
   TextEditingController _codiPostalController = TextEditingController();
-  String? _selectedSexe;
-  DateTime? _selectedDate;
+  String? _selectedSexe;  // Variable per emmagatzemar el sexe seleccionat
+  DateTime? _selectedDate; // Variable per emmagatzemar la data seleccionada
 
+  // Funció per seleccionar la data de naixement
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
         context: context,
@@ -34,35 +35,39 @@ class _DadesPersonalsState extends State<DadesPersonals> {
       setState(() {
         _selectedDate = picked;
         String formattedDate = "${picked.day}-${picked.month}-${picked.year}";
-        _dataNaixementController.text = formattedDate;
+        _dataNaixementController.text = formattedDate;  // Assignar la data seleccionada al controlador
       });
     }
   }
 
+  // Funció per validar si el DNI introduït és correcte
   bool validarDni(String dni) {
-    // Comprobamos la longitud
-    if (dni.length != 9) return false;
-  
-    // Comprobamos que los primeros 8 caracteres sean números
+    if (dni.length != 9) return false;  // Comprovar que el DNI tingui 9 caràcters
+
     String numerosDni = dni.substring(0, 8);
+    // Comprovar que els 8 primers caràcters siguin números
     if (!numerosDni.runes.every((char) => char >= 48 && char <= 57)) return false;
-  
-    // Comprobamos que el último caracter sea una letra
+
     String letraDni = dni.substring(8);
+    // Comprovar que l'últim caràcter sigui una lletra
     return letraDni.runes.every((char) => char >= 65 && char <= 90);
   }
 
+  // Funció per guardar els dades personals del pacient
   Future<void> guardarDatosPersonales(BuildContext context, String userId,
       String dataNaixement,String Dni, String sexe, String telefon, String adreca,
       String poblacio, String codiPostal) async {
+
+    // Comprovació de camps obligatoris
     if (
-      dataNaixement.isEmpty ||
-      Dni.isEmpty ||
+    dataNaixement.isEmpty ||
+        Dni.isEmpty ||
         _selectedSexe == null ||
         telefon.isEmpty ||
         adreca.isEmpty ||
         poblacio.isEmpty ||
         codiPostal.isEmpty) {
+      // Mostrar alerta si falta algun camp
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -80,7 +85,8 @@ class _DadesPersonalsState extends State<DadesPersonals> {
           );
         },
       );
-    } else if (telefon.length != 9) {
+    } else if (telefon.length != 9) {  // Validació del telèfon
+      // Mostrar alerta si el telèfon no és vàlid
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -98,7 +104,8 @@ class _DadesPersonalsState extends State<DadesPersonals> {
           );
         },
       );
-    } else if (!validarDni(Dni)) {
+    } else if (!validarDni(Dni)) {  // Validació del DNI
+      // Mostrar alerta si el DNI no és vàlid
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -117,7 +124,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
         },
       );
     } else {
-      // Guardar los datos personales en la colección 'dadesPersonals' dentro del documento del usuario
+      // Si totes les validacions són correctes, guardar les dades personals
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(userId)
@@ -133,7 +140,7 @@ class _DadesPersonalsState extends State<DadesPersonals> {
         'codiPostal': codiPostal,
       });
 
-      // Después de guardar los datos personales, redirigir a la página deseada
+      // Un cop desades les dades personals, redirigir a la següent pàgina
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => Formulario3(userId: userId)),

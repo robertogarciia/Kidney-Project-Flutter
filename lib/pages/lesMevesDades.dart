@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/pages/lesMevesDadesMediques.dart';
-import 'package:kidneyproject/pages/menu_principal.dart'; // Asegúrate de importar correctamente la página de datos médicos.
+import 'package:kidneyproject/pages/menu_principal.dart';
 
 class LesMevesDades extends StatefulWidget {
   final String userId;
@@ -15,16 +15,14 @@ class LesMevesDades extends StatefulWidget {
 class _LesMevesDadesState extends State<LesMevesDades> {
   late Future<List<DocumentSnapshot>> _userData;
   Map<String, TextEditingController> _controllers = {};
-  Map<String, bool> _isEditing = {}; 
+  Map<String, bool> _isEditing = {};
 
   @override
   void initState() {
     super.initState();
-    print("Iniciando carga de datos para el usuario: ${widget.userId}");
-
-    _userData = _loadUserData();  
+    _userData = _loadUserData();
   }
-
+// funció per carregar les dades
   Future<List<DocumentSnapshot>> _loadUserData() async {
     final userDoc = await FirebaseFirestore.instance
         .collection('Usuarios')
@@ -34,20 +32,22 @@ class _LesMevesDadesState extends State<LesMevesDades> {
         .get();
 
     final userData = userDoc.data() as Map<String, dynamic>;
-
+// si el tipus és familiar carrega les dades familiars
     if (userData['tipo'] == 'Familiar') {
-      final relatedPatientDocs = await FirebaseFirestore.instance
+      final personalData = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
-          .collection('relacionFamiliarPaciente')
+          .collection('dadesFamiliars')
+          .doc('dades')
           .get();
 
-      if (relatedPatientDocs.docs.isNotEmpty) {
-        final relatedPatientData =
-            relatedPatientDocs.docs.first.data() as Map<String, dynamic>;
-        final dniPaciente = relatedPatientData['DniPaciente'];
-        return await _loadPatientData(dniPaciente);
-      }
+      final generalData = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(widget.userId)
+          .get();
+
+      return [personalData, generalData];
+      // si el tipus és pacient carrega les dades personals
     } else if (userData['tipo'] == 'Pacient') {
       final personalData = await FirebaseFirestore.instance
           .collection('Usuarios')
@@ -65,56 +65,35 @@ class _LesMevesDadesState extends State<LesMevesDades> {
     return [];
   }
 
-  Future<List<DocumentSnapshot>> _loadPatientData(String dniPaciente) async {
-    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
-    
-    for (var userDoc in usersSnapshot.docs) {
-      final personalDataSnapshot = await userDoc.reference
-          .collection('dadesPersonals')
-          .doc('dades')
-          .get();
-
-      if (personalDataSnapshot.exists) {
-        final personalData = personalDataSnapshot.data() as Map<String, dynamic>;
-        if (personalData['Dni'] == dniPaciente) {
-          final generalDataSnapshot = await userDoc.reference.get();
-          return [personalDataSnapshot, generalDataSnapshot];
-        }
-      }
-    }
-    return [];
+  void _toggleEdit(String field) {
+    setState(() {
+      _isEditing[field] = !_isEditing[field]!;
+    });
   }
+// funció per desar les dades
+  Future<void> _saveData(String field) async {
+    String value = _controllers[field]!.text;
+    await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(widget.userId)
+        .collection('dadesPersonals')
+        .doc('dades')
+        .update({field: value});
 
-  Future<void> _saveChanges(String field, String value) async {
-    try {
-      // Actualizando los datos en Firestore
-      await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('dadesPersonals')
-          .doc('dades')
-          .update({field: value});
+    // Forzar recarga de la vista
+    setState(() {
+      _isEditing[field] = false;
+      // Recarga de les dades
+      _userData = _loadUserData();
+    });
 
-      setState(() {
-        _isEditing[field] = false; 
-        _userData = _loadUserData(); 
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dades actualiztades correctament.')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al actualitzar les dades.')),
-      );
-    }
-  }
-
-  TextEditingController _getController(String field, String value) {
-    if (!_controllers.containsKey(field)) {
-      _controllers[field] = TextEditingController(text: value);
-    }
-    return _controllers[field]!;
+    // Mostrar missatge de actualizació exitosa
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('S\'ha actualitzat correctament'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -126,11 +105,10 @@ class _LesMevesDadesState extends State<LesMevesDades> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // Regresar directamente al menú principal
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
-              (route) => false,
+                  (route) => false,
             );
           },
         ),
@@ -168,13 +146,27 @@ class _LesMevesDadesState extends State<LesMevesDades> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildInfoTile('Nom:', generalData['Nombre'] ?? 'No disponible', 'Nombre'),
-                _buildInfoTile('Correu:', generalData['Email'] ?? 'No disponible', 'Email'),
-                _buildInfoTile('Data de naixement:', personalData['dataNaixement'] ?? 'No disponible', 'dataNaixement'),
-                _buildInfoTile('Telefon:', personalData['telefon'] ?? 'No disponible', 'telefon'),
-                _buildInfoTile('Direcció:', personalData['adreca'] ?? 'No disponible', 'adreca'),
-                _buildInfoTile('Població:', personalData['poblacio'] ?? 'No disponible', 'poblacio'),
-                _buildInfoTile('Codi Postal:', personalData['codiPostal'] ?? 'No disponible', 'codiPostal'),
+                if (generalData['Nombre']?.isNotEmpty ?? false)
+                  _buildEditableTile('Nom:', generalData['Nombre']!, 'Nombre'),
+                if (generalData['Email']?.isNotEmpty ?? false)
+                  _buildEditableTile('Correu:', generalData['Email']!, 'Email'),
+                if (personalData['Dni']?.isNotEmpty ?? false)
+                  _buildEditableTile('DNI:', personalData['Dni']!, 'Dni'),
+                if (personalData['DniFamiliar']?.isNotEmpty ?? false)
+                  _buildEditableTile('Dni Familiar:', personalData['DniFamiliar']!, 'DniFamiliar'),
+                if (personalData['DniPacient']?.isNotEmpty ?? false)
+                  _buildEditableTile('Dni Pacient:', personalData['DniPacient']!, 'DniPacient'),
+                if (personalData['dataNaixement']?.isNotEmpty ?? false)
+                  _buildEditableTile('Data de naixement:', personalData['dataNaixement']!, 'dataNaixement'),
+                if (personalData['telefon']?.isNotEmpty ?? false)
+                  _buildEditableTile('Telefon:', personalData['telefon']!, 'telefon'),
+                if (personalData['adreca']?.isNotEmpty ?? false)
+                  _buildEditableTile('Direcció:', personalData['adreca']!, 'adreca'),
+                if (personalData['poblacio']?.isNotEmpty ?? false)
+                  _buildEditableTile('Població:', personalData['poblacio']!, 'poblacio'),
+                if (personalData['codiPostal']?.isNotEmpty ?? false)
+                  _buildEditableTile('Codi Postal:', personalData['codiPostal']!, 'codiPostal'),
+
                 const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
@@ -187,14 +179,14 @@ class _LesMevesDadesState extends State<LesMevesDades> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent, // Color del botón
+                      backgroundColor: Colors.greenAccent,
                       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
                     child: const Text(
-                      'Veure dades mèdiques',
+                      'Veure dades mèdiques pacient',
                       style: TextStyle(fontSize: 18),
                     ),
                   ),
@@ -207,7 +199,10 @@ class _LesMevesDadesState extends State<LesMevesDades> {
     );
   }
 
-  Widget _buildInfoTile(String title, String value, String field) {
+  Widget _buildEditableTile(String title, String value, String field) {
+    _controllers.putIfAbsent(field, () => TextEditingController(text: value));
+    _isEditing.putIfAbsent(field, () => false);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
@@ -224,54 +219,40 @@ class _LesMevesDadesState extends State<LesMevesDades> {
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
+                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueAccent)),
                   const SizedBox(height: 6),
-                  _isEditing[field] == true
+                  _isEditing[field]!
                       ? TextField(
-                          controller: _getController(field, value),
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: 'Introduiex un valor',
-                          ),
-                          onSubmitted: (_) => _saveChanges(field, _controllers[field]?.text ?? ''), 
-                        )
-                      : Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black.withOpacity(0.7),
-                          ),
-                        ),
+                    controller: _controllers[field],
+                    decoration: InputDecoration(
+                      hintText: 'Introduce el nuevo valor',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (newValue) {
+                      setState(() {
+                        // El valor se actualiza en el controlador de inmediato
+                      });
+                    },
+                  )
+                      : Text(value, style: TextStyle(fontSize: 16, color: Colors.black.withOpacity(0.7))),
                 ],
               ),
             ),
-            // Icono de edición
             IconButton(
               icon: Icon(
-                _isEditing[field] == true ? Icons.save : Icons.edit,
+                _isEditing[field]! ? Icons.save : Icons.edit,
                 color: Colors.blueAccent,
               ),
               onPressed: () {
-                if (_isEditing[field] == true) {
-                  _saveChanges(field, _controllers[field]?.text ?? '');
+                if (_isEditing[field]!) {
+                  _saveData(field);
                 } else {
-                  setState(() {
-                    _isEditing[field] = true; 
-                  });
+                  _toggleEdit(field);
                 }
               },
             ),

@@ -21,6 +21,7 @@ import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/trivial_game.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
 import 'package:kidneyproject/pages/graficaEstatAnim.dart';
+import 'package:kidneyproject/pages/noticiesPage.dart';
 
 class MenuPrincipal extends StatefulWidget {
   const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
@@ -54,7 +55,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
 
       if (tipoUsuario == 'Pacient') {
         print('Temporizador iniciat');
-        _timer = Timer.periodic(Duration(minutes: 30), (timer) {
+        _timer = Timer.periodic(Duration(minutes: 10), (timer) {
           if (!_isCheckingMood) {
             _isCheckingMood = true;
             print('Navegant a EstatAnim...');
@@ -143,7 +144,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'lib/images/vids.png',
                       onTap: () {
-                        navigateToPage(context, Videos());
+                        navigateToPage(context, Videos(userId: widget.userId));
                       },
                     )
                   ],
@@ -161,7 +162,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'lib/images/inf.png',
                       onTap: () {
-                        navigateToPage(context, Information());
+                        navigateToPage(context, noticiesPage(userId: widget.userId));
                       },
                     )
                   ],
@@ -198,14 +199,14 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       height: 155,
                       width: 155,
                       onTap: () {
-                        navigateToPage(context, Comunities());
+                        navigateToPage(context, Comunities(userId: widget.userId));
                       },
                     ),
                     const SizedBox(width: 5),
                     MidleImgs(
-                      imagePath: 'lib/images/dietas.png',
+                      imagePath: 'lib/images/imatgeDietes.png',
                       height: 155,
-                      width: 155,
+                      width: 150,
                       onTap: () {
                         navigateToPage(
                             context, MenuDietes(userId: widget.userId));

@@ -19,6 +19,7 @@ class _TrivialPageState extends State<TrivialPage> {
   int correctAnswersCount = 0;
   int coins = 0;
   bool _isExplanationVisible = true; // Boolean to toggle explanation visibility
+  bool mostrarImagen = false; // Variable to control image visibility
 
   List<Map<String, dynamic>> questionsAndAnswers = [];
 
@@ -287,11 +288,14 @@ Widget build(BuildContext context) {
   void checkAnswer(
       String selectedAnswer, BuildContext context, int buttonIndex) {
     String correctAnswer =
-        questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
+    questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
     bool isCorrect = selectedAnswer.trim() == correctAnswer;
 
     setState(() {
       buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
+      if (isCorrect) {
+        mostrarImagen = true; // Hacer visible la imagen si la respuesta es correcta
+      }
     });
 
     showDialog(
@@ -299,9 +303,25 @@ Widget build(BuildContext context) {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(isCorrect ? 'Resposta Correcta' : 'Resposta Incorrecta'),
-          content: Text(isCorrect
-              ? '¡Oleeee! La resposta és $correctAnswer.'
-              : 'Ohhh, la resposta correcta és $correctAnswer.'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isCorrect
+                    ? '¡Oleeee! La resposta és $correctAnswer.'
+                    : 'Ohhh, la resposta correcta és $correctAnswer.',
+              ),
+              // Mostrar la imagen solo si la respuesta es correcta y mostrarImagen es true
+              if (isCorrect && mostrarImagen)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Image.asset(
+                    'lib/images/+50Puntos.png',
+                    width: 150,
+                  ),
+                ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -310,6 +330,7 @@ Widget build(BuildContext context) {
                   setState(() {
                     correctAnswersCount++;
                     _addCoins(50);
+                    mostrarImagen = false; // Restablecer la imagen para no mostrarla nuevamente
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
                       incorrectAnswerDiscarded = false;
@@ -320,8 +341,6 @@ Widget build(BuildContext context) {
                   });
                 } else {
                   setState(() {
-                    buttonColors[buttonIndex] = Colors.red;
-                    _discardIncorrectAnswer();
                     // Avanzar a la siguiente pregunta si la respuesta es incorrecta
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
@@ -338,7 +357,8 @@ Widget build(BuildContext context) {
     );
   }
 
-void saveGameData(String userId, int points, int coins) async {
+
+  void saveGameData(String userId, int points, int coins) async {
   try {
     // Referencia al documento de Firestore
     DocumentReference userRef = FirebaseFirestore.instance

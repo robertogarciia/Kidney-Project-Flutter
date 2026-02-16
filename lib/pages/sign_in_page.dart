@@ -16,14 +16,37 @@ class SignIn extends StatefulWidget {
   _SignInState createState() => _SignInState();
 }
 
-class _SignInState extends State<SignIn> {
+class _SignInState extends State<SignIn> with WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _contrasenyaController = TextEditingController();
   bool _isObscured = true;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Detecta cuando la app vuelve al primer plano y reinicia la página
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SignIn()),
+      );
+    }
+  }
+
   Future<void> signUserIn(BuildContext context) async {
     final QuerySnapshot<Map<String, dynamic>> query =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
+    await FirebaseFirestore.instance.collection('Usuarios').get();
 
     var bytes = utf8.encode(_contrasenyaController.text);
     var digest = sha256.convert(bytes);
@@ -107,15 +130,15 @@ class _SignInState extends State<SignIn> {
   Future<bool> _onWillPop() async {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()), 
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
-    return Future.value(false); 
+    return Future.value(false);
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop, 
+      onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Colors.grey[300],
         body: SafeArea(
@@ -158,17 +181,12 @@ class _SignInState extends State<SignIn> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Text('Has oblidat la contrasenya?', style: TextStyle(color: Colors.grey[800])),
-                    ),
-                    const SizedBox(height: 15),
                     BtnIniciSessio(onTap: () => signUserIn(context)),
                     const SizedBox(height: 15),
                     GestureDetector(
                       onTap: () => navigateToRegistrationPage(context),
                       child: Text(
-                        'Si no tens un compte, registra\t!',
+                        'Si no tens un compte, registra\'t!',
                         style: TextStyle(color: Colors.grey[800], decoration: TextDecoration.underline),
                       ),
                     ),

@@ -1,0 +1,92 @@
+{
+	"cmake" : 
+	{
+		"generator" : 
+		{
+			"multiConfig" : false,
+			"name" : "Ninja"
+		},
+		"paths" : 
+		{
+			"cmake" : "C:/Users/mamut/AppData/Local/Android/Sdk/cmake/3.18.1/bin/cmake.exe",
+			"cpack" : "C:/Users/mamut/AppData/Local/Android/Sdk/cmake/3.18.1/bin/cpack.exe",
+			"ctest" : "C:/Users/mamut/AppData/Local/Android/Sdk/cmake/3.18.1/bin/ctest.exe",
+			"root" : "C:/Users/mamut/AppData/Local/Android/Sdk/cmake/3.18.1/share/cmake-3.18"
+		},
+		"version" : 
+		{
+			"isDirty" : true,
+			"major" : 3,
+			"minor" : 18,
+			"patch" : 1,
+			"string" : "3.18.1-g262b901-dirty",
+			"suffix" : "g262b901"
+		}
+	},
+	"objects" : 
+	[
+		{
+			"jsonFile" : "codemodel-v2-b0b4ac6ab0ddc00d0490.json",
+			"kind" : "codemodel",
+			"version" : 
+			{
+				"major" : 2,
+				"minor" : 1
+			}
+		},
+		{
+			"jsonFile" : "cache-v2-7fbb4f2086b2507e5e2c.json",
+			"kind" : "cache",
+			"version" : 
+			{
+				"major" : 2,
+				"minor" : 0
+			}
+		},
+		{
+			"jsonFile" : "cmakeFiles-v1-46ca213b043ca12d5760.json",
+			"kind" : "cmakeFiles",
+			"version" : 
+			{
+				"major" : 1,
+				"minor" : 0
+			}
+		}
+	],
+	"reply" : 
+	{
+		"client-agp" : 
+		{
+			"cache-v2" : 
+			{
+				"jsonFile" : "cache-v2-7fbb4f2086b2507e5e2c.json",
+				"kind" : "cache",
+				"version" : 
+				{
+					"major" : 2,
+					"minor" : 0
+				}
+			},
+			"cmakeFiles-v1" : 
+			{
+				"jsonFile" : "cmakeFiles-v1-46ca213b043ca12d5760.json",
+				"kind" : "cmakeFiles",
+				"version" : 
+				{
+					"major" : 1,
+					"minor" : 0
+				}
+			},
+			"codemodel-v2" : 
+			{
+				"jsonFile" : "codemodel-v2-b0b4ac6ab0ddc00d0490.json",
+				"kind" : "codemodel",
+				"version" : 
+				{
+					"major" : 2,
+					"minor" : 1
+				}
+			}
+		}
+	}
+}
