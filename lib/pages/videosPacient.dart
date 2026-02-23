@@ -4,10 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart'; // Necesario para formatear la fecha
 
+// Página para mostrar los videos vistos por un paciente específico
 class videosPacient extends StatefulWidget {
   final String relatedPatientId;
 
-  const videosPacient({Key? key, required this.relatedPatientId}) : super(key: key);
+  const videosPacient({Key? key, required this.relatedPatientId})
+      : super(key: key);
 
   @override
   _videosPacientState createState() => _videosPacientState();
@@ -37,9 +39,7 @@ class _videosPacientState extends State<videosPacient> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFFF603D),
-
         title: Text('Vídeos visualitzats pel pacient'),
-
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: getVideosVistos(),
@@ -68,24 +68,25 @@ class _videosPacientState extends State<videosPacient> {
                   contentPadding: EdgeInsets.all(15),
                   title: Text(
                     video['Titol'],
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), // Letra blanca
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white), // Letra blanca
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Vist el: ${formatTimestamp(timestamp)}',
-                        style: TextStyle(fontSize: 18,color: Colors.white), // Letra blanca
+                        style: TextStyle(
+                            fontSize: 18, color: Colors.white), // Letra blanca
                       ),
                       SizedBox(height: 8),
-
                     ],
                   ),
-                  onTap: () {
-                  },
+                  onTap: () {},
                 ),
               );
-
             },
           );
         },

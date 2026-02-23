@@ -71,7 +71,7 @@ class _RankingPageState extends State<RankingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
+      appBar: AppBar(
         title: Text('Ranking'),
         backgroundColor: Color.fromRGBO(66, 61, 242, 1.0),
         leading: IconButton(
@@ -107,7 +107,7 @@ class _RankingPageState extends State<RankingPage> {
                 Row(
                   children: [
                     Image.asset(
-                      'lib/images/ranking.png',
+                      'assets/images/ranking.png',
                       width: 28, // Ajusta el tamaño según lo que necesites
                       height: 28,
                     ),
@@ -193,7 +193,7 @@ class _RankingPageState extends State<RankingPage> {
           );
         },
         icon: Image.asset(
-          'lib/images/ranking.png',
+          'assets/images/ranking.png',
           width: 24,
           height: 24,
         ),

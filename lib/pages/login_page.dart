@@ -74,7 +74,7 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 Image.asset(
-                  'lib/images/logoKNP_WT.png',
+                  'assets/images/logoKNP_WT.png',
                   height: 300,
                 ),
                 const SizedBox(height: 30),

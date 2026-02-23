@@ -84,11 +84,14 @@ class _crearDietesState extends State<crearDietes> {
                 children: [
                   _buildButton('Peix', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pagePeix(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pagePeix(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Carns', () {
                     // Acció al presionar "Carns"
@@ -102,84 +105,113 @@ class _crearDietesState extends State<crearDietes> {
                   }),
                   _buildButton('Ous', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageOu(userId: widget.userId, tipusC: widget.tipusC),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageOu(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Embotits', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageEmbotits(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageEmbotits(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Làctics', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageLactics(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageLactics(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Llegums', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageLlegums(userId: widget.userId,tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageLlegums(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Verdures', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageVerdures(userId: widget.userId,tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageVerdures(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
-                  _buildButton('Tubèrcles', () { 
+                  _buildButton('Tubèrcles', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageTubercles(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
-
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageTubercles(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Fruites', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageFruita(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageFruita(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Grases', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageGreixos(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageGreixos(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Dolços', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageDolcos(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageDolcos(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                   _buildButton('Condiments i salses', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => pageCondiments(userId: widget.userId, tipusC: widget.tipusC,),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => pageCondiments(
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                        ),
+                      ),
+                    );
                   }),
                 ],
               ),

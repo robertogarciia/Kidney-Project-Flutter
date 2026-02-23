@@ -21,6 +21,7 @@ class resumDietesPage extends StatefulWidget {
   @override
   _resumDietesPageState createState() => _resumDietesPageState();
 }
+
 // funció per a la puntuació de la dieta
 class _resumDietesPageState extends State<resumDietesPage> {
   final TextEditingController _nombreController = TextEditingController();
@@ -35,6 +36,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
     isMounted = false;
     super.dispose();
   }
+
 // funció per avaluar la dieta
   String _evaluarDieta() {
     if (widget.puntuacionTotal == 0) {
@@ -126,7 +128,8 @@ class _resumDietesPageState extends State<resumDietesPage> {
           ),
         );
 
-        final cestaProvider = Provider.of<CestaProvider>(context, listen: false);
+        final cestaProvider =
+            Provider.of<CestaProvider>(context, listen: false);
         cestaProvider.vaciarCesta();
 
         Navigator.pushReplacement(
@@ -150,13 +153,14 @@ class _resumDietesPageState extends State<resumDietesPage> {
 
   String puntuacionImagePath(int puntuacionTotal) {
     if (puntuacionTotal == 0) {
-      return 'lib/images/+50Puntos.png';
+      return 'assets/images/+50Puntos.png';
     } else if (puntuacionTotal == 1) {
-      return 'lib/images/+10Puntos.png';
+      return 'assets/images/+10Puntos.png';
     } else {
-      return 'lib/images/-10puntos.png';
+      return 'assets/images/-10puntos.png';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final String mensajeEvaluacion = _evaluarDieta();
@@ -237,8 +241,8 @@ class _resumDietesPageState extends State<resumDietesPage> {
                         color: alimento['puntuacion'] == 0
                             ? Colors.green.withOpacity(0.8)
                             : (alimento['puntuacion'] == 1
-                            ? Colors.orange.withOpacity(0.8)
-                            : Colors.red.withOpacity(0.8)),
+                                ? Colors.orange.withOpacity(0.8)
+                                : Colors.red.withOpacity(0.8)),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -274,8 +278,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                                 Text(
                                   'Puntuación: ${alimento['puntuacion']}',
                                   style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white),
+                                      fontSize: 16, color: Colors.white),
                                 ),
                               ],
                             ),
@@ -314,8 +317,8 @@ class _resumDietesPageState extends State<resumDietesPage> {
                             color: widget.puntuacionTotal == 0
                                 ? Colors.green
                                 : (widget.puntuacionTotal == 1
-                                ? Colors.orange
-                                : Colors.red),
+                                    ? Colors.orange
+                                    : Colors.red),
                           ),
                         ),
                       ],
@@ -327,7 +330,7 @@ class _resumDietesPageState extends State<resumDietesPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent,
                       padding:
-                      EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -361,5 +364,4 @@ class _resumDietesPageState extends State<resumDietesPage> {
       ),
     );
   }
-
 }

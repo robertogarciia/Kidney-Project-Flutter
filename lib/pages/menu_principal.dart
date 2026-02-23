@@ -34,14 +34,16 @@ class MenuPrincipal extends StatefulWidget {
 
 class _MenuPrincipalState extends State<MenuPrincipal> {
   Timer? _timer;
-  bool _isCheckingMood = false;
+  bool _isCheckingMood =
+      false; // Bandera para evitar múltiples navegaciones simultáneas
 
   @override
   void initState() {
     super.initState();
-    _startMoodCheckTimer();
+    // _startMoodCheckTimer();
   }
 
+/*
   void _startMoodCheckTimer() async {
     DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
         .collection('Usuarios')
@@ -77,7 +79,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
       print('Usuario no encontrado en la base de datos');
     }
   }
-
+*/
   @override
   void dispose() {
     _timer?.cancel();
@@ -115,14 +117,14 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TopImgs(imagePath: 'lib/images/logoKNP_NT.png'),
+                    TopImgs(imagePath: 'assets/images/logoKNP_NT.png'),
                     Expanded(child: SizedBox()),
                     Padding(
                       padding: EdgeInsets.only(right: 20.0),
                       child: SizedBox(
                         width: 50,
                         height: 50,
-                        child: TopImgs(imagePath: 'lib/images/ajustes.png'),
+                        child: TopImgs(imagePath: 'assets/images/ajustes.png'),
                       ),
                     ),
                   ],
@@ -135,14 +137,14 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     BottomImgs(
-                      imagePath: 'lib/images/mando.png',
+                      imagePath: 'assets/images/mando.png',
                       onTap: () {
                         navigateToPage(context, MenuJoc(userId: widget.userId));
                       },
                     ),
                     const SizedBox(width: 30),
                     MidleImgs(
-                      imagePath: 'lib/images/vids.png',
+                      imagePath: 'assets/images/vids.png',
                       onTap: () {
                         navigateToPage(context, Videos(userId: widget.userId));
                       },
@@ -153,16 +155,17 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     MidleImgs(
-                      imagePath: 'lib/images/ajuda.png',
+                      imagePath: 'assets/images/ajuda.png',
                       onTap: () {
                         navigateToPage(context, Ajuda(userId: widget.userId));
                       },
                     ),
                     const SizedBox(width: 30),
                     MidleImgs(
-                      imagePath: 'lib/images/inf.png',
+                      imagePath: 'assets/images/inf.png',
                       onTap: () {
-                        navigateToPage(context, noticiesPage(userId: widget.userId));
+                        navigateToPage(
+                            context, noticiesPage(userId: widget.userId));
                       },
                     )
                   ],
@@ -171,7 +174,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     MidleImgs(
-                      imagePath: 'lib/images/DadesPers.png',
+                      imagePath: 'assets/images/DadesPers.png',
                       width: 155,
                       height: 155,
                       onTap: () {
@@ -181,7 +184,7 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     ),
                     const SizedBox(width: 8),
                     MidleImgs(
-                      imagePath: 'lib/images/iconEstatAnim2.png',
+                      imagePath: 'assets/images/iconEstatAnim2.png',
                       width: 160,
                       height: 160,
                       onTap: () {
@@ -195,16 +198,17 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     MidleImgs(
-                      imagePath: 'lib/images/comu.png',
+                      imagePath: 'assets/images/comu.png',
                       height: 155,
                       width: 155,
                       onTap: () {
-                        navigateToPage(context, Comunities(userId: widget.userId));
+                        navigateToPage(
+                            context, Comunities(userId: widget.userId));
                       },
                     ),
                     const SizedBox(width: 5),
                     MidleImgs(
-                      imagePath: 'lib/images/imatgeDietes.png',
+                      imagePath: 'assets/images/imatgeDietes.png',
                       height: 155,
                       width: 150,
                       onTap: () {

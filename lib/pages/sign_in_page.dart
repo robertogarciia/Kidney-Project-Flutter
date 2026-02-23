@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
 
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/pages/login_page.dart';
@@ -20,6 +19,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _contrasenyaController = TextEditingController();
   bool _isObscured = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -30,93 +30,80 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _emailController.dispose();
+    _contrasenyaController.dispose();
     super.dispose();
   }
 
-  // Detecta cuando la app vuelve al primer plano y reinicia la página
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+  // 🔐 LOGIN CON FIREBASE AUTH
+  Future<void> signUserIn(BuildContext context) async {
+    setState(() => _isLoading = true);
+
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _contrasenyaController.text.trim(),
+      );
+
+      String userId = userCredential.user!.uid;
+
+      // 🔎 Obtener tipo de usuario desde Firestore
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(userId)
+          .collection('tipusDeUsuario')
+          .doc('tipus')
+          .get();
+
+      Widget targetPage;
+
+      if (documentSnapshot.exists &&
+          documentSnapshot.data() != null &&
+          documentSnapshot['tipo'] != null) {
+        String tipo = documentSnapshot['tipo'];
+
+        targetPage = (tipo == 'Pacient' || tipo == 'Familiar')
+            ? MenuPrincipal(userId: userId)
+            : TipusUsuari(userId: userId);
+      } else {
+        targetPage = TipusUsuari(userId: userId);
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SignIn()),
+        MaterialPageRoute(builder: (context) => targetPage),
       );
-    }
-  }
+    } on FirebaseAuthException catch (e) {
+      String message = "Error al inciar sessió";
 
-  Future<void> signUserIn(BuildContext context) async {
-    final QuerySnapshot<Map<String, dynamic>> query =
-    await FirebaseFirestore.instance.collection('Usuarios').get();
-
-    var bytes = utf8.encode(_contrasenyaController.text);
-    var digest = sha256.convert(bytes);
-    var hashedPasswordToCheck = digest.toString();
-
-    bool credentialsMatch = false;
-    String userId = '';
-
-    for (QueryDocumentSnapshot<Map<String, dynamic>> documento in query.docs) {
-      Map<String, dynamic> usuario = documento.data();
-      if (usuario['Email'] == _emailController.text &&
-          usuario['Contrasenya'] == hashedPasswordToCheck) {
-        credentialsMatch = true;
-        userId = documento.id;
-        break;
+      if (e.code == 'user-not-found') {
+        message = 'No existeix cap usuari amb aquest correu.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Contrasenya incorrecta.';
+      } else if (e.code == 'invalid-email') {
+        message = 'El correu electrònic no és vàlid.';
+      } else if (e.code == 'user-disabled') {
+        message = 'Aquest usuari està deshabilitat.';
       }
-    }
 
-    if (credentialsMatch) {
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Inici de sessió exitós'),
-            content: Text('Benvingut/da!'),
-            actions: <Widget>[
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  var userDoc = FirebaseFirestore.instance.collection('Usuarios').doc(userId);
-                  var documentSnapshot = await userDoc.collection('tipusDeUsuario').doc('tipus').get();
-
-                  if (documentSnapshot.exists && documentSnapshot['tipo'] != null) {
-                    String tipo = documentSnapshot['tipo'];
-                    Widget targetPage = (tipo == 'Pacient' || tipo == 'Familiar')
-                        ? MenuPrincipal(userId: userId)
-                        : TipusUsuari(userId: userId);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => targetPage),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TipusUsuari(userId: userId)),
-                    );
-                  }
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Inici de sessió fallit'),
-            content: Text('El correu electrònic o la contrasenya són incorrectes.'),
+            title: const Text('Error'),
+            content: Text(message),
             actions: <Widget>[
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
         },
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -132,7 +119,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
       context,
       MaterialPageRoute(builder: (context) => LoginPage()),
     );
-    return Future.value(false);
+    return false;
   }
 
   @override
@@ -152,26 +139,34 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                     const SizedBox(height: 30),
                     const Text(
                       'Inicia sessió',
-                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
-                    Image.asset('lib/images/logoKNP_WT.png', height: 300),
+                    Image.asset('assets/images/logoKNP_WT.png', height: 300),
                     const SizedBox(height: 15),
+
+                    // EMAIL
                     TextField(
                       controller: _emailController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: 'Correu Electrònic',
                         border: OutlineInputBorder(),
                       ),
                     ),
+
                     const SizedBox(height: 15),
+
+                    // PASSWORD
                     TextField(
                       controller: _contrasenyaController,
                       obscureText: _isObscured,
                       decoration: InputDecoration(
                         hintText: 'Contrasenya',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
-                          icon: Icon(_isObscured ? Icons.visibility_off : Icons.visibility),
+                          icon: Icon(_isObscured
+                              ? Icons.visibility_off
+                              : Icons.visibility),
                           onPressed: () {
                             setState(() {
                               _isObscured = !_isObscured;
@@ -180,14 +175,25 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 15),
-                    BtnIniciSessio(onTap: () => signUserIn(context)),
+
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : BtnIniciSessio(
+                            onTap: () => signUserIn(context),
+                          ),
+
                     const SizedBox(height: 15),
+
                     GestureDetector(
                       onTap: () => navigateToRegistrationPage(context),
                       child: Text(
                         'Si no tens un compte, registra\'t!',
-                        style: TextStyle(color: Colors.grey[800], decoration: TextDecoration.underline),
+                        style: TextStyle(
+                          color: Colors.grey[800],
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ],

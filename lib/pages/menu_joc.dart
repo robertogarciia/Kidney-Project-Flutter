@@ -16,15 +16,16 @@ class MenuJoc extends StatefulWidget {
   @override
   _MenuJocState createState() => _MenuJocState();
 }
+
 class _MenuJocState extends State<MenuJoc> {
   int coins = 0;
   int points = 0;
   int pointsNoHabilitats = 0;
   int maxPuntuacion = 0;
   int maxPuntuacionNoHabilitats = 0;
-  bool isFamiliar = false;  // Variable para verificar si es un familiar
+  bool isFamiliar = false; // Variable para verificar si es un familiar
   String? relatedPatientId; // Almacenar el ID del pacient relacionat
-  bool isLoading = true;  // Variable para controlar el estat de carga
+  bool isLoading = true; // Variable para controlar el estat de carga
 
   Future<void> _fetchCoinsAndPoints() async {
     try {
@@ -41,7 +42,6 @@ class _MenuJocState extends State<MenuJoc> {
         maxPuntuacion = userData['maxPuntuacion'] ?? 0;
         pointsNoHabilitats = userData['pointsNoHabilitats'] ?? 0;
         maxPuntuacionNoHabilitats = userData['maxPuntuacionNoHabilitats'] ?? 0;
-
       });
     } catch (error) {
       print('Error al obtener los datos del usuario: $error');
@@ -60,13 +60,14 @@ class _MenuJocState extends State<MenuJoc> {
     final userData = userDoc.data() as Map<String, dynamic>?;
 
     if (userData == null) {
-      print("Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
+      print(
+          "Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
       return;
     }
 
     if (userData['tipo'] == 'Familiar') {
       setState(() {
-        isFamiliar = true;  // Es un familiar, habilitar opciones
+        isFamiliar = true; // Es un familiar, habilitar opciones
       });
 
       // Obtenir el pacient relacionat amb aquest familiar
@@ -78,18 +79,21 @@ class _MenuJocState extends State<MenuJoc> {
 
       if (relatedPatientDocs.docs.isNotEmpty) {
         final relatedPatientData = relatedPatientDocs.docs.first.data();
-        final dniPaciente = relatedPatientData['DniPaciente']; // Obtener el DNI del paciente
-        await _getPatientIdFromDNI(dniPaciente);  // Obtener el ID del paciente usando el DNI
+        final dniPaciente =
+            relatedPatientData['DniPaciente']; // Obtener el DNI del paciente
+        await _getPatientIdFromDNI(
+            dniPaciente); // Obtener el ID del paciente usando el DNI
       }
     }
     setState(() {
-      isLoading = false;  // Fi carga de la info
+      isLoading = false; // Fi carga de la info
     });
   }
 
   // Funció per obtenir el ID del pacient a partir del DNI
   Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final usersSnapshot = await FirebaseFirestore.instance.collection('Usuarios').get();
+    final usersSnapshot =
+        await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in usersSnapshot.docs) {
       // Buscar en 'dadesPersonals' per el DNI del pacient
@@ -103,7 +107,8 @@ class _MenuJocState extends State<MenuJoc> {
         if (personalData?['Dni'] == dniPaciente) {
           // Si es troba el DNI, obtenir el ID del usuari
           setState(() {
-            relatedPatientId = userDoc.id;  // Almacenar el ID del pacient relacionat
+            relatedPatientId =
+                userDoc.id; // Almacenar el ID del pacient relacionat
           });
           break;
         }
@@ -125,8 +130,8 @@ class _MenuJocState extends State<MenuJoc> {
   @override
   void initState() {
     super.initState();
-    _fetchCoinsAndPoints();  // Obtenir  punts i monedes
-    _checkUserType();  // Verificar si el usuari es familiar
+    _fetchCoinsAndPoints(); // Obtenir  punts i monedes
+    _checkUserType(); // Verificar si el usuari es familiar
   }
 
   @override
@@ -141,7 +146,8 @@ class _MenuJocState extends State<MenuJoc> {
         ),
         actions: [
           IconButton(
-            icon: Image.asset('lib/images/ranking.png', width: 50, height: 50),
+            icon:
+                Image.asset('assets/images/ranking.png', width: 50, height: 50),
             onPressed: () {
               navigateToPage(context, RankingPage(userId: widget.userId));
             },
@@ -183,7 +189,7 @@ class _MenuJocState extends State<MenuJoc> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'lib/images/coin.png',
+                            'assets/images/coin.png',
                             width: 24,
                             height: 24,
                           ),
@@ -277,7 +283,8 @@ class _MenuJocState extends State<MenuJoc> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+                      const Icon(Icons.emoji_events,
+                          color: Colors.amber, size: 24),
                       const SizedBox(width: 8),
                       Text(
                         'Max. puntuació amb habilitats: $maxPuntuacion',
@@ -295,7 +302,8 @@ class _MenuJocState extends State<MenuJoc> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+                      const Icon(Icons.emoji_events,
+                          color: Colors.amber, size: 24),
                       const SizedBox(width: 8),
                       Text(
                         'Max. puntuació sense habilitats: $maxPuntuacionNoHabilitats',
@@ -343,14 +351,16 @@ class _MenuJocState extends State<MenuJoc> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => jocPacient(relatedPatientId: relatedPatientId!),
+                                builder: (context) => jocPacient(
+                                    relatedPatientId: relatedPatientId!),
                               ),
                             );
                           }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(66, 61, 242, 1.0),
-                          padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15.0, horizontal: 30.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -368,8 +378,6 @@ class _MenuJocState extends State<MenuJoc> {
                       ),
                     ),
                   ),
-
-
               ],
             ),
           ),

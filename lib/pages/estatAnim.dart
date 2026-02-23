@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kidneyproject/pages/graficaEstatAnim.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
 
 class EstatAnim extends StatefulWidget {
@@ -13,9 +14,9 @@ class EstatAnim extends StatefulWidget {
 
 class _EstatAnimState extends State<EstatAnim> {
   final Map<String, String> images = {
-    'lib/images/caraFeliz.png': 'Content/a',
-    'lib/images/caraNormal.png': 'Neutral',
-    'lib/images/caraTriste.png': 'Trist/a'
+    'assets/images/caraFeliz.png': 'Content/a',
+    'assets/images/caraNormal.png': 'Neutral',
+    'assets/images/caraTriste.png': 'Trist/a'
   };
   bool mostrarImagen = false;
 
@@ -25,7 +26,8 @@ class _EstatAnimState extends State<EstatAnim> {
         mostrarImagen = true;
       });
 
-      final userRef = FirebaseFirestore.instance.collection('Usuarios').doc(widget.userId);
+      final userRef =
+          FirebaseFirestore.instance.collection('Usuarios').doc(widget.userId);
 
       // Sumar coins
       DocumentReference datosRef = FirebaseFirestore.instance
@@ -52,11 +54,12 @@ class _EstatAnimState extends State<EstatAnim> {
       });
 
       // Esperar 2 segundos y luego navegar
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(Duration(seconds: 1));
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => MenuPrincipal(userId: widget.userId)),
         );
       }
     } catch (e) {
@@ -83,44 +86,100 @@ class _EstatAnimState extends State<EstatAnim> {
               children: [
                 const SizedBox(height: 20),
                 Expanded(
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      childAspectRatio: 1.7,
-                      mainAxisSpacing: 3,
+                  child: Center(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        bool esMovil = constraints.maxWidth < 600;
+
+                        return esMovil
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: images.entries.map((entry) {
+                                  String imagePath = entry.key;
+                                  String emotion = entry.value;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10),
+                                    child: GestureDetector(
+                                      onTap: () => saveEmotion(emotion),
+                                      child: Card(
+                                        elevation: 8,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Container(
+                                          width: 220,
+                                          height: 160,
+                                          padding: const EdgeInsets.all(12),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Image.asset(imagePath,
+                                                  width: 60, height: 60),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                emotion.toUpperCase(),
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blueAccent,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: images.entries.map((entry) {
+                                  String imagePath = entry.key;
+                                  String emotion = entry.value;
+
+                                  return GestureDetector(
+                                    onTap: () => saveEmotion(emotion),
+                                    child: Card(
+                                      elevation: 8,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Container(
+                                        width: 200,
+                                        height: 220,
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(imagePath,
+                                                width: 50, height: 50),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              emotion.toUpperCase(),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blueAccent,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                      },
                     ),
-                    itemCount: images.length,
-                    itemBuilder: (context, index) {
-                      String imagePath = images.keys.elementAt(index);
-                      String emotion = images.values.elementAt(index);
-                      return GestureDetector(
-                        onTap: () => saveEmotion(emotion),
-                        child: Card(
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(imagePath, width: 60, height: 60),
-                                const SizedBox(height: 15),
-                                Text(
-                                  emotion.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blueAccent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
                   ),
                 ),
               ],
@@ -131,7 +190,7 @@ class _EstatAnimState extends State<EstatAnim> {
               color: Colors.black.withOpacity(0.5),
               alignment: Alignment.center,
               child: Image.asset(
-                'lib/images/+50Puntos.png',
+                'assets/images/+50Puntos.png',
                 width: 200,
                 height: 200,
               ),

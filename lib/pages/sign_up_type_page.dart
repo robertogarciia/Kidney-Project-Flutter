@@ -15,9 +15,10 @@ class SignUpTypePage extends StatefulWidget {
 class _SignUpTypePageState extends State<SignUpTypePage> {
   TextEditingController _nameController = TextEditingController(text: "");
   TextEditingController _emailController = TextEditingController(text: "");
-  TextEditingController _contrasenyaController = TextEditingController(text: "");
+  TextEditingController _contrasenyaController =
+      TextEditingController(text: "");
 
-  final _formKey = GlobalKey<FormState>(); 
+  final _formKey = GlobalKey<FormState>();
   bool isEmailValid = false; //  verificar si es valid del correu
 
   bool hasUpperCase = false;
@@ -49,7 +50,8 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
     }
 
     // Correcció en la expressió per validar el format del correu electrònico
-    if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$').hasMatch(_emailController.text)) {
+    if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$')
+        .hasMatch(_emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Si us plau, ingressa un correu electrònic vàlid.'),
@@ -73,7 +75,8 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
       // Mostra missatge de error y no continuar amb el registre
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Si us plau, assegura\'t de cumplir tots els requisits de la contrasenya.'),
+          content: Text(
+              'Si us plau, assegura\'t de cumplir tots els requisits de la contrasenya.'),
         ),
       );
       return;
@@ -94,7 +97,8 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
         print('Error durant el registre: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error durant el registre. Si us plau, torna a intentar-ho de nou.'),
+            content: Text(
+                'Error durant el registre. Si us plau, torna a intentar-ho de nou.'),
           ),
         );
       }
@@ -123,179 +127,179 @@ class _SignUpTypePageState extends State<SignUpTypePage> {
                     height: 30,
                   ),
 
-              //Oblidat Contrasenya
-              GestureDetector(
-                onTap: () {
-                  navigateToSignInPage(context);
-                },
-                child: const Text(
-                  'Ja tens compte? Inicia Sessió',
-
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-                // Logo
-                Image.asset(
-                  'lib/images/logoKNP_NT.png',
-                  height: 200,
-                ),
-
-                // Camp de nom
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      hintText: 'Nom i Cognoms',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Si us plau, ingressa el teu nom';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                // Camp de correu electrònico
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      hintText: 'Correu Electrònic',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Si us plau, ingressa un correu electrònic';
-                      }
-
-                      // required contrasenya
-                      if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$').hasMatch(value)) {
-                        setState(() {
-                          isEmailValid = false; 
-                        });
-                        return 'Si us plau, ingressa un correu electrònic vàlid';
-                      }
-
-                      setState(() {
-                        isEmailValid = true; // correu valid
-                      });
-
-                      return null;
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                // Camp de contrasenya
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: PasswordField(
-                    controller: _contrasenyaController,
-                    onChanged: (value) {
-                      setState(() {
-                        hasUpperCase = value.contains(RegExp(r'[A-Z]'));
-                        hasNumber = value.contains(RegExp(r'[0-9]'));
-                        hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-                        hasMinLength = value.length >= 6;
-                        showPasswordRestrictions = true;
-                      });
-                    },
+                  //Oblidat Contrasenya
+                  GestureDetector(
                     onTap: () {
-                      setState(() {
-                        showPasswordRestrictions = true;
-                      });
+                      navigateToSignInPage(context);
                     },
+                    child: const Text(
+                      'Ja tens compte? Inicia Sessió',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 8),
+                  // Logo
+                  Image.asset(
+                    'assets/images/logoKNP_NT.png',
+                    height: 200,
+                  ),
 
-                // Mostrar restriccions
-                if (showPasswordRestrictions)
-                  Container(
+                  // Camp de nom
+                  Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_contrasenyaController.text.isEmpty)
-                          const Text(
-                            'Si us plau, ingressa una contrasenya',
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        hintText: 'Nom i Cognoms',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Si us plau, ingressa el teu nom';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // Camp de correu electrònico
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: 'Correu Electrònic',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Si us plau, ingressa un correu electrònic';
+                        }
+
+                        // required contrasenya
+                        if (!RegExp(
+                                r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$')
+                            .hasMatch(value)) {
+                          setState(() {
+                            isEmailValid = false;
+                          });
+                          return 'Si us plau, ingressa un correu electrònic vàlid';
+                        }
+
+                        setState(() {
+                          isEmailValid = true; // correu valid
+                        });
+
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // Camp de contrasenya
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: PasswordField(
+                      controller: _contrasenyaController,
+                      onChanged: (value) {
+                        setState(() {
+                          hasUpperCase = value.contains(RegExp(r'[A-Z]'));
+                          hasNumber = value.contains(RegExp(r'[0-9]'));
+                          hasSpecialChar =
+                              value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+                          hasMinLength = value.length >= 6;
+                          showPasswordRestrictions = true;
+                        });
+                      },
+                      onTap: () {
+                        setState(() {
+                          showPasswordRestrictions = true;
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Mostrar restriccions
+                  if (showPasswordRestrictions)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_contrasenyaController.text.isEmpty)
+                            const Text(
+                              'Si us plau, ingressa una contrasenya',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          Text(
+                            'Al menys una mayúscula: ${hasUpperCase ? '✔' : '❌'}',
                             style: TextStyle(
-                              color: Colors.red,
+                              color: hasUpperCase ? Colors.green : Colors.red,
                             ),
                           ),
-                        Text(
-                          'Al menys una mayúscula: ${hasUpperCase ? '✔' : '❌'}',
-                          style: TextStyle(
-                            color: hasUpperCase ? Colors.green : Colors.red,
+                          Text(
+                            'Al menys un número: ${hasNumber ? '✔' : '❌'}',
+                            style: TextStyle(
+                              color: hasNumber ? Colors.green : Colors.red,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Al menys un número: ${hasNumber ? '✔' : '❌'}',
-                          style: TextStyle(
-                            color: hasNumber ? Colors.green : Colors.red,
+                          Text(
+                            'Al menys un caràcter especial: ${hasSpecialChar ? '✔' : '❌'}',
+                            style: TextStyle(
+                              color: hasSpecialChar ? Colors.green : Colors.red,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Al menys un caràcter especial: ${hasSpecialChar ? '✔' : '❌'}',
-                          style: TextStyle(
-                            color: hasSpecialChar ? Colors.green : Colors.red,
+                          Text(
+                            'Longitut mínima de 6 caràcteres: ${hasMinLength ? '✔' : '❌'}',
+                            style: TextStyle(
+                              color: hasMinLength ? Colors.green : Colors.red,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Longitut mínima de 6 caràcteres: ${hasMinLength ? '✔' : '❌'}',
-                          style: TextStyle(
-                            color: hasMinLength ? Colors.green : Colors.red,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+
+                  const SizedBox(height: 15),
+
+                  // Buto de registrar
+                  BtnRegistrar(
+                    onTap: registerUser,
                   ),
 
-                const SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
-                // Buto de registrar
-                BtnRegistrar(
-                  onTap: registerUser,
-                ),
-
-                const SizedBox(height: 15),
-
-                // Olvidar Contrasenya
-                GestureDetector(
-                  onTap: () {
-                    navigateToSignInPage(context);
-                  },
-                  child: Text(
-                    'Ja tens compte? Inicia Sessió',
-                    style: TextStyle(
-                      color: Colors.grey[800],
-                      decoration: TextDecoration.underline,
+                  // Olvidar Contrasenya
+                  GestureDetector(
+                    onTap: () {
+                      navigateToSignInPage(context);
+                    },
+                    child: Text(
+                      'Ja tens compte? Inicia Sessió',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
-}
-
-
 
 class PasswordField extends StatefulWidget {
   final TextEditingController controller;

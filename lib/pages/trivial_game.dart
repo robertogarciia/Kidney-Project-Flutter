@@ -41,9 +41,8 @@ class _TrivialPageState extends State<TrivialPage> {
 
   void _fetchQuestions() async {
     try {
-      QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
-          .collection('Trivial')
-          .get();
+      QuerySnapshot questionSnapshot =
+          await FirebaseFirestore.instance.collection('Trivial').get();
 
       List<Map<String, dynamic>> fetchedQuestionsAndAnswers =
           questionSnapshot.docs.map((doc) {
@@ -118,183 +117,191 @@ class _TrivialPageState extends State<TrivialPage> {
       print('Error updating coins in Firestore: $error');
     }
   }
+
   void _toggleExplanation() {
     setState(() {
       _isExplanationVisible = !_isExplanationVisible;
     });
   }
+
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Trivial Game'),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Trivial Game'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Image.asset(
+                  'assets/images/coin.png',
+                  width: 24,
+                  height: 24,
+                ),
+                SizedBox(width: 5),
+                Text('$coins'),
+              ],
+            ),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          // Asegura que el contenido se pueda desplazar
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image.asset(
-                'lib/images/coin.png',
-                width: 24,
-                height: 24,
+              Text(
+                'Punts: $correctAnswersCount',
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
               ),
-              SizedBox(width: 5),
-              Text('$coins'),
+              SizedBox(height: 10.0),
+              Text(
+                currentQuestionIndex < questionsAndAnswers.length
+                    ? questionsAndAnswers[currentQuestionIndex]['question']
+                    : 'Fi del joc',
+                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20.0),
+              if (currentQuestionIndex < questionsAndAnswers.length)
+                ...questionsAndAnswers[currentQuestionIndex]['answers']
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                  int index = entry.key;
+                  String answer = entry.value;
+                  return Column(
+                    children: [
+                      TrivialButton(
+                        text: answer,
+                        onPressed: () {
+                          checkAnswer(answer, context, index);
+                        },
+                        color: buttonColors[index],
+                      ),
+                      const SizedBox(height: 10.0),
+                    ],
+                  );
+                }).toList(),
+              SizedBox(height: 30.0),
+              Text(
+                'Pistes',
+                style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // HelpWrong Button (Elimina una resposta incorrecta)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (coins >= 100) {
+                        _subtractCoins(100);
+                        _discardIncorrectAnswer(); // Llama a la función que elimina una resposta incorrecta.
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('No tens suficients monedes'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/helpWrong.png',
+                          height: 40,
+                        ),
+                        SizedBox(width: 5),
+                        Text('100'),
+                      ],
+                    ),
+                  ),
+                  // HelpCorrect Button (Muestra la respuesta correcta)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (coins >= 200) {
+                        _subtractCoins(200);
+                        _markCorrectAnswer(); // Llama a la función que marca la resposta correcta.
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('No tens suficients monedes'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/helpCorrect.png',
+                          height: 40,
+                        ),
+                        SizedBox(width: 5),
+                        Text('200'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 30.0),
+              // Toggle Button to show or hide the explanation
+              ElevatedButton(
+                onPressed: _toggleExplanation,
+                child: Text(_isExplanationVisible
+                    ? 'Mostrar explicació'
+                    : 'Ocultar explicació'),
+              ),
+              SizedBox(height: 20.0),
+              // Explanation text that is conditionally shown
+              if (!_isExplanationVisible)
+                Text(
+                  "Explicació dels botons: \n\n"
+                  "1. Botó vermell: Al presionar el botó, elimina una resposta incorrecta. (Cost: 100 monedes).\n\n"
+                  "2. Botó verd: Al presionar el botó, marca la resposta correcta. (Cost: 200 monedes).",
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily:
+                        'Roboto', // O cualquier otra fuente que prefieras
+                    color: Colors.black87, // Color del texto
+                    height: 1.2, // Espaciado entre líneas
+                  ),
+                  textAlign:
+                      TextAlign.left, // Alineación del texto a la izquierda
+                ),
             ],
           ),
         ),
-      ],
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: SingleChildScrollView(  // Asegura que el contenido se pueda desplazar
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Punts: $correctAnswersCount',
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10.0),
-            Text(
-              currentQuestionIndex < questionsAndAnswers.length
-                  ? questionsAndAnswers[currentQuestionIndex]['question']
-                  : 'Fi del joc',
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.0),
-            if (currentQuestionIndex < questionsAndAnswers.length)
-              ...questionsAndAnswers[currentQuestionIndex]['answers']
-                  .asMap()
-                  .entries
-                  .map((entry) {
-                int index = entry.key;
-                String answer = entry.value;
-                return Column(
-                  children: [
-                    TrivialButton(
-                      text: answer,
-                      onPressed: () {
-                        checkAnswer(answer, context, index);
-                      },
-                      color: buttonColors[index],
-                    ),
-                    const SizedBox(height: 10.0),
-                  ],
-                );
-              }).toList(),
-            SizedBox(height: 30.0),
-            Text(
-              'Pistes',
-              style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // HelpWrong Button (Elimina una resposta incorrecta)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (coins >= 100) {
-                      _subtractCoins(100);
-                      _discardIncorrectAnswer(); // Llama a la función que elimina una resposta incorrecta.
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('No tens suficients monedes'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'lib/images/helpWrong.png',
-                        height: 40,
-                      ),
-                      SizedBox(width: 5),
-                      Text('100'),
-                    ],
-                  ),
-                ),
-                // HelpCorrect Button (Muestra la respuesta correcta)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (coins >= 200) {
-                      _subtractCoins(200);
-                      _markCorrectAnswer(); // Llama a la función que marca la resposta correcta.
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('No tens suficients monedes'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'lib/images/helpCorrect.png',
-                        height: 40,
-                      ),
-                      SizedBox(width: 5),
-                      Text('200'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30.0),
-            // Toggle Button to show or hide the explanation
-            ElevatedButton(
-              onPressed: _toggleExplanation,
-              child: Text(_isExplanationVisible ? 'Mostrar explicació' : 'Ocultar explicació'),
-            ),
-            SizedBox(height: 20.0),
-            // Explanation text that is conditionally shown
-            if (!_isExplanationVisible)
-              Text(
-                "Explicació dels botons: \n\n"
-                "1. Botó vermell: Al presionar el botó, elimina una resposta incorrecta. (Cost: 100 monedes).\n\n"
-                "2. Botó verd: Al presionar el botó, marca la resposta correcta. (Cost: 200 monedes).",
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto', // O cualquier otra fuente que prefieras
-                  color: Colors.black87, // Color del texto
-                  height: 1.2, // Espaciado entre líneas
-                ),
-                textAlign: TextAlign.left, // Alineación del texto a la izquierda
-              ),
-          ],
-        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void checkAnswer(
       String selectedAnswer, BuildContext context, int buttonIndex) {
     String correctAnswer =
-    questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
+        questionsAndAnswers[currentQuestionIndex]['correctAnswer'].trim();
     bool isCorrect = selectedAnswer.trim() == correctAnswer;
 
     setState(() {
       buttonColors[buttonIndex] = isCorrect ? Colors.green : Colors.red;
       if (isCorrect) {
-        mostrarImagen = true; // Hacer visible la imagen si la respuesta es correcta
+        mostrarImagen =
+            true; // Hacer visible la imagen si la respuesta es correcta
       }
     });
 
@@ -316,7 +323,7 @@ Widget build(BuildContext context) {
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Image.asset(
-                    'lib/images/+50Puntos.png',
+                    'assets/images/+50Puntos.png',
                     width: 150,
                   ),
                 ),
@@ -330,7 +337,8 @@ Widget build(BuildContext context) {
                   setState(() {
                     correctAnswersCount++;
                     _addCoins(50);
-                    mostrarImagen = false; // Restablecer la imagen para no mostrarla nuevamente
+                    mostrarImagen =
+                        false; // Restablecer la imagen para no mostrarla nuevamente
                     if (currentQuestionIndex < questionsAndAnswers.length - 1) {
                       currentQuestionIndex++;
                       incorrectAnswerDiscarded = false;
@@ -357,60 +365,63 @@ Widget build(BuildContext context) {
     );
   }
 
-
   void saveGameData(String userId, int points, int coins) async {
-  try {
-    // Referencia al documento de Firestore
-    DocumentReference userRef = FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(userId)
-        .collection('trivial')
-        .doc('datos');
+    try {
+      // Referencia al documento de Firestore
+      DocumentReference userRef = FirebaseFirestore.instance
+          .collection('Usuarios')
+          .doc(userId)
+          .collection('trivial')
+          .doc('datos');
 
-    // Log para verificar los datos a guardar
-    print('Guardando datos: Puntos = $points, Monedas = $coins');
+      // Log para verificar los datos a guardar
+      print('Guardando datos: Puntos = $points, Monedas = $coins');
 
-    // Obtener el documento
-    DocumentSnapshot userDoc = await userRef.get();
+      // Obtener el documento
+      DocumentSnapshot userDoc = await userRef.get();
 
-    if (userDoc.exists) {
-      // Si el documento existe, comprobar si 'maxPuntuacion' está presente
-      int currentMaxScore = 0; // Valor por defecto si el campo no existe
+      if (userDoc.exists) {
+        // Si el documento existe, comprobar si 'maxPuntuacion' está presente
+        int currentMaxScore = 0; // Valor por defecto si el campo no existe
 
-      if (userDoc.data() != null && (userDoc.data() as Map<String, dynamic>).containsKey('maxPuntuacion')) {
-        // Si maxPuntuacion existe, la leemos
-        currentMaxScore = userDoc['maxPuntuacion'] ?? 0;
+        if (userDoc.data() != null &&
+            (userDoc.data() as Map<String, dynamic>)
+                .containsKey('maxPuntuacion')) {
+          // Si maxPuntuacion existe, la leemos
+          currentMaxScore = userDoc['maxPuntuacion'] ?? 0;
+        } else {
+          // Si no existe, inicializamos con el valor actual de los puntos
+          currentMaxScore = points;
+        }
+
+        // Determinar la nueva puntuación máxima (si es mayor, la actualizamos)
+        int newMaxScore = points > currentMaxScore ? points : currentMaxScore;
+
+        // Guardar los nuevos datos, incluyendo la puntuación máxima
+        await userRef.set({
+          'points': points, // Guardar los puntos de esta partida
+          'coins': coins,
+          'maxPuntuacion':
+              newMaxScore, // Siempre actualizamos la puntuación máxima si es necesario
+        }, SetOptions(merge: true)); // Merge solo actualiza los campos
+
+        print(
+            'Datos guardados correctamente, maxPuntuacion actualizada si corresponde');
       } else {
-        // Si no existe, inicializamos con el valor actual de los puntos
-        currentMaxScore = points;
+        // Si el documento no existe, lo creamos con la puntuación inicial
+        await userRef.set({
+          'points': points,
+          'coins': coins,
+          'maxPuntuacion':
+              points, // Si no existe, inicializamos 'maxPuntuacion' con los puntos
+        });
+
+        print('Nuevo documento de usuario creado con maxPuntuacion: $points');
       }
-
-      // Determinar la nueva puntuación máxima (si es mayor, la actualizamos)
-      int newMaxScore = points > currentMaxScore ? points : currentMaxScore;
-
-      // Guardar los nuevos datos, incluyendo la puntuación máxima
-      await userRef.set({
-        'points': points,  // Guardar los puntos de esta partida
-        'coins': coins,
-        'maxPuntuacion': newMaxScore,  // Siempre actualizamos la puntuación máxima si es necesario
-      }, SetOptions(merge: true));  // Merge solo actualiza los campos
-
-      print('Datos guardados correctamente, maxPuntuacion actualizada si corresponde');
-    } else {
-      // Si el documento no existe, lo creamos con la puntuación inicial
-      await userRef.set({
-        'points': points,
-        'coins': coins,
-        'maxPuntuacion': points,  // Si no existe, inicializamos 'maxPuntuacion' con los puntos
-      });
-
-      print('Nuevo documento de usuario creado con maxPuntuacion: $points');
+    } catch (error) {
+      print('Error al guardar los datos del juego: $error');
     }
-  } catch (error) {
-    print('Error al guardar los datos del juego: $error');
   }
-}
-
 
   void _discardIncorrectAnswer() {
     if (!incorrectAnswerDiscarded) {
@@ -497,8 +508,7 @@ Widget build(BuildContext context) {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          MenuJoc(userId: widget.userId)),
+                      builder: (context) => MenuJoc(userId: widget.userId)),
                 );
               },
               child: Text('Tornar al Menú'),

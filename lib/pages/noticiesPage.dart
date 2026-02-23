@@ -65,7 +65,7 @@ class _noticiesPageState extends State<noticiesPage> {
 
   Future<void> _getPatientIdFromDNI(String dniPaciente) async {
     final usersSnapshot =
-    await FirebaseFirestore.instance.collection('Usuarios').get();
+        await FirebaseFirestore.instance.collection('Usuarios').get();
 
     for (var userDoc in usersSnapshot.docs) {
       final personalDataSnapshot = await userDoc.reference
@@ -111,21 +111,22 @@ class _noticiesPageState extends State<noticiesPage> {
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: loadingRelacion
-                  ? Center(child: CircularProgressIndicator(color: Colors.white))
+                  ? Center(
+                      child: CircularProgressIndicator(color: Colors.white))
                   : relatedPatientId != null
-                  ? ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => noticiesPacient(
-                          relatedPatientId: relatedPatientId!),
-                    ),
-                  );
-                },
-                child: Text('Veure notícies del meu pacient'),
-              )
-                  : SizedBox.shrink(),
+                      ? ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => noticiesPacient(
+                                    relatedPatientId: relatedPatientId!),
+                              ),
+                            );
+                          },
+                          child: Text('Veure notícies del meu pacient'),
+                        )
+                      : SizedBox.shrink(),
             ),
         ],
       ),
@@ -140,7 +141,7 @@ class _noticiesPageState extends State<noticiesPage> {
                     Text(
                       'Noticies',
                       style:
-                      TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 22),
 
@@ -217,7 +218,8 @@ class _noticiesPageState extends State<noticiesPage> {
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         }
                         if (snapshot.hasError) {
@@ -228,13 +230,11 @@ class _noticiesPageState extends State<noticiesPage> {
                         }
 
                         List<DocumentSnapshot> filteredNews =
-                        snapshot.data!.docs.where((doc) {
+                            snapshot.data!.docs.where((doc) {
                           bool matchesCategory = selectedCategory == null ||
                               doc['Categoria'] == selectedCategory;
                           bool matchesSearch = doc['Titol'] != null &&
-                              doc['Titol']
-                                  .toLowerCase()
-                                  .contains(searchQuery);
+                              doc['Titol'].toLowerCase().contains(searchQuery);
                           return matchesCategory && matchesSearch;
                         }).toList();
 
@@ -244,9 +244,10 @@ class _noticiesPageState extends State<noticiesPage> {
                         }
 
                         return Column(
-                          children: filteredNews.map((DocumentSnapshot document) {
+                          children:
+                              filteredNews.map((DocumentSnapshot document) {
                             Map<String, dynamic> data =
-                            document.data() as Map<String, dynamic>;
+                                document.data() as Map<String, dynamic>;
 
                             return FutureBuilder<DocumentSnapshot>(
                               future: FirebaseFirestore.instance
@@ -283,7 +284,6 @@ class _noticiesPageState extends State<noticiesPage> {
                 ),
               ),
             ),
-
             AnimatedOpacity(
               opacity: mostrarImagen ? 1.0 : 0.0,
               duration: Duration(milliseconds: 300),
@@ -293,7 +293,7 @@ class _noticiesPageState extends State<noticiesPage> {
                   color: Colors.black.withOpacity(0.5),
                   child: Center(
                     child: Image.asset(
-                      'lib/images/+10Puntos.png',
+                      'assets/images/+10Puntos.png',
                       width: 250,
                     ),
                   ),
