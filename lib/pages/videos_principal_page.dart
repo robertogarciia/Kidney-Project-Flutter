@@ -131,6 +131,15 @@ class _VideosState extends State<Videos> {
   }
 
   @override
+  void dispose() {
+    // 🔥 IMPORTANTE: cerrar controllers
+    for (var controller in _controllers.values) {
+      controller.close();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 800;
@@ -188,71 +197,32 @@ class _VideosState extends State<Videos> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      DropdownButton<String>(
-                        hint: const Text("Categoria"),
-                        value: selectedCategory,
-                        items: ['Diàlisis', 'Nutrició']
-                            .map((e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => selectedCategory = value);
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedCategory = null;
-                            searchQuery = '';
-                          });
-                        },
-                        child: const Text("Restablir"),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   StreamBuilder<QuerySnapshot>(
                     stream: _videosStream(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return const Center(
-                            child: Text("Error carregant vídeos"));
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
                       }
 
-                      final docs = snapshot.data?.docs ?? [];
+                      final docs = snapshot.data!.docs;
+
                       final filtered = docs.where((doc) {
                         final data = doc.data() as Map<String, dynamic>;
-                        final matchesSearch = data['Titol']
-                                ?.toString()
-                                .toLowerCase()
-                                .contains(searchQuery) ??
-                            false;
-                        return matchesSearch;
+                        return data['Titol']
+                            .toString()
+                            .toLowerCase()
+                            .contains(searchQuery);
                       }).toList();
-
-                      if (filtered.isEmpty) {
-                        return const Center(
-                            child: Text("No se encontraron vídeos"));
-                      }
 
                       return Column(
                         children: filtered.map((doc) {
                           final data = doc.data() as Map<String, dynamic>;
 
-                          // Crear controlador persistente
                           if (!_controllers.containsKey(data['Titol'])) {
                             final videoId =
                                 YoutubePlayerController.convertUrlToId(
                                     data['url']);
+
                             if (videoId != null) {
                               _controllers[data['Titol']] =
                                   YoutubePlayerController.fromVideoId(
@@ -260,7 +230,7 @@ class _VideosState extends State<Videos> {
                                 autoPlay: false,
                                 params: const YoutubePlayerParams(
                                   showControls: true,
-                                  showFullscreenButton: true,
+                                  showFullscreenButton: false, // 🔥 SOLUCIÓN
                                 ),
                               );
                             }
@@ -290,20 +260,9 @@ class _VideosState extends State<Videos> {
                       );
                     },
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            if (mostrarImagen)
-              Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: Image(
-                    image: AssetImage('assets/images/+10Puntos.png'),
-                    width: 250,
-                  ),
-                ),
-              ),
           ],
         ),
       ),

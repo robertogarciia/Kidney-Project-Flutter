@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoCard extends StatefulWidget {
   final String videoUrl;
@@ -49,84 +50,118 @@ class _VideoCardState extends State<VideoCard> {
     }
   }
 
+  Future<void> _openYoutube() async {
+    final Uri url = Uri.parse(widget.videoUrl);
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final videoHeight = widget.isDesktop ? 300.0 : 250.0;
+    final videoHeight = widget.isDesktop ? 320.0 : 270.0;
 
     return GestureDetector(
       onTap: () => setState(() => _isExpanded = !_isExpanded),
-      child: IntrinsicHeight(
-        child: Card(
-          margin: const EdgeInsets.all(8),
-          color: const Color(0xFFFF603D),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.videoTitle,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  maxLines: widget.isDesktop ? 1 : 2,
-                  overflow: TextOverflow.ellipsis,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 10), // 🔥 más ancho
+        color: const Color(0xFFFF603D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16), // 🔥 más espacio interno
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.videoTitle,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 10),
-                if (_isExpanded)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: SizedBox(
-                      height: videoHeight,
-                      child: YoutubePlayer(controller: widget.controller),
-                    ),
+                maxLines: widget.isDesktop ? 1 : 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 14),
+
+              if (_isExpanded)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: SizedBox(
+                    height: videoHeight,
+                    child: YoutubePlayer(controller: widget.controller),
                   ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _isViewed
-                      ? null
-                      : () async {
-                          await widget.onMarkAsViewed(widget.videoTitle);
-                          if (mounted) setState(() => _isViewed = true);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isViewed ? Colors.green : Colors.white,
-                    foregroundColor:
-                        _isViewed ? Colors.white : const Color(0xFFFF603D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
+                ),
+
+              const SizedBox(height: 14),
+
+              // 🔥 NUEVO BOTÓN YOUTUBE
+              ElevatedButton.icon(
+                onPressed: _openYoutube,
+                icon: const Icon(Icons.open_in_new),
+                label: const Text(
+                  'Ver vídeo en YouTube',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.check,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // 🔥 BOTÓN MARCAR COMO VISTO
+              ElevatedButton(
+                onPressed: _isViewed
+                    ? null
+                    : () async {
+                        await widget.onMarkAsViewed(widget.videoTitle);
+                        if (mounted) setState(() => _isViewed = true);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isViewed ? Colors.green : Colors.white,
+                  foregroundColor:
+                      _isViewed ? Colors.white : const Color(0xFFFF603D),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check,
+                      color: _isViewed ? Colors.white : const Color(0xFFFF603D),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isViewed ? 'Vist' : 'Marcar com vist',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
                         color:
                             _isViewed ? Colors.white : const Color(0xFFFF603D),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _isViewed ? 'Vist' : 'Marcar com vist',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: _isViewed
-                              ? Colors.white
-                              : const Color(0xFFFF603D),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
