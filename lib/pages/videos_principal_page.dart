@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/video_card.dart';
 import 'package:kidneyproject/pages/videosPacient.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class Videos extends StatefulWidget {
   final String userId;
-
   const Videos({Key? key, required this.userId}) : super(key: key);
 
   @override
@@ -13,72 +13,75 @@ class Videos extends StatefulWidget {
 }
 
 class _VideosState extends State<Videos> {
-  late Future<List<DocumentSnapshot>> _videosFuture;
-
   String? selectedCategory;
   String searchQuery = '';
-
   bool isFamiliar = false;
   String? relatedPatientId;
   bool mostrarImagen = false;
 
+  // Controladores persistentes por título de video
+  final Map<String, YoutubePlayerController> _controllers = {};
+
   @override
   void initState() {
     super.initState();
-    _videosFuture = _loadVideos();
     _checkUserType();
   }
 
-  // 🔹 Cargar vídeos UNA sola vez
-  Future<List<DocumentSnapshot>> _loadVideos() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('Videos').get();
-    return snapshot.docs;
-  }
-
-  // 🔹 Verificar tipo usuario
   Future<void> _checkUserType() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('tipusDeUsuario')
-        .doc('tipus')
-        .get();
-
-    final data = userDoc.data();
-    if (data == null) return;
-
-    if (data['tipo'] == 'Familiar') {
-      setState(() => isFamiliar = true);
-
-      final relacionSnapshot = await FirebaseFirestore.instance
+    try {
+      final userDoc = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
-          .collection('relacionFamiliarPaciente')
+          .collection('tipusDeUsuario')
+          .doc('tipus')
           .get();
 
-      if (relacionSnapshot.docs.isNotEmpty) {
-        final dniPaciente = relacionSnapshot.docs.first.data()['DniPaciente'];
-        await _getPatientIdFromDNI(dniPaciente);
+      final data = userDoc.data();
+      if (data == null) return;
+
+      if (data['tipo'] == 'Familiar') {
+        if (!mounted) return;
+        setState(() => isFamiliar = true);
+
+        final relacionSnapshot = await FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(widget.userId)
+            .collection('relacionFamiliarPaciente')
+            .limit(1)
+            .get();
+
+        if (relacionSnapshot.docs.isNotEmpty) {
+          final dniPaciente = relacionSnapshot.docs.first.data()['DniPaciente'];
+          await _getPatientIdFromDNI(dniPaciente);
+        }
       }
+    } catch (e) {
+      debugPrint("Error verificando tipo usuario: $e");
     }
   }
 
   Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final users = await FirebaseFirestore.instance.collection('Usuarios').get();
+    try {
+      final query = await FirebaseFirestore.instance
+          .collectionGroup('dadesPersonals')
+          .where('Dni', isEqualTo: dniPaciente)
+          .limit(1)
+          .get();
 
-    for (var user in users.docs) {
-      final personal =
-          await user.reference.collection('dadesPersonals').doc('dades').get();
+      if (query.docs.isNotEmpty) {
+        final doc = query.docs.first;
+        final userRef = doc.reference.parent.parent;
 
-      if (personal.exists && personal.data()?['Dni'] == dniPaciente) {
-        setState(() => relatedPatientId = user.id);
-        break;
+        if (userRef != null && mounted) {
+          setState(() => relatedPatientId = userRef.id);
+        }
       }
+    } catch (e) {
+      debugPrint("Error buscando paciente por DNI: $e");
     }
   }
 
-  // 🔹 Marcar como visto
   Future<void> marcarComoVisto(String videoTitle) async {
     try {
       final ref = FirebaseFirestore.instance
@@ -102,32 +105,36 @@ class _VideosState extends State<Videos> {
             .collection('trivial')
             .doc('datos');
 
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          final data = await transaction.get(coinsRef);
+        await coinsRef.set(
+          {'coins': FieldValue.increment(10)},
+          SetOptions(merge: true),
+        );
 
-          if (!data.exists) {
-            transaction.set(coinsRef, {'coins': 10});
-          } else {
-            int coins = data.get('coins') ?? 0;
-            transaction.update(coinsRef, {'coins': coins + 10});
-          }
-        });
-
+        if (!mounted) return;
         setState(() => mostrarImagen = true);
-
         await Future.delayed(const Duration(seconds: 1));
-
-        if (mounted) {
-          setState(() => mostrarImagen = false);
-        }
+        if (mounted) setState(() => mostrarImagen = false);
       }
     } catch (e) {
-      print("Error: $e");
+      debugPrint("Error marcando como visto: $e");
     }
+  }
+
+  Stream<QuerySnapshot> _videosStream() {
+    Query query = FirebaseFirestore.instance.collection('Videos');
+
+    if (selectedCategory != null) {
+      query = query.where('Categoria', isEqualTo: selectedCategory);
+    }
+
+    return query.snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 800;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -158,131 +165,147 @@ class _VideosState extends State<Videos> {
             )
         ],
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 15),
-
-              // 🔎 Buscador
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      searchQuery = value.toLowerCase();
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: "Buscar per títol...",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 15),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() => searchQuery = value.toLowerCase());
+                      },
+                      decoration: InputDecoration(
+                        hintText: "Buscar per títol...",
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DropdownButton<String>(
+                        hint: const Text("Categoria"),
+                        value: selectedCategory,
+                        items: ['Diàlisis', 'Nutrició']
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() => selectedCategory = value);
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedCategory = null;
+                            searchQuery = '';
+                          });
+                        },
+                        child: const Text("Restablir"),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: _videosStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return const Center(
+                            child: Text("Error carregant vídeos"));
+                      }
 
-              const SizedBox(height: 15),
+                      final docs = snapshot.data?.docs ?? [];
+                      final filtered = docs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final matchesSearch = data['Titol']
+                                ?.toString()
+                                .toLowerCase()
+                                .contains(searchQuery) ??
+                            false;
+                        return matchesSearch;
+                      }).toList();
 
-              // 📂 Filtros
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  DropdownButton<String>(
-                    hint: const Text("Categoria"),
-                    value: selectedCategory,
-                    items: ['Diàlisis', 'Nutrició']
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() => selectedCategory = value);
+                      if (filtered.isEmpty) {
+                        return const Center(
+                            child: Text("No se encontraron vídeos"));
+                      }
+
+                      return Column(
+                        children: filtered.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+
+                          // Crear controlador persistente
+                          if (!_controllers.containsKey(data['Titol'])) {
+                            final videoId =
+                                YoutubePlayerController.convertUrlToId(
+                                    data['url']);
+                            if (videoId != null) {
+                              _controllers[data['Titol']] =
+                                  YoutubePlayerController.fromVideoId(
+                                videoId: videoId,
+                                autoPlay: false,
+                                params: const YoutubePlayerParams(
+                                  showControls: true,
+                                  showFullscreenButton: true,
+                                ),
+                              );
+                            }
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                    maxWidth:
+                                        isDesktop ? 700 : double.infinity),
+                                child: VideoCard(
+                                  videoUrl: data['url'],
+                                  videoTitle: data['Titol'],
+                                  videoCategoria: data['Categoria'],
+                                  userId: widget.userId,
+                                  onMarkAsViewed: marcarComoVisto,
+                                  isDesktop: isDesktop,
+                                  controller: _controllers[data['Titol']]!,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
                     },
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        selectedCategory = null;
-                        searchQuery = '';
-                      });
-                    },
-                    child: const Text("Restablir"),
-                  )
+                  const SizedBox(height: 20),
                 ],
               ),
-
-              const SizedBox(height: 10),
-
-              // 📺 Lista vídeos
-              Expanded(
-                child: FutureBuilder<List<DocumentSnapshot>>(
-                  future: _videosFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text("No hi ha vídeos"));
-                    }
-
-                    final filtered = snapshot.data!.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-
-                      final matchesCategory = selectedCategory == null ||
-                          data['Categoria'] == selectedCategory;
-
-                      final matchesSearch = data['Titol']
-                              ?.toString()
-                              .toLowerCase()
-                              .contains(searchQuery) ??
-                          false;
-
-                      return matchesCategory && matchesSearch;
-                    }).toList();
-
-                    if (filtered.isEmpty) {
-                      return const Center(
-                          child: Text("No se encontraron vídeos"));
-                    }
-
-                    return ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final data =
-                            filtered[index].data() as Map<String, dynamic>;
-
-                        return VideoCard(
-                          videoUrl: data['url'],
-                          videoTitle: data['Titol'],
-                          videoCategoria: data['Categoria'],
-                          userId: widget.userId,
-                          onMarkAsViewed: marcarComoVisto,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-
-          // 🎉 Imagen +10 puntos
-          if (mostrarImagen)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/+10Puntos.png',
-                  width: 250,
-                ),
-              ),
             ),
-        ],
+            if (mostrarImagen)
+              Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: Image(
+                    image: AssetImage('assets/images/+10Puntos.png'),
+                    width: 250,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
