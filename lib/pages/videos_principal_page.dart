@@ -13,11 +13,14 @@ class Videos extends StatefulWidget {
 }
 
 class _VideosState extends State<Videos> {
-  String? selectedCategory;
+  String? selectedCategory = 'Totes';
   String searchQuery = '';
   bool isFamiliar = false;
   String? relatedPatientId;
   bool mostrarImagen = false;
+
+  // Hardcode de categorías
+  final List<String> categorias = ['Nutrició', 'Diàlisis'];
 
   // Controladores persistentes por título de video
   final Map<String, YoutubePlayerController> _controllers = {};
@@ -112,7 +115,7 @@ class _VideosState extends State<Videos> {
 
         if (!mounted) return;
         setState(() => mostrarImagen = true);
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 0));
         if (mounted) setState(() => mostrarImagen = false);
       }
     } catch (e) {
@@ -123,7 +126,7 @@ class _VideosState extends State<Videos> {
   Stream<QuerySnapshot> _videosStream() {
     Query query = FirebaseFirestore.instance.collection('Videos');
 
-    if (selectedCategory != null) {
+    if (selectedCategory != null && selectedCategory != 'Totes') {
       query = query.where('Categoria', isEqualTo: selectedCategory);
     }
 
@@ -132,7 +135,6 @@ class _VideosState extends State<Videos> {
 
   @override
   void dispose() {
-    // 🔥 IMPORTANTE: cerrar controllers
     for (var controller in _controllers.values) {
       controller.close();
     }
@@ -175,95 +177,157 @@ class _VideosState extends State<Videos> {
         ],
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 15),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: TextField(
-                      onChanged: (value) {
-                        setState(() => searchQuery = value.toLowerCase());
-                      },
-                      decoration: InputDecoration(
-                        hintText: "Buscar per títol...",
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 15),
+
+              // Buscador + filtros centrados y más cortos
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    children: [
+                      // Barra de búsqueda
+                      TextField(
+                        onChanged: (value) {
+                          setState(() => searchQuery = value.toLowerCase());
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Buscar per títol...",
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: _videosStream(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const CircularProgressIndicator();
-                      }
+                      const SizedBox(height: 10),
 
-                      final docs = snapshot.data!.docs;
-
-                      final filtered = docs.where((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        return data['Titol']
-                            .toString()
-                            .toLowerCase()
-                            .contains(searchQuery);
-                      }).toList();
-
-                      return Column(
-                        children: filtered.map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-
-                          if (!_controllers.containsKey(data['Titol'])) {
-                            final videoId =
-                                YoutubePlayerController.convertUrlToId(
-                                    data['url']);
-
-                            if (videoId != null) {
-                              _controllers[data['Titol']] =
-                                  YoutubePlayerController.fromVideoId(
-                                videoId: videoId,
-                                autoPlay: false,
-                                params: const YoutubePlayerParams(
-                                  showControls: true,
-                                  showFullscreenButton: false, // 🔥 SOLUCIÓN
+                      // Filtros debajo de búsqueda
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Seleccionar Categoria:",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedCategory,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                              );
-                            }
-                          }
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxWidth:
-                                        isDesktop ? 700 : double.infinity),
-                                child: VideoCard(
-                                  videoUrl: data['url'],
-                                  videoTitle: data['Titol'],
-                                  videoCategoria: data['Categoria'],
-                                  userId: widget.userId,
-                                  onMarkAsViewed: marcarComoVisto,
-                                  isDesktop: isDesktop,
-                                  controller: _controllers[data['Titol']]!,
-                                ),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 10),
                               ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: 'Totes',
+                                  child: Text('Totes'),
+                                ),
+                                ...categorias.map((cat) => DropdownMenuItem(
+                                      value: cat,
+                                      child: Text(cat),
+                                    )),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value ?? 'Totes';
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                searchQuery = '';
+                                selectedCategory = 'Totes';
+                              });
+                            },
+                            icon: const Icon(Icons.refresh),
+                            tooltip: 'Restablir filtres',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // Lista de videos filtrada
+              StreamBuilder<QuerySnapshot>(
+                stream: _videosStream(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  final filtered = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final matchTitle = data['Titol']
+                        .toString()
+                        .toLowerCase()
+                        .contains(searchQuery);
+                    return matchTitle;
+                  }).toList();
+
+                  return Column(
+                    children: filtered.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+
+                      if (!_controllers.containsKey(data['Titol'])) {
+                        final videoId =
+                            YoutubePlayerController.convertUrlToId(data['url']);
+
+                        if (videoId != null) {
+                          _controllers[data['Titol']] =
+                              YoutubePlayerController.fromVideoId(
+                            videoId: videoId,
+                            autoPlay: false,
+                            params: const YoutubePlayerParams(
+                              showControls: true,
+                              showFullscreenButton: false,
                             ),
                           );
-                        }).toList(),
+                        }
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxWidth: isDesktop ? 700 : double.infinity),
+                            child: VideoCard(
+                              videoUrl: data['url'],
+                              videoTitle: data['Titol'],
+                              videoCategoria: data['Categoria'],
+                              userId: widget.userId,
+                              onMarkAsViewed: marcarComoVisto,
+                              isDesktop: isDesktop,
+                              controller: _controllers[data['Titol']]!,
+                            ),
+                          ),
+                        ),
                       );
-                    },
-                  ),
-                ],
+                    }).toList(),
+                  );
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
