@@ -14,6 +14,7 @@ import 'package:kidneyproject/pages/graficaEstatAnim.dart';
 import 'package:kidneyproject/pages/help_prinicipal_page.dart';
 import 'package:kidneyproject/pages/information_principal_page.dart';
 import 'package:kidneyproject/pages/lesMevesDades.dart';
+import 'package:kidneyproject/pages/logrosPage.dart';
 import 'package:kidneyproject/pages/menuDietes.dart';
 import 'package:kidneyproject/pages/menu_joc.dart';
 import 'package:kidneyproject/pages/sign_Up_Choose.dart';
@@ -114,17 +115,38 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
             child: Column(
               children: <Widget>[
                 const SizedBox(height: 5),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Row(
                   children: [
-                    TopImgs(imagePath: 'assets/images/logoKNP_NT.png'),
-                    Expanded(child: SizedBox()),
+                    const TopImgs(imagePath: 'assets/images/logoKNP_NT.png'),
+                    Spacer(), // empuja el botón a la derecha
                     Padding(
-                      padding: EdgeInsets.only(right: 20.0),
-                      child: SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: TopImgs(imagePath: 'assets/images/ajustes.png'),
+                      padding: const EdgeInsets.only(
+                          right: 16.0), // margen desde la derecha
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  LogrosPage(userId: widget.userId),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.yellow[700], // fondo amarillo
+                          elevation: 6, // relieve
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                12), // esquinas redondeadas
+                          ),
+                          padding: EdgeInsets.all(12), // tamaño del botón
+                        ),
+                        child: Icon(
+                          Icons.star,
+                          color: Colors
+                              .white, // estrella blanca sobre fondo amarillo
+                          size: 32,
+                        ),
                       ),
                     ),
                   ],

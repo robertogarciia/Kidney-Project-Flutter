@@ -110,7 +110,7 @@ class _VideoCardState extends State<VideoCard> {
                     onPressed: _openYoutube,
                     icon: const Icon(Icons.open_in_new),
                     label: const Text(
-                      'Ver vídeo en YouTube',
+                      'Veure vídeo a YouTube',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
