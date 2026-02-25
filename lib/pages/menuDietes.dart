@@ -189,6 +189,7 @@ class _MenuDietesState extends State<MenuDietes> {
                     const SizedBox(height: 30),
 
                     // Ver dietes propias del familiar
+                    // Ver dietes propias del familiar
                     if (_tipoUsuario == 'Familiar')
                       ElevatedButton(
                         onPressed: () {
@@ -205,7 +206,7 @@ class _MenuDietesState extends State<MenuDietes> {
                         child: const Text('Veure les meves dietes creades',
                             style: TextStyle(fontSize: 25)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orangeAccent,
+                          backgroundColor: Colors.greenAccent,
                           minimumSize: const Size(300, 70),
                         ),
                       ),

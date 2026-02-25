@@ -17,12 +17,11 @@ class _VideosState extends State<Videos> {
   String searchQuery = '';
   bool isFamiliar = false;
   String? relatedPatientId;
+  bool loadingRelacion = false;
   bool mostrarImagen = false;
 
-  // Hardcode de categorías
   final List<String> categorias = ['Nutrició', 'Diàlisis'];
 
-  // Controladores persistentes por título de video
   final Map<String, YoutubePlayerController> _controllers = {};
 
   @override
@@ -44,8 +43,10 @@ class _VideosState extends State<Videos> {
       if (data == null) return;
 
       if (data['tipo'] == 'Familiar') {
-        if (!mounted) return;
-        setState(() => isFamiliar = true);
+        setState(() {
+          isFamiliar = true;
+          loadingRelacion = true;
+        });
 
         final relacionSnapshot = await FirebaseFirestore.instance
             .collection('Usuarios')
@@ -55,29 +56,43 @@ class _VideosState extends State<Videos> {
             .get();
 
         if (relacionSnapshot.docs.isNotEmpty) {
-          final dniPaciente = relacionSnapshot.docs.first.data()['DniPaciente'];
-          await _getPatientIdFromDNI(dniPaciente);
+          final dniPaciente =
+              relacionSnapshot.docs.first.data()['DniPaciente'] as String?;
+          if (dniPaciente != null) {
+            await _getPatientIdFromDNI(dniPaciente);
+          }
         }
+
+        setState(() {
+          loadingRelacion = false;
+        });
       }
     } catch (e) {
       debugPrint("Error verificando tipo usuario: $e");
     }
   }
 
+  /// Busca el paciente recorriendo la colección Usuarios para evitar CollectionGroup
   Future<void> _getPatientIdFromDNI(String dniPaciente) async {
     try {
-      final query = await FirebaseFirestore.instance
-          .collectionGroup('dadesPersonals')
-          .where('Dni', isEqualTo: dniPaciente)
-          .limit(1)
-          .get();
+      final usersSnapshot =
+          await FirebaseFirestore.instance.collection('Usuarios').get();
 
-      if (query.docs.isNotEmpty) {
-        final doc = query.docs.first;
-        final userRef = doc.reference.parent.parent;
+      for (var userDoc in usersSnapshot.docs) {
+        final personalDataSnapshot = await userDoc.reference
+            .collection('dadesPersonals')
+            .doc('dades')
+            .get();
 
-        if (userRef != null && mounted) {
-          setState(() => relatedPatientId = userRef.id);
+        if (personalDataSnapshot.exists) {
+          final personalData = personalDataSnapshot.data();
+          if (personalData?['Dni'] == dniPaciente) {
+            setState(() {
+              relatedPatientId = userDoc.id;
+              debugPrint("Paciente relacionado encontrado: $relatedPatientId");
+            });
+            break;
+          }
         }
       }
     } catch (e) {
@@ -159,20 +174,35 @@ class _VideosState extends State<Videos> {
           if (isFamiliar)
             Padding(
               padding: const EdgeInsets.only(right: 10),
-              child: ElevatedButton(
-                onPressed: relatedPatientId == null
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => videosPacient(
-                                relatedPatientId: relatedPatientId!),
+              child: loadingRelacion
+                  ? SizedBox(
+                      width: 120,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
                           ),
-                        );
-                      },
-                child: const Text("Vídeos pacient"),
-              ),
+                        ),
+                      ),
+                    )
+                  : relatedPatientId != null
+                      ? ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => videosPacient(
+                                  relatedPatientId: relatedPatientId!,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text("Vídeos pacient"),
+                        )
+                      : SizedBox.shrink(),
             )
         ],
       ),
@@ -181,14 +211,12 @@ class _VideosState extends State<Videos> {
           child: Column(
             children: [
               const SizedBox(height: 15),
-
-              // Buscador + filtros centrados y más cortos
+              // Buscador + filtros
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Column(
                     children: [
-                      // Barra de búsqueda
                       TextField(
                         onChanged: (value) {
                           setState(() => searchQuery = value.toLowerCase());
@@ -205,8 +233,6 @@ class _VideosState extends State<Videos> {
                         ),
                       ),
                       const SizedBox(height: 10),
-
-                      // Filtros debajo de búsqueda
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -231,10 +257,12 @@ class _VideosState extends State<Videos> {
                                   value: 'Totes',
                                   child: Text('Totes'),
                                 ),
-                                ...categorias.map((cat) => DropdownMenuItem(
-                                      value: cat,
-                                      child: Text(cat),
-                                    )),
+                                ...categorias.map(
+                                  (cat) => DropdownMenuItem(
+                                    value: cat,
+                                    child: Text(cat),
+                                  ),
+                                ),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -260,19 +288,14 @@ class _VideosState extends State<Videos> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 15),
-
-              // Lista de videos filtrada
               StreamBuilder<QuerySnapshot>(
                 stream: _videosStream(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const CircularProgressIndicator();
                   }
-
                   final docs = snapshot.data!.docs;
-
                   final filtered = docs.where((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final matchTitle = data['Titol']
@@ -285,11 +308,9 @@ class _VideosState extends State<Videos> {
                   return Column(
                     children: filtered.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
-
                       if (!_controllers.containsKey(data['Titol'])) {
                         final videoId =
                             YoutubePlayerController.convertUrlToId(data['url']);
-
                         if (videoId != null) {
                           _controllers[data['Titol']] =
                               YoutubePlayerController.fromVideoId(
@@ -302,7 +323,6 @@ class _VideosState extends State<Videos> {
                           );
                         }
                       }
-
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         child: Align(
