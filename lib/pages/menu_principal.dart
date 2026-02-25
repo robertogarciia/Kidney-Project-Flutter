@@ -21,7 +21,6 @@ import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
 import 'package:kidneyproject/pages/trivial_game.dart';
 import 'package:kidneyproject/pages/videos_principal_page.dart';
-import 'package:kidneyproject/pages/graficaEstatAnim.dart';
 import 'package:kidneyproject/pages/noticiesPage.dart';
 
 class MenuPrincipal extends StatefulWidget {
@@ -35,52 +34,8 @@ class MenuPrincipal extends StatefulWidget {
 
 class _MenuPrincipalState extends State<MenuPrincipal> {
   Timer? _timer;
-  bool _isCheckingMood =
-      false; // Bandera para evitar múltiples navegaciones simultáneas
+  bool _isCheckingMood = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // _startMoodCheckTimer();
-  }
-
-/*
-  void _startMoodCheckTimer() async {
-    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('tipusDeUsuario')
-        .doc('tipus')
-        .get();
-
-    if (userSnapshot.exists) {
-      String tipoUsuario = userSnapshot['tipo'];
-
-      if (tipoUsuario == 'Pacient') {
-        print('Temporizador iniciat');
-        _timer = Timer.periodic(Duration(minutes: 10), (timer) {
-          if (!_isCheckingMood) {
-            _isCheckingMood = true;
-            print('Navegant a EstatAnim...');
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => EstatAnim(userId: widget.userId)),
-            ).then((_) {
-              _isCheckingMood = false;
-              print('Regresó de EstatAnim');
-            });
-          }
-        });
-      } else {
-        print(
-            'El tipo de usuario no es Pacient, el temporizador no se activa.');
-      }
-    } else {
-      print('Usuario no encontrado en la base de datos');
-    }
-  }
-*/
   @override
   void dispose() {
     _timer?.cancel();
@@ -94,34 +49,29 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
     );
   }
 
-  void register(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SignUpChoose()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         bool cerrarSesion = await mostrarDialogoCerrarSesion(context);
-        return cerrarSesion; // Devuelve `true` para salir, `false` para quedarse
+        return cerrarSesion;
       },
       child: Scaffold(
         backgroundColor: Colors.grey[300],
         body: SafeArea(
-          child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               children: <Widget>[
-                const SizedBox(height: 5),
+                const SizedBox(height: 10),
+
+                /// 🔹 LOGO + BOTÓN LOGROS
                 Row(
                   children: [
                     const TopImgs(imagePath: 'assets/images/logoKNP_NT.png'),
-                    Spacer(), // empuja el botón a la derecha
+                    const Spacer(),
                     Padding(
-                      padding: const EdgeInsets.only(
-                          right: 16.0), // margen desde la derecha
+                      padding: const EdgeInsets.only(right: 16.0),
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -133,28 +83,38 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow[700], // fondo amarillo
-                          elevation: 6, // relieve
+                          backgroundColor: Colors.yellow[700],
+                          elevation: 6,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                12), // esquinas redondeadas
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: EdgeInsets.all(12), // tamaño del botón
+                          padding: const EdgeInsets.all(12),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.star,
-                          color: Colors
-                              .white, // estrella blanca sobre fondo amarillo
+                          color: Colors.white,
                           size: 32,
                         ),
                       ),
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 10),
+
+                /// 🔹 TÍTULO
                 const Text(
                   'Menú Principal',
-                  style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+
+                const SizedBox(height: 25),
+
+                /// 🔹 FILA 1
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -164,15 +124,19 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                         navigateToPage(context, MenuJoc(userId: widget.userId));
                       },
                     ),
-                    const SizedBox(width: 30),
+                    const SizedBox(width: 15),
                     MidleImgs(
                       imagePath: 'assets/images/vids.png',
                       onTap: () {
                         navigateToPage(context, Videos(userId: widget.userId));
                       },
-                    )
+                    ),
                   ],
                 ),
+
+                const SizedBox(height: 15),
+
+                /// 🔹 FILA 2
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -182,16 +146,20 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                         navigateToPage(context, Ajuda(userId: widget.userId));
                       },
                     ),
-                    const SizedBox(width: 30),
+                    const SizedBox(width: 15),
                     MidleImgs(
                       imagePath: 'assets/images/inf.png',
                       onTap: () {
                         navigateToPage(
                             context, noticiesPage(userId: widget.userId));
                       },
-                    )
+                    ),
                   ],
                 ),
+
+                const SizedBox(height: 15),
+
+                /// 🔹 FILA 3
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -216,23 +184,27 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 15),
+
+                /// 🔹 FILA 4
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     MidleImgs(
                       imagePath: 'assets/images/comu.png',
-                      height: 155,
                       width: 155,
+                      height: 155,
                       onTap: () {
                         navigateToPage(
                             context, Comunities(userId: widget.userId));
                       },
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 8),
                     MidleImgs(
                       imagePath: 'assets/images/imatgeDietes.png',
-                      height: 155,
                       width: 150,
+                      height: 155,
                       onTap: () {
                         navigateToPage(
                             context, MenuDietes(userId: widget.userId));
@@ -240,6 +212,8 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -262,12 +236,10 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context)
-                      .pop(true); // Cierra el diálogo antes de navegar
+                  Navigator.of(context).pop(true);
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => SignIn()), // Redirige al login
+                    MaterialPageRoute(builder: (context) => SignIn()),
                   );
                 },
                 child: const Text("Tancar sessió"),

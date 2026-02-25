@@ -19,7 +19,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
 
   bool isLoading = false;
 
-  // 🔐 Password validation variables
+  // 🔐 Variables de validación de contraseña
   bool showPasswordRestrictions = false;
   bool hasUpperCase = false;
   bool hasNumber = false;
@@ -43,9 +43,8 @@ class _SignUpChooseState extends State<SignUpChoose> {
     });
   }
 
-  // 🔥 REGISTER CON FIREBASE AUTH
   Future<void> registerUser() async {
-    // 🚫 Bloquear si no cumple requisitos
+    // 🚫 Validar requisitos de contraseña antes de continuar
     if (!hasUpperCase || !hasNumber || !hasSpecialChar || !hasMinLength) {
       showDialog(
         context: context,
@@ -57,9 +56,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Acceptar'),
             ),
           ],
@@ -71,14 +68,17 @@ class _SignUpChooseState extends State<SignUpChoose> {
     setState(() => isLoading = true);
 
     try {
+      print('Intentando crear usuario en Firebase Auth...');
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
-      String uid = userCredential.user!.uid;
+      final uid = userCredential.user!.uid;
+      print('Usuario creado en Auth con UID: $uid');
 
+      // 🔥 Solo si Auth fue exitoso, crear Firestore
       await FirebaseFirestore.instance.collection('Usuarios').doc(uid).set({
         'Email': emailController.text.trim(),
         'Nombre': nameController.text.trim(),
@@ -90,10 +90,9 @@ class _SignUpChooseState extends State<SignUpChoose> {
           .doc(uid)
           .collection('tipusDeUsuario')
           .doc('tipus')
-          .set({
-        'tipo': null,
-      });
+          .set({'tipo': null});
 
+      // ✅ Mostrar confirmación
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -114,7 +113,8 @@ class _SignUpChooseState extends State<SignUpChoose> {
         ),
       );
     } on FirebaseAuthException catch (e) {
-      String message = "Error al registrar";
+      print('Error en Firebase Auth: ${e.code}');
+      String message = 'Error al registrar';
 
       if (e.code == 'email-already-in-use') {
         message = 'Aquest correu ja està registrat.';
@@ -122,19 +122,34 @@ class _SignUpChooseState extends State<SignUpChoose> {
         message = 'La contrasenya és massa dèbil.';
       } else if (e.code == 'invalid-email') {
         message = 'El correu electrònic no és vàlid.';
+      } else if (e.code == 'network-request-failed') {
+        message = 'Error de connexió. Revisa la teva xarxa.';
       }
 
       showDialog(
         context: context,
-        barrierDismissible: false, // opcional: evita cerrar tocando fuera
+        barrierDismissible: false,
         builder: (context) => AlertDialog(
           title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // 🔥 Cierra el alert
-              },
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      print('Error desconocido: $e');
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Ha ocurrido un error inesperado.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cerrar'),
             ),
           ],
@@ -162,7 +177,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
             child: Column(
               children: <Widget>[
                 const SizedBox(height: 30),
-
                 const Text(
                   'Registra\'t',
                   style: TextStyle(
@@ -170,12 +184,10 @@ class _SignUpChooseState extends State<SignUpChoose> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 Image.asset(
                   'assets/images/logoKNP_WT.png',
                   height: 250,
                 ),
-
                 const SizedBox(height: 20),
 
                 // Nombre
@@ -189,7 +201,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 15),
 
                 // Email
@@ -203,7 +214,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 15),
 
                 // Password
@@ -222,7 +232,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
 
                 // 🔐 RESTRICCIONES VISUALES
@@ -264,9 +273,9 @@ class _SignUpChooseState extends State<SignUpChoose> {
                       ],
                     ),
                   ),
-
                 const SizedBox(height: 20),
 
+                // Botón registrar
                 isLoading
                     ? const CircularProgressIndicator()
                     : BtnRegistrar(onTap: registerUser),
