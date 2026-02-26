@@ -30,9 +30,9 @@ class _MenuJocState extends State<MenuJoc> {
   int pointsNoHabilitats = 0;
   int maxPuntuacion = 0;
   int maxPuntuacionNoHabilitats = 0;
-  late bool isFamiliar; // Variable para verificar si es un familiar
-  late String? relatedPatientId; // Almacenar el ID del pacient relacionat
-  bool isLoading = true; // Variable para controlar el estat de carga
+  late bool isFamiliar; // Valor recibido por navegacion
+  late String? relatedPatientId; // Paciente relacionado recibido por navegacion
+  bool isLoading = false; // No hace falta consultar tipo/relacion aqui
 
   Future<void> _fetchCoinsAndPoints() async {
     try {
@@ -55,73 +55,6 @@ class _MenuJocState extends State<MenuJoc> {
     }
   }
 
-  // Funció per a verificar el tipo de usuari (familiars)
-  Future<void> _checkUserType() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('tipusDeUsuario')
-        .doc('tipus')
-        .get();
-
-    final userData = userDoc.data() as Map<String, dynamic>?;
-
-    if (userData == null) {
-      print(
-          "Error: No se encontró el documento de tipusDeUsuario para ${widget.userId}");
-      return;
-    }
-
-    if (userData['tipo'] == 'Familiar') {
-      setState(() {
-        isFamiliar = true; // Es un familiar, habilitar opciones
-      });
-
-      // Obtenir el pacient relacionat amb aquest familiar
-      final relatedPatientDocs = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('relacionFamiliarPaciente')
-          .get();
-
-      if (relatedPatientDocs.docs.isNotEmpty) {
-        final relatedPatientData = relatedPatientDocs.docs.first.data();
-        final dniPaciente =
-            relatedPatientData['DniPaciente']; // Obtener el DNI del paciente
-        await _getPatientIdFromDNI(
-            dniPaciente); // Obtener el ID del paciente usando el DNI
-      }
-    }
-    setState(() {
-      isLoading = false; // Fi carga de la info
-    });
-  }
-
-  // Funció per obtenir el ID del pacient a partir del DNI
-  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final usersSnapshot =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
-
-    for (var userDoc in usersSnapshot.docs) {
-      // Buscar en 'dadesPersonals' per el DNI del pacient
-      final personalDataSnapshot = await userDoc.reference
-          .collection('dadesPersonals')
-          .doc('dades')
-          .get();
-
-      if (personalDataSnapshot.exists) {
-        final personalData = personalDataSnapshot.data();
-        if (personalData?['Dni'] == dniPaciente) {
-          // Si es troba el DNI, obtenir el ID del usuari
-          setState(() {
-            relatedPatientId =
-                userDoc.id; // Almacenar el ID del pacient relacionat
-          });
-          break;
-        }
-      }
-    }
-  }
 
   void navigateToPage(BuildContext context, Widget page) {
     Navigator.push(
@@ -140,7 +73,7 @@ class _MenuJocState extends State<MenuJoc> {
     isFamiliar = widget.isFamiliar;
     relatedPatientId = widget.relatedPatientId;
     _fetchCoinsAndPoints(); // Obtenir  punts i monedes
-    _checkUserType(); // Verificar si el usuari es familiar
+
   }
 
   @override
