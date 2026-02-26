@@ -191,7 +191,9 @@ class _MenuDietesState extends State<MenuDietes> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => lesMevesDietes(
-                                userId: idParaVer, mostrarSoloPropias: false),
+                                userId: idParaVer,
+                                pacienteId: widget.pacienteId,
+                                mostrarSoloPropias: false),
                           ),
                         );
                       },
@@ -217,6 +219,7 @@ class _MenuDietesState extends State<MenuDietes> {
                             MaterialPageRoute(
                               builder: (context) => lesMevesDietes(
                                   userId: widget.userId,
+                                  pacienteId: widget.pacienteId,
                                   mostrarSoloPropias: true),
                             ),
                           );
