@@ -34,33 +34,53 @@ class _MenuJocState extends State<MenuJoc> {
   late String? relatedPatientId; // Paciente relacionado recibido por navegacion
   bool isLoading = false; // No hace falta consultar tipo/relacion aqui
 
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
   Future<void> _fetchCoinsAndPoints() async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+    });
+
     try {
-      DocumentSnapshot userData = await FirebaseFirestore.instance
+      final userData = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(widget.userId)
           .collection('trivial')
           .doc('datos')
           .get();
 
+      final data = userData.data() as Map<String, dynamic>? ?? {};
+      if (!mounted) return;
       setState(() {
-        coins = userData['coins'] ?? 0;
-        points = userData['points'] ?? 0;
-        maxPuntuacion = userData['maxPuntuacion'] ?? 0;
-        pointsNoHabilitats = userData['pointsNoHabilitats'] ?? 0;
-        maxPuntuacionNoHabilitats = userData['maxPuntuacionNoHabilitats'] ?? 0;
+        coins = _toInt(data['coins']);
+        points = _toInt(data['points']);
+        maxPuntuacion = _toInt(data['maxPuntuacion']);
+        pointsNoHabilitats = _toInt(data['pointsNoHabilitats']);
+        maxPuntuacionNoHabilitats = _toInt(data['maxPuntuacionNoHabilitats']);
+        isLoading = false;
       });
     } catch (error) {
       print('Error al obtener los datos del usuario: $error');
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
 
-  void navigateToPage(BuildContext context, Widget page) {
-    Navigator.push(
+  Future<void> navigateToPage(BuildContext context, Widget page) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
     );
+    await _fetchCoinsAndPoints();
   }
 
   void navigateBackToMenu(BuildContext context) {
@@ -83,19 +103,23 @@ class _MenuJocState extends State<MenuJoc> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () =>
-              navigateToPage(context, MenuPrincipal(
+          onPressed: () async {
+            await navigateToPage(
+              context,
+              MenuPrincipal(
                 userId: widget.userId,
                 isFamiliar: isFamiliar,
                 relatedPatientId: relatedPatientId,
-              )),
+              ),
+            );
+          },
         ),
         actions: [
           IconButton(
             icon:
                 Image.asset('assets/images/ranking.png', width: 50, height: 50),
-            onPressed: () {
-              navigateToPage(context, RankingPage(
+            onPressed: () async {
+              await navigateToPage(context, RankingPage(
                   userId: widget.userId,
                   isFamiliar: isFamiliar,
                   relatedPatientId: relatedPatientId,
@@ -159,8 +183,8 @@ class _MenuJocState extends State<MenuJoc> {
 
                 // Botón para "Joc amb habilitats"
                 GestureDetector(
-                  onTap: () {
-                    navigateToPage(context, TrivialPage(
+                  onTap: () async {
+                    await navigateToPage(context, TrivialPage(
                           userId: widget.userId,
                           isFamiliar: isFamiliar,
                           relatedPatientId: relatedPatientId,
@@ -190,8 +214,8 @@ class _MenuJocState extends State<MenuJoc> {
 
                 // Botón para "Joc sense habilitats"
                 GestureDetector(
-                  onTap: () {
-                    navigateToPage(context,
+                  onTap: () async {
+                    await navigateToPage(context,
                         TrivialPageNoHabilitats(
                           userId: widget.userId,
                           isFamiliar: isFamiliar,

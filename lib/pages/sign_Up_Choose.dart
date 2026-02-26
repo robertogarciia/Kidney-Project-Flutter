@@ -259,11 +259,14 @@ class _SignUpChooseState extends State<SignUpChoose> {
                 // Nombre
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: TextField(
-                    controller: nameController,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: TextField(
+                      controller: nameController,
                     decoration: const InputDecoration(
                       hintText: 'Nom complet',
                       border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
@@ -272,11 +275,14 @@ class _SignUpChooseState extends State<SignUpChoose> {
                 // Email
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: TextField(
-                    controller: emailController,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: TextField(
+                      controller: emailController,
                     decoration: const InputDecoration(
                       hintText: 'Correu electrònic',
                       border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
@@ -285,8 +291,10 @@ class _SignUpChooseState extends State<SignUpChoose> {
                 // Password amb ícono mostrar/ocultar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: TextField(
-                    controller: passwordController,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: TextField(
+                      controller: passwordController,
                     obscureText: !showPassword,
                     onChanged: (value) {
                       showPasswordRestrictions = true;
@@ -308,6 +316,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
                             showPassword = !showPassword;
                           });
                         },
+                      ),
                       ),
                     ),
                   ),

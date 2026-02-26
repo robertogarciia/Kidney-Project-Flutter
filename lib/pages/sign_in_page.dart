@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/pages/login_page.dart';
 import 'package:kidneyproject/pages/menu_principal.dart';
+import 'package:kidneyproject/pages/sign_Up_Choose.dart';
 import 'package:kidneyproject/pages/sign_up_type_page.dart';
 import 'package:kidneyproject/pages/tipus_usuari.dart';
 
@@ -150,7 +151,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
   void navigateToRegistrationPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignUpTypePage()),
+      MaterialPageRoute(builder: (context) => SignUpChoose()),
     );
   }
 
@@ -184,37 +185,47 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                     ),
                     Image.asset('assets/images/logoKNP_WT.png', height: 300),
                     const SizedBox(height: 15),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        hintText: 'Correu Electrònic',
-                        border: OutlineInputBorder(),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 360),
+                      child: TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          hintText: 'Correu Electrònic',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15),
-                    TextField(
-                      controller: _contrasenyaController,
-                      obscureText: _isObscured,
-                      decoration: InputDecoration(
-                        hintText: 'Contrasenya',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(_isObscured
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                          onPressed: () {
-                            setState(() {
-                              _isObscured = !_isObscured;
-                            });
-                          },
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 360),
+                      child: TextField(
+                        controller: _contrasenyaController,
+                        obscureText: _isObscured,
+                        decoration: InputDecoration(
+                          hintText: 'Contrasenya',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(_isObscured
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                            onPressed: () {
+                              setState(() {
+                                _isObscured = !_isObscured;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 15),
                     _isLoading
                         ? const CircularProgressIndicator()
-                        : BtnIniciSessio(
-                            onTap: () => signUserIn(context),
+                        : ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 360),
+                            child: BtnIniciSessio(
+                              onTap: () => signUserIn(context),
+                              margin: EdgeInsets.zero,
+                            ),
                           ),
                     const SizedBox(height: 15),
                     GestureDetector(

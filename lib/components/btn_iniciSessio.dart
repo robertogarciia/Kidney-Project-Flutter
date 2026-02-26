@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class BtnIniciSessio extends StatelessWidget {
   final Function()? onTap;
+  final EdgeInsetsGeometry margin;
 
-  const BtnIniciSessio({Key? key, required this.onTap}) : super(key: key);
+  const BtnIniciSessio({
+    Key? key,
+    required this.onTap,
+    this.margin = const EdgeInsets.symmetric(horizontal: 25),
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +19,7 @@ class BtnIniciSessio extends StatelessWidget {
         width: double.infinity, // Ancho máximo igual al ancho de la pantalla
         child: Container(
           padding: const EdgeInsets.all(15),
-          margin: const EdgeInsets.symmetric(horizontal: 25),
+          margin: margin,
           decoration: BoxDecoration(
             color: const Color(0xFF403DF3),
             borderRadius: BorderRadius.circular(20),
