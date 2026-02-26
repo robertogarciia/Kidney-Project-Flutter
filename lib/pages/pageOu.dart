@@ -62,11 +62,11 @@ class _pageOuState extends State<pageOu> {
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(20.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 6.0,
-              mainAxisSpacing: 6.0,
+            padding: const EdgeInsets.all(12.0),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).size.width >= 1000 ? 6 : 4,
+              crossAxisSpacing: 4.0,
+              mainAxisSpacing: 4.0,
               childAspectRatio: 1,
             ),
             itemCount: snapshot.data!.docs.length,
@@ -150,7 +150,7 @@ class _pageOuState extends State<pageOu> {
                           dieta['Nom'] ?? 'Sin nombre',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
