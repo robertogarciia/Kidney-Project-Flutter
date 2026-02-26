@@ -24,73 +24,68 @@ class _ComunitiesState extends State<Comunities> {
   }
 
   Future<String> obtenerNombreOtroParticipante(String chatId) async {
-    var chat = await FirebaseFirestore.instance.collection('Chats').doc(chatId).get();
+    var chat =
+        await FirebaseFirestore.instance.collection('Chats').doc(chatId).get();
     var participants = chat['Participants'];
-
     String otherUserId = participants.firstWhere((id) => id != widget.userId);
 
-    var userDoc = await FirebaseFirestore.instance.collection('Usuarios').doc(otherUserId).get();
+    // Buscar en Usuarios
+    var userDoc = await FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(otherUserId)
+        .get();
+    if (userDoc.exists) return userDoc['Nombre'] ?? 'Usuari';
 
-    if (userDoc.exists) {
-      return userDoc['Nombre'] ?? 'Usuari';
-    } else {
-      var personalDoc = await FirebaseFirestore.instance.collection('personalMèdic').doc(otherUserId).get();
-      if (personalDoc.exists) {
-        return personalDoc['Nom'] ?? 'Personal';
-      } else {
-        return 'No trobat';
-      }
-    }
+    // Buscar en personalMèdic
+    var personalDoc = await FirebaseFirestore.instance
+        .collection('personalMèdic')
+        .doc(otherUserId)
+        .get();
+    if (personalDoc.exists) return personalDoc['Nom'] ?? 'Personal';
+
+    return 'No trobat';
   }
 
   Future<String?> obtenirCategoriaDelContacte(String chatId) async {
-    var chat = await FirebaseFirestore.instance.collection('Chats').doc(chatId).get();
+    var chat =
+        await FirebaseFirestore.instance.collection('Chats').doc(chatId).get();
     var participants = chat['Participants'];
     String otherUserId = participants.firstWhere((id) => id != widget.userId);
 
-    var personalDoc = await FirebaseFirestore.instance.collection('personalMèdic').doc(otherUserId).get();
-    if (personalDoc.exists) {
-      return personalDoc['Categoria'];
-    }
+    var personalDoc = await FirebaseFirestore.instance
+        .collection('personalMèdic')
+        .doc(otherUserId)
+        .get();
+    if (personalDoc.exists) return personalDoc['Categoria'];
     return 'Altres';
   }
 
   Future<void> mostrarSeleccionCrearXat(BuildContext context) async {
-    final relationsSnapshot = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('relacióUsuariPersonal')
-        .get();
-
-    List<Map<String, dynamic>> relacions = [];
-
-    for (final doc in relationsSnapshot.docs) {
+    // 1️⃣ Obtener todos los profesionales
+    final personalSnapshot =
+        await FirebaseFirestore.instance.collection('personalMèdic').get();
+    List<Map<String, dynamic>> personalList = personalSnapshot.docs.map((doc) {
       final data = doc.data();
-      final ref = data['idPersonal'] as DocumentReference?;
-      if (ref != null) {
-        final personalSnap = await ref.get();
-        final personalData = personalSnap.data() as Map<String, dynamic>?;
-        if (personalData != null) {
-          relacions.add({
-            'id': doc.id,
-            'categoria': personalData['Categoria'] ?? 'No disponible',
-            'nom': personalData['Nom'] ?? 'No disponible',
-            'idPersonal': ref.id,
-          });
-        }
-      }
-    }
+      return {
+        'idPersonal': doc.id,
+        'nom': data['Nom'] ?? 'No disponible',
+        'categoria': data['Categoria'] ?? 'Altres',
+      };
+    }).toList();
 
+    // 2️⃣ Filtrar los que ya tienen chat
     List<String> idsPersonasConChat = [];
-    for (final r in relacions) {
-      final idAltre = r['idPersonal'];
-      final participants = [widget.userId, idAltre]..sort();
+    for (final p in personalList) {
+      final participants = [widget.userId, p['idPersonal']]..sort();
       final chatId = participants.join("_");
-      final chatRef = FirebaseFirestore.instance.collection('Chats').doc(chatId);
-      final chatExists = await chatRef.get();
-      if (chatExists.exists) idsPersonasConChat.add(idAltre);
+      final chatRef = await FirebaseFirestore.instance
+          .collection('Chats')
+          .doc(chatId)
+          .get();
+      if (chatRef.exists) idsPersonasConChat.add(p['idPersonal']);
     }
 
+    // 3️⃣ Variables para el modal
     String? categoriaSeleccionada;
     Map<String, dynamic>? personalSeleccionat;
 
@@ -99,88 +94,129 @@ class _ComunitiesState extends State<Comunities> {
       isScrollControlled: true,
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setState) {
+          // Filtrar por categoría y eliminar los que ya tienen chat
           final personalFiltrat = categoriaSeleccionada == null
-              ? relacions
-              : relacions.where((e) => e['categoria'] == categoriaSeleccionada).toList();
+              ? personalList
+              : personalList
+                  .where((p) => p['categoria'] == categoriaSeleccionada)
+                  .toList();
 
-          final personalSinChat = personalFiltrat.where((p) => !idsPersonasConChat.contains(p['idPersonal'])).toList();
+          final personalSinChat = personalFiltrat
+              .where((p) => !idsPersonasConChat.contains(p['idPersonal']))
+              .toList();
 
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Nou xat", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("Nou xat",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 SizedBox(height: 16),
-                DropdownButton<String>(
-                  isExpanded: true,
-                  hint: Text('Categoria (opcional)'),
-                  value: categoriaSeleccionada,
-                  items: [null, ...relacions.map((e) => e['categoria'] as String).toSet()]
-                      .map((cat) => DropdownMenuItem(
-                    value: cat,
-                    child: Text(cat ?? 'Totes'),
-                  ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      categoriaSeleccionada = value;
-                      personalSeleccionat = null;
-                    });
-                  },
+
+                // Dropdown de categoría con estilo
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blueAccent, width: 1.5),
+                  ),
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    hint: Text('Categoria (opcional)'),
+                    value: categoriaSeleccionada,
+                    items: [
+                      null,
+                      ...personalList
+                          .map((p) => p['categoria'] as String)
+                          .toSet()
+                    ]
+                        .map((cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat ?? 'Totes'),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        categoriaSeleccionada = value;
+                        personalSeleccionat = null;
+                      });
+                    },
+                    dropdownColor: Colors.white,
+                    iconEnabledColor: Colors.blueAccent,
+                    underline: SizedBox(),
+                  ),
                 ),
                 SizedBox(height: 12),
-                DropdownButton<Map<String, dynamic>>(
-                  isExpanded: true,
-                  hint: Text('Selecciona personal'),
-                  value: personalSeleccionat,
-                  items: personalSinChat
-                      .map((p) => DropdownMenuItem(
-                    value: p,
-                    child: Text(p['nom']),
-                  ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      personalSeleccionat = value;
-                    });
-                  },
+
+                // Dropdown de personal con **mismo estilo**
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blueAccent, width: 1.5),
+                  ),
+                  child: DropdownButton<Map<String, dynamic>>(
+                    isExpanded: true,
+                    hint: Text('Selecciona personal'),
+                    value: personalSeleccionat,
+                    items: personalSinChat
+                        .map((p) => DropdownMenuItem(
+                              value: p,
+                              child: Text(p['nom']),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        personalSeleccionat = value;
+                      });
+                    },
+                    dropdownColor: Colors.white,
+                    iconEnabledColor: Colors.blueAccent,
+                    underline: SizedBox(),
+                  ),
                 ),
                 SizedBox(height: 16),
+
                 ElevatedButton(
                   onPressed: personalSeleccionat == null
                       ? null
                       : () async {
-                    final idAltre = personalSeleccionat!['idPersonal'];
-                    final participants = [widget.userId, idAltre]..sort();
-                    final chatId = participants.join("_");
-                    final chatRef = FirebaseFirestore.instance.collection('Chats').doc(chatId);
-                    final chatExists = await chatRef.get();
+                          final idAltre = personalSeleccionat!['idPersonal'];
+                          final participants = [widget.userId, idAltre]..sort();
+                          final chatId = participants.join("_");
+                          final chatRef = FirebaseFirestore.instance
+                              .collection('Chats')
+                              .doc(chatId);
+                          final chatExists = await chatRef.get();
 
-                    if (chatExists.exists) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Este chat ja existeix.')),
-                      );
-                    } else {
-                      await chatRef.set({
-                        'Participants': participants,
-                        'ultimMissatge': '',
-                        'lastTimestamp': Timestamp.now()
-                      });
+                          if (chatExists.exists) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Este chat ja existeix.')),
+                            );
+                          } else {
+                            await chatRef.set({
+                              'Participants': participants,
+                              'ultimMissatge': '',
+                              'lastTimestamp': Timestamp.now(),
+                            });
 
-                      Navigator.pop(ctx);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatPage(
-                            chatId: chatId,
-                            userId: widget.userId,
-                            otherUserName: personalSeleccionat!['nom'],
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  chatId: chatId,
+                                  userId: widget.userId,
+                                  otherUserName: personalSeleccionat!['nom'],
+                                ),
+                              ),
+                            );
+                          }
+                        },
                   child: Text("Iniciar xat"),
                 ),
               ],
@@ -213,7 +249,8 @@ class _ComunitiesState extends State<Comunities> {
                       prefixIcon: Icon(Icons.search),
                       filled: true,
                       fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onChanged: (_) {
                       setState(() {});
@@ -222,7 +259,8 @@ class _ComunitiesState extends State<Comunities> {
                   SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: ['Totes', 'Personal', 'Alimentació'].map((categoria) {
+                    children:
+                        ['Totes', 'Personal', 'Alimentació'].map((categoria) {
                       bool isSelected = _categoriaFiltrada == categoria;
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -245,14 +283,17 @@ class _ComunitiesState extends State<Comunities> {
               child: StreamBuilder<QuerySnapshot>(
                 stream: obtenerChats(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                  if (!snapshot.hasData)
+                    return Center(child: CircularProgressIndicator());
                   var chats = snapshot.data!.docs;
 
                   return FutureBuilder<List<Map<String, dynamic>>>(
                     future: Future.wait(chats.map((chat) async {
                       final chatId = chat.id;
-                      final otherName = await obtenerNombreOtroParticipante(chatId);
-                      final categoria = await obtenirCategoriaDelContacte(chatId);
+                      final otherName =
+                          await obtenerNombreOtroParticipante(chatId);
+                      final categoria =
+                          await obtenirCategoriaDelContacte(chatId);
                       return {
                         'chat': chat,
                         'otherUserName': otherName,
@@ -260,20 +301,21 @@ class _ComunitiesState extends State<Comunities> {
                       };
                     })),
                     builder: (context, userDataSnapshot) {
-                      if (!userDataSnapshot.hasData) return Center(child: CircularProgressIndicator());
+                      if (!userDataSnapshot.hasData)
+                        return Center(child: CircularProgressIndicator());
 
-                      var filtrats = userDataSnapshot.data!
-                          .where((item) {
-                        final matchCategoria = _categoriaFiltrada == 'Totes' || item['categoria'] == _categoriaFiltrada;
+                      var filtrats = userDataSnapshot.data!.where((item) {
+                        final matchCategoria = _categoriaFiltrada == 'Totes' ||
+                            item['categoria'] == _categoriaFiltrada;
                         final matchText = item['otherUserName']
                             .toString()
                             .toLowerCase()
                             .contains(_searchController.text.toLowerCase());
                         return matchCategoria && matchText;
-                      })
-                          .toList();
+                      }).toList();
 
-                      if (filtrats.isEmpty) return Center(child: Text('No s\'han trobat xats.'));
+                      if (filtrats.isEmpty)
+                        return Center(child: Text('No s\'han trobat xats.'));
 
                       return ListView.builder(
                         itemCount: filtrats.length,
@@ -282,20 +324,27 @@ class _ComunitiesState extends State<Comunities> {
                           var chat = item['chat'];
                           var chatId = chat.id;
                           var otherUserName = item['otherUserName'];
-                          var lastMessage = chat['ultimMissatge'] ?? 'No hi ha missatges encara';
-                          var lastTimestamp = chat['lastTimestamp']?.toDate() ?? DateTime.now();
+                          var lastMessage = chat['ultimMissatge'] ??
+                              'No hi ha missatges encara';
+                          var lastTimestamp =
+                              chat['lastTimestamp']?.toDate() ?? DateTime.now();
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             child: Card(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               elevation: 3,
                               color: Colors.white,
                               child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
                                 title: Text(
                                   otherUserName,
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent),
                                 ),
                                 subtitle: Text(
                                   "últim missatge: $lastMessage",
