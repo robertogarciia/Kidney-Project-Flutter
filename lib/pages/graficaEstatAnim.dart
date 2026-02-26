@@ -22,7 +22,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
   bool isLoading = true;
   bool isFamiliar = false;
   String relatedPatientId = '';
-
+  bool isLoadingUserType = true;
   final List<String> months = [
     'Gener',
     'Febrer',
@@ -109,6 +109,8 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
   }
 
   Future<void> fetchMoodData(String month) async {
+    isLoadingUserType = false;
+
     setState(() => isLoading = true);
 
     try {
@@ -312,33 +314,35 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
               ),
               const SizedBox(height: 30),
 
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pinkAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(Icons.mood, color: Colors.white),
-                label: const Text(
-                  "Registrar estat d'ànim",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EstatAnim(userId: widget.userId),
+// Després dins del build:
+              if (!isFamiliar && !isLoadingUserType)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pinkAccent,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  );
-                },
-              ),
+                  ),
+                  icon: const Icon(Icons.mood, color: Colors.white),
+                  label: const Text(
+                    "Registrar estat d'ànim",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EstatAnim(userId: widget.userId),
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),

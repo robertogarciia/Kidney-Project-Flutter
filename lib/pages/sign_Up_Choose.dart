@@ -19,12 +19,13 @@ class _SignUpChooseState extends State<SignUpChoose> {
 
   bool isLoading = false;
 
-  // 🔐 Variables de validación de contraseña
+  // 🔐 Variables de validació de contrasenya
   bool showPasswordRestrictions = false;
   bool hasUpperCase = false;
   bool hasNumber = false;
   bool hasSpecialChar = false;
   bool hasMinLength = false;
+  bool showPassword = false; // Mostrar/ocultar contrasenya
 
   @override
   void dispose() {
@@ -44,7 +45,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
   }
 
   Future<void> registerUser() async {
-    // 🚫 Validar requisitos de contraseña antes de continuar
     if (!hasUpperCase || !hasNumber || !hasSpecialChar || !hasMinLength) {
       showDialog(
         context: context,
@@ -68,7 +68,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
     setState(() => isLoading = true);
 
     try {
-      print('Intentando crear usuario en Firebase Auth...');
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -76,9 +75,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
       );
 
       final uid = userCredential.user!.uid;
-      print('Usuario creado en Auth con UID: $uid');
 
-      // 🔥 Solo si Auth fue exitoso, crear Firestore
       await FirebaseFirestore.instance.collection('Usuarios').doc(uid).set({
         'Email': emailController.text.trim(),
         'Nombre': nameController.text.trim(),
@@ -92,7 +89,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
           .doc('tipus')
           .set({'tipo': null});
 
-      // ✅ Mostrar confirmación
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -113,7 +109,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
         ),
       );
     } on FirebaseAuthException catch (e) {
-      print('Error en Firebase Auth: ${e.code}');
       String message = 'Error al registrar';
 
       if (e.code == 'email-already-in-use') {
@@ -141,7 +136,6 @@ class _SignUpChooseState extends State<SignUpChoose> {
         ),
       );
     } catch (e) {
-      print('Error desconocido: $e');
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -216,25 +210,39 @@ class _SignUpChooseState extends State<SignUpChoose> {
                 ),
                 const SizedBox(height: 15),
 
-                // Password
+                // Password amb ícono mostrar/ocultar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: TextField(
                     controller: passwordController,
-                    obscureText: true,
+                    obscureText: !showPassword,
                     onChanged: (value) {
                       showPasswordRestrictions = true;
                       validatePassword(value);
+                      setState(() {}); // Per refrescar checkmarks
                     },
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Contrasenya',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          showPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Colors.grey[700],
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            showPassword = !showPassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // 🔐 RESTRICCIONES VISUALES
+                // 🔐 RESTRICCIONS VISUALES
                 if (showPasswordRestrictions)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -275,7 +283,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
                   ),
                 const SizedBox(height: 20),
 
-                // Botón registrar
+                // Botó registrar
                 isLoading
                     ? const CircularProgressIndicator()
                     : BtnRegistrar(onTap: registerUser),

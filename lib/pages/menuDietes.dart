@@ -195,15 +195,18 @@ class _MenuDietesState extends State<MenuDietes> {
                           ),
                         );
                       },
-                      child: const Text('Veure Dietes',
-                          style: TextStyle(fontSize: 25)),
+                      child: Text(
+                        _tipoUsuario == 'Familiar'
+                            ? 'Veure Dietes Pacient'
+                            : 'Veure Dietes',
+                        style: const TextStyle(fontSize: 25),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.greenAccent,
                         minimumSize: const Size(300, 70),
                       ),
                     ),
                     const SizedBox(height: 30),
-
                     // Ver dietes propias del familiar
                     // Ver dietes propias del familiar
                     if (_tipoUsuario == 'Familiar')
