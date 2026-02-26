@@ -5,13 +5,11 @@ import 'package:kidneyproject/pages/laMevaDietaDetall.dart';
 
 class lesMevesDietes extends StatefulWidget {
   final String userId;
-  final String tipusC;
   final bool mostrarSoloPropias; // Nuevo parámetro
 
   const lesMevesDietes({
     Key? key,
     required this.userId,
-    required this.tipusC,
     this.mostrarSoloPropias = false,
   }) : super(key: key);
 

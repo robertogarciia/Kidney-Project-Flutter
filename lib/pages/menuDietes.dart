@@ -42,8 +42,8 @@ class _MenuDietesState extends State<MenuDietes> {
   }
 
   Future<void> _loadData() async {
-    await _getTipusC();
     await _getTipoUsuario();
+    await _getTipusC();
     setState(() {
       _datosCargados = true;
       _mostrarLoading = false;
@@ -52,15 +52,33 @@ class _MenuDietesState extends State<MenuDietes> {
 
   Future<void> _getTipusC() async {
     try {
+      final String idCorrecto =
+          (_tipoUsuario == 'Familiar' && widget.pacienteId.isNotEmpty)
+              ? widget.pacienteId
+              : widget.userId;
+
+      print('Tipo usuario: $_tipoUsuario');
+      print('UserId: ${widget.userId}');
+      print('PacienteId: ${widget.pacienteId}');
+      print('ID usado para cargar dadesMediques: $idCorrecto');
+
       DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
-          .doc(widget.userId)
+          .doc(idCorrecto)
           .collection('dadesMediques')
           .doc('datos')
           .get();
 
-      _tipusC =
-          docSnapshot.exists ? docSnapshot['tipusC'] ?? '' : 'Desconocido';
+      print('Documento existe: ${docSnapshot.exists}');
+      print('Datos documento: ${docSnapshot.data()}');
+
+      if (docSnapshot.exists) {
+        _tipusC = docSnapshot['tipusC'] ?? '';
+        print('TipusC obtenido: $_tipusC');
+      } else {
+        _tipusC = 'Desconocido';
+        print('No existe dadesMediques/datos para ese usuario');
+      }
     } catch (e) {
       print('Error al obtener dades: $e');
     }
@@ -173,9 +191,7 @@ class _MenuDietesState extends State<MenuDietes> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => lesMevesDietes(
-                                userId: idParaVer,
-                                tipusC: _tipusC,
-                                mostrarSoloPropias: false),
+                                userId: idParaVer, mostrarSoloPropias: false),
                           ),
                         );
                       },
@@ -198,7 +214,6 @@ class _MenuDietesState extends State<MenuDietes> {
                             MaterialPageRoute(
                               builder: (context) => lesMevesDietes(
                                   userId: widget.userId,
-                                  tipusC: _tipusC,
                                   mostrarSoloPropias: true),
                             ),
                           );
