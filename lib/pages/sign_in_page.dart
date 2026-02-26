@@ -103,7 +103,11 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
           relatedPatientId: relatedPatientId,
         );
       } else {
-        targetPage = TipusUsuari(userId: userId);
+        targetPage = TipusUsuari(
+          userId: userId,
+          isFamiliar: isFamiliar,
+          relatedPatientId: relatedPatientId,
+        );
       }
 
       Navigator.pushReplacement(

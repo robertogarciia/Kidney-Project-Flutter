@@ -69,13 +69,52 @@ class _SignUpChooseState extends State<SignUpChoose> {
   }
 
   Future<void> registerUser() async {
-    // Validación antes de enviar
+    if (isLoading) return;
+
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final name = nameController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Dades incompletes'),
+          content: const Text('Completa nom, correu i contrasenya.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Acceptar')),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Correu invalid'),
+          content: const Text('Introdueix un correu electronic valid.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Acceptar')),
+          ],
+        ),
+      );
+      return;
+    }
+
     if (!hasUpperCase || !hasNumber || !hasSpecialChar || !hasMinLength) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text('Contrasenya invàlida'),
+          title: const Text('Contrasenya invalida'),
           content: const Text(
               'La contrasenya ha de complir tots els requisits indicats.'),
           actions: [
@@ -89,25 +128,22 @@ class _SignUpChooseState extends State<SignUpChoose> {
     }
 
     setState(() => isLoading = true);
+    UserCredential? userCredential;
 
     try {
-      // Crear usuario en Firebase Auth
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
       final uid = userCredential.user!.uid;
 
-      // Guardar datos en Firestore
       await FirebaseFirestore.instance.collection('Usuarios').doc(uid).set({
-        'Email': emailController.text.trim(),
-        'Nombre': nameController.text.trim(),
+        'Email': email,
+        'Nombre': name,
         'createdAt': Timestamp.now(),
       });
 
-      // Inicializar tipo de usuario
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(uid)
@@ -115,7 +151,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
           .doc('tipus')
           .set({'tipo': null});
 
-      // Mensaje de éxito
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -139,15 +175,16 @@ class _SignUpChooseState extends State<SignUpChoose> {
       String message = 'Error al registrar';
 
       if (e.code == 'email-already-in-use') {
-        message = 'Aquest correu ja està registrat.';
+        message = 'Aquest correu ja esta registrat.';
       } else if (e.code == 'weak-password') {
-        message = 'La contrasenya és massa dèbil.';
+        message = 'La contrasenya es massa debil.';
       } else if (e.code == 'invalid-email') {
-        message = 'El correu electrònic no és vàlid.';
+        message = 'El correu electronic no es valid.';
       } else if (e.code == 'network-request-failed') {
-        message = 'Error de connexió. Revisa la teva xarxa.';
+        message = 'Error de connexio. Revisa la teva xarxa.';
       }
 
+      if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -162,11 +199,19 @@ class _SignUpChooseState extends State<SignUpChoose> {
         ),
       );
     } catch (e) {
+      if (userCredential?.user != null) {
+        try {
+          await userCredential!.user!.delete();
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Error'),
-          content: const Text('Ha ocurrido un error inesperado.'),
+          content: const Text(
+              'No sha pogut completar el registre. Torna-ho a provar.'),
           actions: [
             TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -175,7 +220,9 @@ class _SignUpChooseState extends State<SignUpChoose> {
         ),
       );
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 

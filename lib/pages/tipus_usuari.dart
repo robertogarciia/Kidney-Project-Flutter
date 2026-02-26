@@ -8,8 +8,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TipusUsuari extends StatelessWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const TipusUsuari({Key? key, required this.userId}) : super(key: key);
+  const TipusUsuari({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   Future<void> actualizarTipoUsuario(BuildContext context, String tipoUsuario) async {
     try {
@@ -30,7 +37,12 @@ class TipusUsuari extends StatelessWidget {
       } else if (tipoUsuario == 'Familiar') {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DadesFamiliars(userId: userId)), 
+          MaterialPageRoute(
+              builder: (context) => DadesFamiliars(
+                    userId: userId,
+                    isFamiliar: true,
+                    relatedPatientId: null,
+                  )), 
         );
       } else {
         Navigator.push(
