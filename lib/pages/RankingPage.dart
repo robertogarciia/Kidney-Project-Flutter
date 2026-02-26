@@ -5,8 +5,15 @@ import 'package:kidneyproject/pages/menu_joc.dart';
 
 class RankingPage extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const RankingPage({Key? key, required this.userId}) : super(key: key);
+  const RankingPage({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _RankingPageState createState() => _RankingPageState();
@@ -80,7 +87,11 @@ class _RankingPageState extends State<RankingPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => MenuJoc(userId: widget.userId),
+                builder: (context) => MenuJoc(
+                  userId: widget.userId,
+                  isFamiliar: widget.isFamiliar,
+                  relatedPatientId: widget.relatedPatientId,
+                ),
               ),
             );
           },
@@ -188,7 +199,11 @@ class _RankingPageState extends State<RankingPage> {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  RankingPageNoHabilidades(userId: widget.userId),
+                  RankingPageNoHabilidades(
+                    userId: widget.userId,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
+                  ),
             ),
           );
         },

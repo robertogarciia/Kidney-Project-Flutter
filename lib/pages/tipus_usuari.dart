@@ -35,7 +35,11 @@ class TipusUsuari extends StatelessWidget {
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MenuPrincipal(userId: userId)),
+          MaterialPageRoute(builder: (context) => MenuPrincipal(
+            userId: userId,
+            isFamiliar: false,
+            relatedPatientId: null,
+          )),
         );
       }
     } catch (error) {

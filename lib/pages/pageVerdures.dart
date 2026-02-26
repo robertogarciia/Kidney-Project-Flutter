@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageVerdures extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pageVerdures({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pageVerdures({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pageVerduresState createState() => _pageVerduresState();
@@ -42,6 +49,8 @@ class _pageVerduresState extends State<pageVerdures> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -100,6 +109,8 @@ class _pageVerduresState extends State<pageVerdures> {
                                 dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

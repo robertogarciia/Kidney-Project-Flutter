@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pagePeix extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pagePeix({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pagePeix({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pagePeixState createState() => _pagePeixState();
@@ -42,6 +49,8 @@ class _pagePeixState extends State<pagePeix> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -100,6 +109,8 @@ class _pagePeixState extends State<pagePeix> {
                                 dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

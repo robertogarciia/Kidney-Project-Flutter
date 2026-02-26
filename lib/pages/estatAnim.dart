@@ -5,8 +5,15 @@ import 'package:kidneyproject/pages/menu_principal.dart';
 
 class EstatAnim extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const EstatAnim({Key? key, required this.userId}) : super(key: key);
+  const EstatAnim({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _EstatAnimState createState() => _EstatAnimState();
@@ -59,7 +66,11 @@ class _EstatAnimState extends State<EstatAnim> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => MenuPrincipal(userId: widget.userId)),
+              builder: (context) => MenuPrincipal(
+                userId: widget.userId,
+                isFamiliar: widget.isFamiliar,
+                relatedPatientId: widget.relatedPatientId,
+              )),
         );
       }
     } catch (e) {

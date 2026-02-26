@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageTubercles extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pageTubercles({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pageTubercles({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pageTuberclesState createState() => _pageTuberclesState();
@@ -42,6 +49,8 @@ class _pageTuberclesState extends State<pageTubercles> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -100,6 +109,8 @@ class _pageTuberclesState extends State<pageTubercles> {
                                 dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

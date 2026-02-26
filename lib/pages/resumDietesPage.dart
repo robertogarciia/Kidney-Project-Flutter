@@ -9,6 +9,8 @@ class resumDietesPage extends StatefulWidget {
   final String tipusC;
   final int puntuacionTotal;
   final List<Map<String, dynamic>> alimentos;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
   const resumDietesPage({
     Key? key,
@@ -16,6 +18,8 @@ class resumDietesPage extends StatefulWidget {
     required this.tipusC,
     required this.puntuacionTotal,
     required this.alimentos,
+    this.isFamiliar = false,
+    this.relatedPatientId,
   }) : super(key: key);
 
   @override
@@ -135,7 +139,11 @@ class _resumDietesPageState extends State<resumDietesPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MenuDietes(userId: widget.userId),
+            builder: (context) => MenuDietes(
+              userId: widget.userId,
+              isFamiliar: widget.isFamiliar,
+              relatedPatientId: widget.relatedPatientId,
+            ),
           ),
         );
       }

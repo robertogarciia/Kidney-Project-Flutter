@@ -9,8 +9,16 @@ import 'package:kidneyproject/pages/resumDietesPage.dart';
 class cestaPage extends StatelessWidget {
   final String userId; // ID de l'usuari
   final String tipusC; // Tipus de dieta
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const cestaPage({Key? key, required this.userId, required this.tipusC}) : super(key: key);
+  const cestaPage({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   // Funció per guardar la puntuació de la dieta finalitzada.
   Future<void> _guardarPuntuacion(BuildContext context, int puntuacionTotal) async {
@@ -51,6 +59,8 @@ class cestaPage extends StatelessWidget {
                   builder: (context) => crearDietes(
                     userId: userId,
                     tipusC: tipusC,
+                    isFamiliar: isFamiliar,
+                    relatedPatientId: relatedPatientId,
                   ),
                 ),
               );
@@ -115,9 +125,11 @@ class cestaPage extends StatelessWidget {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => crearDietes(
-                                              userId: userId,
-                                              tipusC: tipusC,
-                                            ),
+                    userId: userId,
+                    tipusC: tipusC,
+                    isFamiliar: isFamiliar,
+                    relatedPatientId: relatedPatientId,
+                  ),
                                           ),
                                         );
                                       },
@@ -188,6 +200,8 @@ class cestaPage extends StatelessWidget {
                               tipusC: tipusC,
                               puntuacionTotal: cestaProvider.puntuacionTotal,
                               alimentos: cestaProvider.cestaItems,
+                              isFamiliar: isFamiliar,
+                              relatedPatientId: relatedPatientId,
                             )),
                       );
                     },

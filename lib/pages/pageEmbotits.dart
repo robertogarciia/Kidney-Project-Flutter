@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageEmbotits extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pageEmbotits({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pageEmbotits({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pageEmbotitsState createState() => _pageEmbotitsState();
@@ -42,6 +49,8 @@ class _pageEmbotitsState extends State<pageEmbotits> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -95,11 +104,13 @@ class _pageEmbotitsState extends State<pageEmbotits> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => detallPage(
-                            nombre: dieta['Nom'] ?? 'Sense nombre',
+                            nombre: dieta['Nom'] ?? 'Sin nombre',
                             descripcion:
-                                dieta['Descripció'] ?? 'sense descripció',
+                                dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

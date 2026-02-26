@@ -4,8 +4,15 @@ import 'package:kidneyproject/pages/menu_principal.dart';
 
 class Ajuda extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const Ajuda({Key? key, required this.userId}) : super(key: key);
+  const Ajuda({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _AjudaState createState() => _AjudaState();
@@ -23,7 +30,11 @@ class _AjudaState extends State<Ajuda> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => MenuPrincipal(userId: widget.userId),
+                builder: (context) => MenuPrincipal(
+                  userId: widget.userId,
+                  isFamiliar: widget.isFamiliar,
+                  relatedPatientId: widget.relatedPatientId,
+                ),
               ),
             );
           },

@@ -3,8 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LogrosPage extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const LogrosPage({Key? key, required this.userId}) : super(key: key);
+  const LogrosPage({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _LogrosPageState createState() => _LogrosPageState();

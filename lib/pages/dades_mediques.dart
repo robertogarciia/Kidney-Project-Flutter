@@ -11,8 +11,15 @@ void main() {
 
 class Formulario3 extends StatelessWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const Formulario3({Key? key, required this.userId}) : super(key: key);
+  const Formulario3({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +28,26 @@ class Formulario3 extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Formulario(userId: userId), // Pasa el userId al widget al Formulari
+      home: Formulario(
+        userId: userId,
+        isFamiliar: isFamiliar,
+        relatedPatientId: relatedPatientId,
+      ), // Pasa el userId al widget al Formulari
     );
   }
 }
 
 class Formulario extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const Formulario({Key? key, required this.userId}) : super(key: key);
+  const Formulario({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _FormularioState createState() => _FormularioState();
@@ -80,7 +98,11 @@ class _FormularioState extends State<Formulario> {
       // Redirigir al menú principal después de guardar les dades
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => EstatAnim(userId: userId)),
+        MaterialPageRoute(builder: (context) => EstatAnim(
+            userId: userId,
+            isFamiliar: widget.isFamiliar,
+            relatedPatientId: widget.relatedPatientId,
+          )),
       );
     } catch (error) {
       // Manejo de errores

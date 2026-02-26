@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageCondiments extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pageCondiments({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pageCondiments({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pageCondimentsState createState() => _pageCondimentsState();
@@ -42,6 +49,8 @@ class _pageCondimentsState extends State<pageCondiments> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -100,6 +109,8 @@ class _pageCondimentsState extends State<pageCondiments> {
                                 dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

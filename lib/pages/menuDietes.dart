@@ -110,7 +110,11 @@ class _MenuDietesState extends State<MenuDietes> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                MenuPrincipal(userId: widget.userId),
+                                MenuPrincipal(
+                                userId: widget.userId,
+                                isFamiliar: widget.isFamiliar,
+                                relatedPatientId: widget.relatedPatientId,
+                              ),
                           ),
                         );
                       },
@@ -123,7 +127,11 @@ class _MenuDietesState extends State<MenuDietes> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MenuPrincipal(userId: widget.userId),
+                  builder: (context) => MenuPrincipal(
+                                userId: widget.userId,
+                                isFamiliar: widget.isFamiliar,
+                                relatedPatientId: widget.relatedPatientId,
+                              ),
                 ),
               );
             }
@@ -146,7 +154,11 @@ class _MenuDietesState extends State<MenuDietes> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => crearDietes(
-                                userId: widget.userId, tipusC: _tipusC),
+                                userId: widget.userId,
+                                tipusC: _tipusC,
+                                isFamiliar: widget.isFamiliar,
+                                relatedPatientId: widget.relatedPatientId,
+                              ),
                           ),
                         );
                       },

@@ -6,11 +6,15 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageOu extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
   const pageOu({
     Key? key,
     required this.userId,
     required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
   }) : super(key: key);
 
   @override
@@ -34,6 +38,8 @@ class _pageOuState extends State<pageOu> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -85,11 +91,14 @@ class _pageOuState extends State<pageOu> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => detallPage(
-                        nombre: dieta['Nom'] ?? 'Sin nombre',
-                        descripcion: dieta['Descripció'] ?? 'Sin descripción',
-                        imageUrl: imageUrl,
-                        puntuacion: puntuacion,
-                      ),
+                            nombre: dieta['Nom'] ?? 'Sin nombre',
+                            descripcion:
+                                dieta['Descripció'] ?? 'Sin descripción',
+                            imageUrl: imageUrl,
+                            puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
+                          ),
                     ),
                   );
                 },

@@ -79,7 +79,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       child: ElevatedButton(
                         onPressed: () {
                           navigateToPage(
-                              context, LogrosPage(userId: widget.userId));
+                              context,
+                              LogrosPage(
+                                userId: widget.userId,
+                                isFamiliar: _isFamiliar,
+                                relatedPatientId: _relatedPatientId,
+                              ));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow[700],
@@ -119,7 +124,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     BottomImgs(
                       imagePath: 'assets/images/mando.png',
                       onTap: () => navigateToPage(
-                          context, MenuJoc(userId: widget.userId)),
+                          context,
+                          MenuJoc(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                     const SizedBox(width: 15),
                     MidleImgs(
@@ -144,7 +154,13 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'assets/images/ajuda.png',
                       onTap: () =>
-                          navigateToPage(context, Ajuda(userId: widget.userId)),
+                          navigateToPage(
+                          context,
+                          Ajuda(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                     const SizedBox(width: 15),
                     MidleImgs(
@@ -171,7 +187,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       width: 155,
                       height: 155,
                       onTap: () => navigateToPage(
-                          context, LesMevesDades(userId: widget.userId)),
+                          context,
+                          LesMevesDades(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                     const SizedBox(width: 8),
                     MidleImgs(
@@ -200,7 +221,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       width: 155,
                       height: 155,
                       onTap: () => navigateToPage(
-                          context, Comunities(userId: widget.userId)),
+                          context,
+                          Comunities(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                     const SizedBox(width: 8),
                     MidleImgs(

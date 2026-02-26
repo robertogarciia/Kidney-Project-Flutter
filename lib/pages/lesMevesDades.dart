@@ -5,8 +5,15 @@ import 'package:kidneyproject/pages/menu_principal.dart';
 
 class LesMevesDades extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const LesMevesDades({Key? key, required this.userId}) : super(key: key);
+  const LesMevesDades({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _LesMevesDadesState createState() => _LesMevesDadesState();
@@ -107,7 +114,11 @@ class _LesMevesDadesState extends State<LesMevesDades> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => MenuPrincipal(userId: widget.userId)),
+              MaterialPageRoute(builder: (context) => MenuPrincipal(
+                  userId: widget.userId,
+                  isFamiliar: widget.isFamiliar,
+                  relatedPatientId: widget.relatedPatientId,
+                )),
                   (route) => false,
             );
           },
@@ -174,7 +185,11 @@ class _LesMevesDadesState extends State<LesMevesDades> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => LesMevesDadesMediques(userId: widget.userId),
+                          builder: (context) => LesMevesDadesMediques(
+                            userId: widget.userId,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
+                          ),
                         ),
                       );
                     },

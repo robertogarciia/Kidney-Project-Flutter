@@ -4,8 +4,15 @@ import 'ChatPage.dart';
 
 class Comunities extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const Comunities({Key? key, required this.userId}) : super(key: key);
+  const Comunities({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   State<Comunities> createState() => _ComunitiesState();

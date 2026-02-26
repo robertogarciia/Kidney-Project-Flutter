@@ -7,9 +7,16 @@ import 'package:kidneyproject/pages/detallPage.dart';
 class pageLactics extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const pageLactics({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const pageLactics({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _pageLacticsState createState() => _pageLacticsState();
@@ -42,6 +49,8 @@ class _pageLacticsState extends State<pageLactics> {
                   builder: (context) => cestaPage(
                     userId: widget.userId,
                     tipusC: widget.tipusC,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -100,6 +109,8 @@ class _pageLacticsState extends State<pageLactics> {
                                 dieta['Descripció'] ?? 'Sin descripción',
                             imageUrl: imageUrl,
                             puntuacion: puntuacion,
+                            isFamiliar: widget.isFamiliar,
+                            relatedPatientId: widget.relatedPatientId,
                           ),
                         ),
                       );

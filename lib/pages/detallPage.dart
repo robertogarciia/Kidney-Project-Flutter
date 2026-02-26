@@ -7,6 +7,8 @@ class detallPage extends StatelessWidget {
   final String descripcion;
   final String imageUrl;
   final int puntuacion;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
   const detallPage({
     Key? key,
@@ -14,6 +16,8 @@ class detallPage extends StatelessWidget {
     required this.descripcion,
     required this.imageUrl,
     required this.puntuacion,
+    this.isFamiliar = false,
+    this.relatedPatientId,
   }) : super(key: key);
 
   @override

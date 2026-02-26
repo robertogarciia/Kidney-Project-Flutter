@@ -7,8 +7,15 @@ import 'package:kidneyproject/pages/menu_principal.dart';
 
 class TrivialPage extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  TrivialPage({Key? key, required this.userId}) : super(key: key);
+  TrivialPage({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _TrivialPageState createState() => _TrivialPageState();
@@ -508,7 +515,11 @@ class _TrivialPageState extends State<TrivialPage> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MenuJoc(userId: widget.userId)),
+                      builder: (context) => MenuJoc(
+                        userId: widget.userId,
+                        isFamiliar: widget.isFamiliar,
+                        relatedPatientId: widget.relatedPatientId,
+                      )),
                 );
               },
               child: Text('Tornar al Menú'),

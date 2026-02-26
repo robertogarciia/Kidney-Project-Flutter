@@ -10,8 +10,15 @@ import 'jocPacient.dart';
 
 class MenuJoc extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const MenuJoc({Key? key, required this.userId}) : super(key: key);
+  const MenuJoc({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _MenuJocState createState() => _MenuJocState();
@@ -23,8 +30,8 @@ class _MenuJocState extends State<MenuJoc> {
   int pointsNoHabilitats = 0;
   int maxPuntuacion = 0;
   int maxPuntuacionNoHabilitats = 0;
-  bool isFamiliar = false; // Variable para verificar si es un familiar
-  String? relatedPatientId; // Almacenar el ID del pacient relacionat
+  late bool isFamiliar; // Variable para verificar si es un familiar
+  late String? relatedPatientId; // Almacenar el ID del pacient relacionat
   bool isLoading = true; // Variable para controlar el estat de carga
 
   Future<void> _fetchCoinsAndPoints() async {
@@ -130,6 +137,8 @@ class _MenuJocState extends State<MenuJoc> {
   @override
   void initState() {
     super.initState();
+    isFamiliar = widget.isFamiliar;
+    relatedPatientId = widget.relatedPatientId;
     _fetchCoinsAndPoints(); // Obtenir  punts i monedes
     _checkUserType(); // Verificar si el usuari es familiar
   }
@@ -142,14 +151,22 @@ class _MenuJocState extends State<MenuJoc> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () =>
-              navigateToPage(context, MenuPrincipal(userId: widget.userId)),
+              navigateToPage(context, MenuPrincipal(
+                userId: widget.userId,
+                isFamiliar: isFamiliar,
+                relatedPatientId: relatedPatientId,
+              )),
         ),
         actions: [
           IconButton(
             icon:
                 Image.asset('assets/images/ranking.png', width: 50, height: 50),
             onPressed: () {
-              navigateToPage(context, RankingPage(userId: widget.userId));
+              navigateToPage(context, RankingPage(
+                  userId: widget.userId,
+                  isFamiliar: isFamiliar,
+                  relatedPatientId: relatedPatientId,
+                ));
             },
           ),
         ],
@@ -210,7 +227,11 @@ class _MenuJocState extends State<MenuJoc> {
                 // Botón para "Joc amb habilitats"
                 GestureDetector(
                   onTap: () {
-                    navigateToPage(context, TrivialPage(userId: widget.userId));
+                    navigateToPage(context, TrivialPage(
+                          userId: widget.userId,
+                          isFamiliar: isFamiliar,
+                          relatedPatientId: relatedPatientId,
+                        ));
                   },
                   child: Container(
                     width: double.infinity,
@@ -238,7 +259,11 @@ class _MenuJocState extends State<MenuJoc> {
                 GestureDetector(
                   onTap: () {
                     navigateToPage(context,
-                        TrivialPageNoHabilitats(userId: widget.userId));
+                        TrivialPageNoHabilitats(
+                          userId: widget.userId,
+                          isFamiliar: isFamiliar,
+                          relatedPatientId: relatedPatientId,
+                        ));
                   },
                   child: Container(
                     width: double.infinity,

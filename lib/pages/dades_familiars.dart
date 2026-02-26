@@ -193,7 +193,11 @@ class _DadesFamiliarsState extends State<DadesFamiliars> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => MenuPrincipal(userId: userId)),
+                builder: (context) => MenuPrincipal(
+            userId: userId,
+            isFamiliar: true,
+            relatedPatientId: null,
+          )),
           );
         } catch (e) {
           print("Error al guardar los datos: $e");

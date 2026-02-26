@@ -20,9 +20,16 @@ import 'package:kidneyproject/pages/menuDietes.dart';
 class crearDietes extends StatefulWidget {
   final String userId;
   final String tipusC;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const crearDietes({Key? key, required this.userId, required this.tipusC})
-      : super(key: key);
+  const crearDietes({
+    Key? key,
+    required this.userId,
+    required this.tipusC,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _crearDietesState createState() => _crearDietesState();
@@ -50,7 +57,9 @@ class _crearDietesState extends State<crearDietes> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => MenuDietes(
-                    userId: widget.userId, // Pasa el userId a la nova pàgina
+                    userId: widget.userId,
+                    isFamiliar: widget.isFamiliar,
+                    relatedPatientId: widget.relatedPatientId,
                   ),
                 ),
               );
@@ -64,8 +73,10 @@ class _crearDietesState extends State<crearDietes> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => cestaPage(
-                      userId: widget.userId, // Pasa el userId a la nova pàgina
-                      tipusC: widget.tipusC, // Pasa el tipusC a la nova pàgina
+                      userId: widget.userId,
+                      tipusC: widget.tipusC,
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
                     ),
                   ),
                 );
@@ -89,7 +100,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pagePeix(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -99,7 +112,11 @@ class _crearDietesState extends State<crearDietes> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => pageCarns(
-                            userId: widget.userId, tipusC: widget.tipusC),
+                          userId: widget.userId,
+                          tipusC: widget.tipusC,
+                          isFamiliar: widget.isFamiliar,
+                          relatedPatientId: widget.relatedPatientId,
+                        ),
                       ),
                     );
                   }),
@@ -110,7 +127,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageOu(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -121,7 +140,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageEmbotits(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -132,7 +153,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageLactics(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -143,7 +166,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageLlegums(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -154,7 +179,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageVerdures(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -165,7 +192,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageTubercles(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -176,7 +205,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageFruita(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -187,7 +218,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageGreixos(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -198,7 +231,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageDolcos(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
@@ -209,7 +244,9 @@ class _crearDietesState extends State<crearDietes> {
                         builder: (context) => pageCondiments(
                           userId: widget.userId,
                           tipusC: widget.tipusC,
-                        ),
+                      isFamiliar: widget.isFamiliar,
+                      relatedPatientId: widget.relatedPatientId,
+                    ),
                       ),
                     );
                   }),
