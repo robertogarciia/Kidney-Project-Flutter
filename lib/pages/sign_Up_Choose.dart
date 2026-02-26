@@ -2,9 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:kidneyproject/components/btn_registrar.dart';
-import 'package:kidneyproject/pages/sign_in_page.dart';
+import 'sign_in_page.dart';
 
+/// BOTÓN REGISTRAR PERSONALIZADO
+class BtnRegistrar extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const BtnRegistrar({Key? key, required this.onTap}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.pinkAccent,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      child: const Text(
+        'Registrar',
+        style: TextStyle(
+            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    );
+  }
+}
+
+/// PANTALLA DE REGISTRO
 class SignUpChoose extends StatefulWidget {
   const SignUpChoose({Key? key}) : super(key: key);
 
@@ -19,13 +43,13 @@ class _SignUpChooseState extends State<SignUpChoose> {
 
   bool isLoading = false;
 
-  // 🔐 Variables de validació de contrasenya
+  // 🔐 Validación de contraseña
   bool showPasswordRestrictions = false;
   bool hasUpperCase = false;
   bool hasNumber = false;
   bool hasSpecialChar = false;
   bool hasMinLength = false;
-  bool showPassword = false; // Mostrar/ocultar contrasenya
+  bool showPassword = false; // Mostrar/ocultar contraseña
 
   @override
   void dispose() {
@@ -45,6 +69,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
   }
 
   Future<void> registerUser() async {
+    // Validación antes de enviar
     if (!hasUpperCase || !hasNumber || !hasSpecialChar || !hasMinLength) {
       showDialog(
         context: context,
@@ -52,13 +77,11 @@ class _SignUpChooseState extends State<SignUpChoose> {
         builder: (context) => AlertDialog(
           title: const Text('Contrasenya invàlida'),
           content: const Text(
-            'La contrasenya ha de complir tots els requisits indicats.',
-          ),
+              'La contrasenya ha de complir tots els requisits indicats.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Acceptar'),
-            ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Acceptar')),
           ],
         ),
       );
@@ -68,6 +91,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
     setState(() => isLoading = true);
 
     try {
+      // Crear usuario en Firebase Auth
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -76,12 +100,14 @@ class _SignUpChooseState extends State<SignUpChoose> {
 
       final uid = userCredential.user!.uid;
 
+      // Guardar datos en Firestore
       await FirebaseFirestore.instance.collection('Usuarios').doc(uid).set({
         'Email': emailController.text.trim(),
         'Nombre': nameController.text.trim(),
         'createdAt': Timestamp.now(),
       });
 
+      // Inicializar tipo de usuario
       await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(uid)
@@ -89,6 +115,7 @@ class _SignUpChooseState extends State<SignUpChoose> {
           .doc('tipus')
           .set({'tipo': null});
 
+      // Mensaje de éxito
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -129,9 +156,8 @@ class _SignUpChooseState extends State<SignUpChoose> {
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar'),
-            ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cerrar')),
           ],
         ),
       );
@@ -143,9 +169,8 @@ class _SignUpChooseState extends State<SignUpChoose> {
           content: const Text('Ha ocurrido un error inesperado.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar'),
-            ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cerrar')),
           ],
         ),
       );

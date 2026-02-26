@@ -4,7 +4,7 @@ import 'package:kidneyproject/components/button.dart';
 import 'package:kidneyproject/components/btn_iniciSessio.dart';
 import 'package:kidneyproject/components/btn_registrar.dart';
 import 'package:kidneyproject/pages/sign_in_page.dart';
-import 'package:kidneyproject/pages/sign_Up_Choose.dart';
+import 'package:kidneyproject/pages/sign_Up_Choose.dart' hide BtnRegistrar;
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);

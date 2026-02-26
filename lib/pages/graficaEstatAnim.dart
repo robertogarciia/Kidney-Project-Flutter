@@ -7,8 +7,15 @@ import 'estatAnim.dart';
 
 class graficaEstatAnim extends StatefulWidget {
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
-  const graficaEstatAnim({Key? key, required this.userId}) : super(key: key);
+  const graficaEstatAnim(
+      {Key? key,
+      required this.userId,
+      required this.isFamiliar,
+      this.relatedPatientId})
+      : super(key: key);
 
   @override
   _graficaEstatAnimState createState() => _graficaEstatAnimState();
@@ -20,9 +27,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
   final List<int> years = List<int>.generate(10, (index) => 2023 + index);
   int selectedYear = DateTime.now().year;
   bool isLoading = true;
-  bool isFamiliar = false;
-  String relatedPatientId = '';
-  bool isLoadingUserType = true;
+
   final List<String> months = [
     'Gener',
     'Febrer',
@@ -44,73 +49,10 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
     final now = DateTime.now();
     selectedMonth = months[now.month - 1];
     moodData = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
-    _checkUserType();
-  }
-
-  Future<void> _checkUserType() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('tipusDeUsuario')
-        .doc('tipus')
-        .get();
-
-    final userData = userDoc.data();
-    if (userData == null) {
-      print("Error: No se encontró el tipo de usuario.");
-      return;
-    }
-
-    if (userData['tipo'] == 'Familiar') {
-      setState(() {
-        isFamiliar = true;
-      });
-
-      final relatedDocs = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('relacionFamiliarPaciente')
-          .get();
-
-      if (relatedDocs.docs.isEmpty) {
-        print("Error: No hay relación con paciente.");
-        return;
-      }
-
-      final dniPaciente = relatedDocs.docs.first.data()['DniPaciente'];
-      await _getPatientIdFromDNI(dniPaciente);
-    } else {
-      fetchMoodData(selectedMonth);
-    }
-  }
-
-  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
-
-    for (var userDoc in snapshot.docs) {
-      final personalDataSnapshot = await userDoc.reference
-          .collection('dadesPersonals')
-          .doc('dades')
-          .get();
-
-      if (personalDataSnapshot.exists) {
-        final data = personalDataSnapshot.data();
-        if (data?['Dni'] == dniPaciente) {
-          setState(() {
-            relatedPatientId = userDoc.id;
-          });
-          break;
-        }
-      }
-    }
-
     fetchMoodData(selectedMonth);
   }
 
   Future<void> fetchMoodData(String month) async {
-    isLoadingUserType = false;
-
     setState(() => isLoading = true);
 
     try {
@@ -118,9 +60,13 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
       final end =
           DateTime(selectedYear, months.indexOf(month) + 2, 0, 23, 59, 59);
 
+      final targetUserId = widget.isFamiliar && widget.relatedPatientId != null
+          ? widget.relatedPatientId!
+          : widget.userId;
+
       final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
-          .doc(isFamiliar ? relatedPatientId : widget.userId)
+          .doc(targetUserId)
           .collection('estatAnim')
           .where('Data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
           .where('Data', isLessThanOrEqualTo: Timestamp.fromDate(end))
@@ -130,9 +76,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
 
       for (var doc in snapshot.docs) {
         final mood = doc['Estat'];
-        if (counts.containsKey(mood)) {
-          counts[mood] = counts[mood]! + 1;
-        }
+        if (counts.containsKey(mood)) counts[mood] = counts[mood]! + 1;
       }
 
       setState(() {
@@ -147,6 +91,10 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
 
   @override
   Widget build(BuildContext context) {
+    final targetUserId = widget.isFamiliar && widget.relatedPatientId != null
+        ? widget.relatedPatientId!
+        : widget.userId;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -155,7 +103,11 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => MenuPrincipal(userId: widget.userId)),
+                  builder: (context) => MenuPrincipal(
+                        userId: widget.userId,
+                        isFamiliar: widget.isFamiliar,
+                        relatedPatientId: widget.relatedPatientId,
+                      )),
             );
           },
         ),
@@ -251,6 +203,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
 
               const SizedBox(height: 30),
 
+              // Gráfica
               isLoading
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation(Colors.pinkAccent))
@@ -262,7 +215,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                               color: Colors.pinkAccent,
                               fontWeight: FontWeight.bold),
                         )
-                      : Container(
+                      : SizedBox(
                           height: 200,
                           width: 200,
                           child: PieChart(
@@ -299,6 +252,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
 
               const SizedBox(height: 30),
 
+              // Leyenda
               const Text('Llegenda',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
@@ -312,10 +266,11 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   _buildLegendItem('assets/images/caraTriste.png', 'Trist/a'),
                 ],
               ),
+
               const SizedBox(height: 30),
 
-// Després dins del build:
-              if (!isFamiliar && !isLoadingUserType)
+              // Botón registrar solo si NO es familiar
+              if (!widget.isFamiliar)
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pinkAccent,

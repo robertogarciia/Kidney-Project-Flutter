@@ -9,10 +9,16 @@ import 'cestaProvider.dart';
 
 class MenuDietes extends StatefulWidget {
   final String userId;
-  final String pacienteId; // Id del paciente que ve el familiar (opcional)
+  final bool isFamiliar; // Si el usuario es familiar
+  final String?
+      relatedPatientId; // Id del paciente que ve el familiar (opcional)
 
-  const MenuDietes({Key? key, required this.userId, this.pacienteId = ''})
-      : super(key: key);
+  const MenuDietes({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _MenuDietesState createState() => _MenuDietesState();
@@ -20,7 +26,6 @@ class MenuDietes extends StatefulWidget {
 
 class _MenuDietesState extends State<MenuDietes> {
   String _tipusC = '';
-  String _tipoUsuario = '';
   bool _datosCargados = false;
   bool _mostrarLoading = false;
 
@@ -28,7 +33,7 @@ class _MenuDietesState extends State<MenuDietes> {
   void initState() {
     super.initState();
     _startLoadingTimer();
-    _loadData();
+    _loadTipusC();
   }
 
   void _startLoadingTimer() {
@@ -41,61 +46,37 @@ class _MenuDietesState extends State<MenuDietes> {
     });
   }
 
-  Future<void> _loadData() async {
-    await _getTipoUsuario();
-    await _getTipusC();
-    setState(() {
-      _datosCargados = true;
-      _mostrarLoading = false;
-    });
-  }
-
-  Future<void> _getTipusC() async {
+  /// 🔹 Carga el tipusC directamente según el id correspondiente
+  Future<void> _loadTipusC() async {
     try {
-      final String idCorrecto =
-          (_tipoUsuario == 'Familiar' && widget.pacienteId.isNotEmpty)
-              ? widget.pacienteId
-              : widget.userId;
+      final idParaDatos = (widget.isFamiliar && widget.relatedPatientId != null)
+          ? widget.relatedPatientId!
+          : widget.userId;
 
-      print('Tipo usuario: $_tipoUsuario');
-      print('UserId: ${widget.userId}');
-      print('PacienteId: ${widget.pacienteId}');
-      print('ID usado para cargar dadesMediques: $idCorrecto');
-
-      DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+      final docSnapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
-          .doc(idCorrecto)
+          .doc(idParaDatos)
           .collection('dadesMediques')
           .doc('datos')
           .get();
-
-      print('Documento existe: ${docSnapshot.exists}');
-      print('Datos documento: ${docSnapshot.data()}');
 
       if (docSnapshot.exists) {
         _tipusC = docSnapshot['tipusC'] ?? '';
         print('TipusC obtenido: $_tipusC');
       } else {
         _tipusC = 'Desconocido';
-        print('No existe dadesMediques/datos para ese usuario');
+        print('No existe dadesMediques/datos para $idParaDatos');
       }
     } catch (e) {
-      print('Error al obtener dades: $e');
-    }
-  }
-
-  Future<void> _getTipoUsuario() async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('tipusDeUsuario')
-          .doc('tipus')
-          .get();
-
-      if (userDoc.exists) _tipoUsuario = userDoc['tipo'] ?? '';
-    } catch (e) {
-      print('Error al obtener el tipo de usuario: $e');
+      print('Error al obtener dadesMediques: $e');
+      _tipusC = 'Desconocido';
+    } finally {
+      if (mounted) {
+        setState(() {
+          _datosCargados = true;
+          _mostrarLoading = false;
+        });
+      }
     }
   }
 
@@ -128,8 +109,9 @@ class _MenuDietesState extends State<MenuDietes> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  MenuPrincipal(userId: widget.userId)),
+                            builder: (context) =>
+                                MenuPrincipal(userId: widget.userId),
+                          ),
                         );
                       },
                       child: const Text('Sí, vull continuar'),
@@ -157,7 +139,7 @@ class _MenuDietesState extends State<MenuDietes> {
                   children: [
                     const SizedBox(height: 50),
 
-                    // Crear dietes
+                    /// Crear dietes
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -179,12 +161,12 @@ class _MenuDietesState extends State<MenuDietes> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Ver dietes del paciente (si es familiar)
+                    /// Ver dietes del paciente (si es familiar)
                     ElevatedButton(
                       onPressed: () {
-                        final idParaVer = _tipoUsuario == 'Familiar' &&
-                                widget.pacienteId.isNotEmpty
-                            ? widget.pacienteId
+                        final idParaVer = (widget.isFamiliar &&
+                                widget.relatedPatientId != null)
+                            ? widget.relatedPatientId!
                             : widget.userId;
 
                         Navigator.push(
@@ -192,13 +174,13 @@ class _MenuDietesState extends State<MenuDietes> {
                           MaterialPageRoute(
                             builder: (context) => lesMevesDietes(
                                 userId: idParaVer,
-                                pacienteId: widget.pacienteId,
+                                pacienteId: widget.relatedPatientId,
                                 mostrarSoloPropias: false),
                           ),
                         );
                       },
                       child: Text(
-                        _tipoUsuario == 'Familiar'
+                        widget.isFamiliar
                             ? 'Veure Dietes Pacient'
                             : 'Veure Dietes',
                         style: const TextStyle(fontSize: 25),
@@ -209,9 +191,9 @@ class _MenuDietesState extends State<MenuDietes> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    // Ver dietes propias del familiar
-                    // Ver dietes propias del familiar
-                    if (_tipoUsuario == 'Familiar')
+
+                    /// Ver dietes propias del familiar
+                    if (widget.isFamiliar)
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -219,13 +201,15 @@ class _MenuDietesState extends State<MenuDietes> {
                             MaterialPageRoute(
                               builder: (context) => lesMevesDietes(
                                   userId: widget.userId,
-                                  pacienteId: widget.pacienteId,
+                                  pacienteId: widget.relatedPatientId,
                                   mostrarSoloPropias: true),
                             ),
                           );
                         },
-                        child: const Text('Veure les meves dietes creades',
-                            style: TextStyle(fontSize: 25)),
+                        child: const Text(
+                          'Veure les meves dietes creades',
+                          style: TextStyle(fontSize: 25),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.greenAccent,
                           minimumSize: const Size(300, 70),

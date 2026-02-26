@@ -35,7 +35,6 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // 🔐 LOGIN CON FIREBASE AUTH
   Future<void> signUserIn(BuildContext context) async {
     setState(() => _isLoading = true);
 
@@ -49,23 +48,60 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
       String userId = userCredential.user!.uid;
 
       // 🔎 Obtener tipo de usuario desde Firestore
-      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+      final tipoDoc = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(userId)
           .collection('tipusDeUsuario')
           .doc('tipus')
           .get();
 
+      final data = tipoDoc.data();
+      String tipo = data?['tipo'] ?? '';
+
+      bool isFamiliar = tipo == 'Familiar';
+      String? relatedPatientId;
+
+      // Si es familiar, buscamos el paciente relacionado directamente
+      if (isFamiliar) {
+        final relacionSnap = await FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(userId)
+            .collection('relacionFamiliarPaciente')
+            .limit(1)
+            .get();
+
+        if (relacionSnap.docs.isNotEmpty) {
+          final dniPaciente = relacionSnap.docs.first['DniPaciente'];
+
+          // Buscar el userId del paciente a partir del DNI
+          final usersSnapshot =
+              await FirebaseFirestore.instance.collection('Usuarios').get();
+
+          for (var userDoc in usersSnapshot.docs) {
+            final personalSnapshot = await userDoc.reference
+                .collection('dadesPersonals')
+                .doc('dades')
+                .get();
+
+            if (personalSnapshot.exists) {
+              final personalData = personalSnapshot.data();
+              if (personalData?['Dni'] == dniPaciente) {
+                relatedPatientId = userDoc.id;
+                break;
+              }
+            }
+          }
+        }
+      }
+
       Widget targetPage;
 
-      if (documentSnapshot.exists &&
-          documentSnapshot.data() != null &&
-          documentSnapshot['tipo'] != null) {
-        String tipo = documentSnapshot['tipo'];
-
-        targetPage = (tipo == 'Pacient' || tipo == 'Familiar')
-            ? MenuPrincipal(userId: userId)
-            : TipusUsuari(userId: userId);
+      if (tipo == 'Pacient' || tipo == 'Familiar') {
+        targetPage = MenuPrincipal(
+          userId: userId,
+          isFamiliar: isFamiliar,
+          relatedPatientId: relatedPatientId,
+        );
       } else {
         targetPage = TipusUsuari(userId: userId);
       }
@@ -75,7 +111,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
         MaterialPageRoute(builder: (context) => targetPage),
       );
     } on FirebaseAuthException catch (e) {
-      String message = "Error al inciar sessió";
+      String message = "Error al iniciar sessió";
 
       if (e.code == 'user-not-found') {
         message = 'No existeix cap usuari amb aquest correu.';
@@ -144,8 +180,6 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                     ),
                     Image.asset('assets/images/logoKNP_WT.png', height: 300),
                     const SizedBox(height: 15),
-
-                    // EMAIL
                     TextField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -153,10 +187,7 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                         border: OutlineInputBorder(),
                       ),
                     ),
-
                     const SizedBox(height: 15),
-
-                    // PASSWORD
                     TextField(
                       controller: _contrasenyaController,
                       obscureText: _isObscured,
@@ -175,17 +206,13 @@ class _SignInState extends State<SignIn> with WidgetsBindingObserver {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 15),
-
                     _isLoading
                         ? const CircularProgressIndicator()
                         : BtnIniciSessio(
                             onTap: () => signUserIn(context),
                           ),
-
                     const SizedBox(height: 15),
-
                     GestureDetector(
                       onTap: () => navigateToRegistrationPage(context),
                       child: Text(

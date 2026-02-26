@@ -6,7 +6,15 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class Videos extends StatefulWidget {
   final String userId;
-  const Videos({Key? key, required this.userId}) : super(key: key);
+  final bool isFamiliar; // recibido desde menu_principal
+  final String? relatedPatientId; // recibido desde menu_principal
+
+  const Videos({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   State<Videos> createState() => _VideosState();
@@ -15,89 +23,19 @@ class Videos extends StatefulWidget {
 class _VideosState extends State<Videos> {
   String? selectedCategory = 'Totes';
   String searchQuery = '';
-  bool isFamiliar = false;
-  String? relatedPatientId;
-  bool loadingRelacion = false;
   bool mostrarImagen = false;
 
   final List<String> categorias = ['Nutrició', 'Diàlisis'];
-
   final Map<String, YoutubePlayerController> _controllers = {};
 
-  @override
-  void initState() {
-    super.initState();
-    _checkUserType();
-  }
+  Stream<QuerySnapshot> _videosStream() {
+    Query query = FirebaseFirestore.instance.collection('Videos');
 
-  Future<void> _checkUserType() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('tipusDeUsuario')
-          .doc('tipus')
-          .get();
-
-      final data = userDoc.data();
-      if (data == null) return;
-
-      if (data['tipo'] == 'Familiar') {
-        setState(() {
-          isFamiliar = true;
-          loadingRelacion = true;
-        });
-
-        final relacionSnapshot = await FirebaseFirestore.instance
-            .collection('Usuarios')
-            .doc(widget.userId)
-            .collection('relacionFamiliarPaciente')
-            .limit(1)
-            .get();
-
-        if (relacionSnapshot.docs.isNotEmpty) {
-          final dniPaciente =
-              relacionSnapshot.docs.first.data()['DniPaciente'] as String?;
-          if (dniPaciente != null) {
-            await _getPatientIdFromDNI(dniPaciente);
-          }
-        }
-
-        setState(() {
-          loadingRelacion = false;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error verificando tipo usuario: $e");
+    if (selectedCategory != null && selectedCategory != 'Totes') {
+      query = query.where('Categoria', isEqualTo: selectedCategory);
     }
-  }
 
-  /// Busca el paciente recorriendo la colección Usuarios para evitar CollectionGroup
-  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    try {
-      final usersSnapshot =
-          await FirebaseFirestore.instance.collection('Usuarios').get();
-
-      for (var userDoc in usersSnapshot.docs) {
-        final personalDataSnapshot = await userDoc.reference
-            .collection('dadesPersonals')
-            .doc('dades')
-            .get();
-
-        if (personalDataSnapshot.exists) {
-          final personalData = personalDataSnapshot.data();
-          if (personalData?['Dni'] == dniPaciente) {
-            setState(() {
-              relatedPatientId = userDoc.id;
-              debugPrint("Paciente relacionado encontrado: $relatedPatientId");
-            });
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Error buscando paciente por DNI: $e");
-    }
+    return query.snapshots();
   }
 
   Future<void> marcarComoVisto(String videoTitle) async {
@@ -138,16 +76,6 @@ class _VideosState extends State<Videos> {
     }
   }
 
-  Stream<QuerySnapshot> _videosStream() {
-    Query query = FirebaseFirestore.instance.collection('Videos');
-
-    if (selectedCategory != null && selectedCategory != 'Totes') {
-      query = query.where('Categoria', isEqualTo: selectedCategory);
-    }
-
-    return query.snapshots();
-  }
-
   @override
   void dispose() {
     for (var controller in _controllers.values) {
@@ -171,39 +99,23 @@ class _VideosState extends State<Videos> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (isFamiliar)
+          if (widget.isFamiliar && widget.relatedPatientId != null)
             Padding(
               padding: const EdgeInsets.only(right: 10),
-              child: loadingRelacion
-                  ? SizedBox(
-                      width: 120,
-                      child: Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => videosPacient(
+                        relatedPatientId: widget.relatedPatientId!,
                       ),
-                    )
-                  : relatedPatientId != null
-                      ? ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => videosPacient(
-                                  relatedPatientId: relatedPatientId!,
-                                ),
-                              ),
-                            );
-                          },
-                          child: const Text("Vídeos pacient"),
-                        )
-                      : SizedBox.shrink(),
-            )
+                    ),
+                  );
+                },
+                child: const Text("Vídeos pacient"),
+              ),
+            ),
         ],
       ),
       body: SafeArea(
@@ -298,11 +210,10 @@ class _VideosState extends State<Videos> {
                   final docs = snapshot.data!.docs;
                   final filtered = docs.where((doc) {
                     final data = doc.data() as Map<String, dynamic>;
-                    final matchTitle = data['Titol']
+                    return data['Titol']
                         .toString()
                         .toLowerCase()
                         .contains(searchQuery);
-                    return matchTitle;
                   }).toList();
 
                   return Column(

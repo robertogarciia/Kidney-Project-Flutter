@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kidneyproject/components/bottom_imgs.dart';
 import 'package:kidneyproject/components/midle_imgs.dart';
@@ -16,122 +14,48 @@ import 'package:kidneyproject/pages/noticiesPage.dart';
 import 'package:kidneyproject/pages/graficaEstatAnim.dart';
 
 class MenuPrincipal extends StatefulWidget {
-  const MenuPrincipal({Key? key, required this.userId}) : super(key: key);
+  const MenuPrincipal({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId = '',
+  }) : super(key: key);
 
   final String userId;
+  final bool isFamiliar;
+  final String? relatedPatientId;
 
   @override
   _MenuPrincipalState createState() => _MenuPrincipalState();
 }
 
 class _MenuPrincipalState extends State<MenuPrincipal> {
-  bool isFamiliar = false;
-  bool isLoading = true;
-  String relatedPatientId = '';
+  // Variables de estado para mantener isFamiliar y relatedPatientId
+  late bool _isFamiliar;
+  late String? _relatedPatientId;
 
   @override
   void initState() {
     super.initState();
-    _checkUserType();
+    _isFamiliar = widget.isFamiliar;
+    _relatedPatientId = widget.relatedPatientId;
+
+    print(
+        '[MenuPrincipal] initState: isFamiliar=$_isFamiliar, relatedPatientId=$_relatedPatientId');
   }
 
-  // 🔎 Verificar si es Familiar y obtener paciente
-  Future<void> _checkUserType() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('tipusDeUsuario')
-          .doc('tipus')
-          .get();
-
-      final userData = userDoc.data();
-
-      if (userData != null && userData['tipo'] == 'Familiar') {
-        isFamiliar = true;
-
-        // Obtener DNI del paciente relacionado
-        final relatedPatientDocs = await FirebaseFirestore.instance
-            .collection('Usuarios')
-            .doc(widget.userId)
-            .collection('relacionFamiliarPaciente')
-            .get();
-
-        if (relatedPatientDocs.docs.isNotEmpty) {
-          final dniPaciente =
-              relatedPatientDocs.docs.first.data()['DniPaciente'];
-
-          if (dniPaciente != null) {
-            await _getPatientIdFromDNI(dniPaciente);
-          }
-        }
-      }
-    } catch (e) {
-      print("Error en _checkUserType: $e");
-    }
-
-    if (mounted) {
-      setState(() => isLoading = false);
-    }
-  }
-
-  // 🔎 Obtener ID del paciente usando collectionGroup (optimizado)
-  // 🔎 Obtener ID del paciente usando el DNI (estructura confirmada)
-  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    try {
-      final usersSnapshot =
-          await FirebaseFirestore.instance.collection('Usuarios').get();
-
-      bool found = false;
-
-      for (var userDoc in usersSnapshot.docs) {
-        final personalDataSnapshot = await userDoc.reference
-            .collection('dadesPersonals')
-            .doc('dades')
-            .get();
-
-        if (personalDataSnapshot.exists) {
-          final personalData = personalDataSnapshot.data();
-
-          // Comprobamos DNI ignorando mayúsculas y espacios
-          final dniStored =
-              personalData?['Dni']?.toString().trim().toUpperCase();
-          final dniToCheck = dniPaciente.trim().toUpperCase();
-
-          if (dniStored == dniToCheck) {
-            setState(() {
-              relatedPatientId = userDoc.id;
-            });
-            print("Paciente encontrado: $relatedPatientId");
-            found = true;
-            break;
-          }
-        }
-      }
-
-      if (!found) {
-        print("No se encontró paciente con DNI $dniPaciente");
-      }
-    } catch (e) {
-      print("Error buscando paciente por DNI: $e");
-    }
-  }
-
-  void navigateToPage(BuildContext context, Widget page) {
-    Navigator.push(
+  void navigateToPage(BuildContext context, Widget page) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
     );
+    // Cuando volvemos del push, mantenemos los valores
+    print(
+        '[MenuPrincipal] after push: isFamiliar=$_isFamiliar, relatedPatientId=$_relatedPatientId');
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return WillPopScope(
       onWillPop: () async {
         return await mostrarDialogoCerrarSesion(context);
@@ -201,7 +125,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'assets/images/vids.png',
                       onTap: () => navigateToPage(
-                          context, Videos(userId: widget.userId)),
+                          context,
+                          Videos(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                   ],
                 ),
@@ -223,9 +152,10 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       onTap: () => navigateToPage(
                           context,
                           noticiesPage(
-                              userId: widget.userId,
-                              isFamiliar: isFamiliar,
-                              relatedPatientId: relatedPatientId)),
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                   ],
                 ),
@@ -249,7 +179,12 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                       width: 160,
                       height: 160,
                       onTap: () => navigateToPage(
-                          context, graficaEstatAnim(userId: widget.userId)),
+                          context,
+                          graficaEstatAnim(
+                            userId: widget.userId,
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
+                          )),
                     ),
                   ],
                 ),
@@ -277,7 +212,8 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                           context,
                           MenuDietes(
                             userId: widget.userId,
-                            pacienteId: isFamiliar ? relatedPatientId : '',
+                            isFamiliar: _isFamiliar,
+                            relatedPatientId: _relatedPatientId,
                           ),
                         );
                       },
