@@ -221,7 +221,11 @@ class _MenuPrincipalState extends State<MenuPrincipal> {
                     MidleImgs(
                       imagePath: 'assets/images/inf.png',
                       onTap: () => navigateToPage(
-                          context, noticiesPage(userId: widget.userId)),
+                          context,
+                          noticiesPage(
+                              userId: widget.userId,
+                              isFamiliar: isFamiliar,
+                              relatedPatientId: relatedPatientId)),
                     ),
                   ],
                 ),

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kidneyproject/components/info_card.dart';
@@ -6,8 +5,15 @@ import 'noticiesPacient.dart';
 
 class noticiesPage extends StatefulWidget {
   final String userId;
+  final bool isFamiliar; // recibido desde menu_principal
+  final String? relatedPatientId; // recibido desde menu_principal
 
-  const noticiesPage({Key? key, required this.userId}) : super(key: key);
+  const noticiesPage({
+    Key? key,
+    required this.userId,
+    this.isFamiliar = false,
+    this.relatedPatientId,
+  }) : super(key: key);
 
   @override
   _noticiesPageState createState() => _noticiesPageState();
@@ -17,73 +23,6 @@ class _noticiesPageState extends State<noticiesPage> {
   String? selectedCategory;
   String searchQuery = '';
   bool mostrarImagen = false;
-
-  bool isFamiliar = false;
-  String? relatedPatientId;
-  bool loadingRelacion = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkUserType();
-  }
-
-  Future<void> _checkUserType() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Usuarios')
-        .doc(widget.userId)
-        .collection('tipusDeUsuario')
-        .doc('tipus')
-        .get();
-
-    final userData = userDoc.data() as Map<String, dynamic>?;
-
-    if (userData == null) return;
-
-    if (userData['tipo'] == 'Familiar') {
-      setState(() {
-        isFamiliar = true;
-        loadingRelacion = true;
-      });
-
-      final relatedPatientDocs = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(widget.userId)
-          .collection('relacionFamiliarPaciente')
-          .get();
-
-      if (relatedPatientDocs.docs.isNotEmpty) {
-        final dniPaciente = relatedPatientDocs.docs.first.data()['DniPaciente'];
-        await _getPatientIdFromDNI(dniPaciente);
-      }
-
-      setState(() {
-        loadingRelacion = false;
-      });
-    }
-  }
-
-  Future<void> _getPatientIdFromDNI(String dniPaciente) async {
-    final usersSnapshot =
-        await FirebaseFirestore.instance.collection('Usuarios').get();
-
-    for (var userDoc in usersSnapshot.docs) {
-      final personalDataSnapshot = await userDoc.reference
-          .collection('dadesPersonals')
-          .doc('dades')
-          .get();
-
-      if (personalDataSnapshot.exists) {
-        final personalData = personalDataSnapshot.data();
-        if (personalData?['Dni'] == dniPaciente) {
-          setState(() {
-            relatedPatientId = userDoc.id;
-          });
-          break;
-        }
-      }
-    }
-  }
 
   void resetFilter() {
     setState(() {
@@ -99,34 +38,28 @@ class _noticiesPageState extends State<noticiesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xFFFFD53D),
+        backgroundColor: const Color(0xFFFFD53D),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (isFamiliar)
+          if (widget.isFamiliar && widget.relatedPatientId != null)
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
-              child: loadingRelacion
-                  ? Center(
-                      child: CircularProgressIndicator(color: Colors.white))
-                  : relatedPatientId != null
-                      ? ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => noticiesPacient(
-                                    relatedPatientId: relatedPatientId!),
-                              ),
-                            );
-                          },
-                          child: Text('Veure notícies del meu pacient'),
-                        )
-                      : SizedBox.shrink(),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => noticiesPacient(
+                        relatedPatientId: widget.relatedPatientId!,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Veure notícies del meu pacient'),
+              ),
             ),
         ],
       ),
@@ -137,13 +70,13 @@ class _noticiesPageState extends State<noticiesPage> {
               child: Center(
                 child: Column(
                   children: <Widget>[
-                    SizedBox(height: 20),
-                    Text(
+                    const SizedBox(height: 20),
+                    const Text(
                       'Noticies',
                       style:
                           TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 22),
+                    const SizedBox(height: 22),
 
                     // Buscador
                     Padding(
@@ -157,7 +90,7 @@ class _noticiesPageState extends State<noticiesPage> {
                               color: Colors.grey.withOpacity(0.2),
                               spreadRadius: 5,
                               blurRadius: 15,
-                              offset: Offset(0, 3),
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -167,7 +100,7 @@ class _noticiesPageState extends State<noticiesPage> {
                               searchQuery = value.toLowerCase();
                             });
                           },
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Buscar per títol...',
                             hintStyle: TextStyle(color: Colors.grey),
                             border: InputBorder.none,
@@ -181,14 +114,14 @@ class _noticiesPageState extends State<noticiesPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     // Filtros
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         DropdownButton<String>(
-                          hint: Text('Seleccionar categoría'),
+                          hint: const Text('Seleccionar categoría'),
                           value: selectedCategory,
                           items: ['Salud', 'Investigación'].map((String value) {
                             return DropdownMenuItem<String>(
@@ -202,35 +135,34 @@ class _noticiesPageState extends State<noticiesPage> {
                             });
                           },
                         ),
-                        SizedBox(width: 20),
+                        const SizedBox(width: 20),
                         ElevatedButton(
                           onPressed: resetFilter,
-                          child: Text('Restablir filtres'),
+                          child: const Text('Restablir filtres'),
                         ),
                       ],
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     // Mostrar noticias
-                    StreamBuilder(
+                    StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection('Noticies')
                           .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                      builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return CircularProgressIndicator();
+                          return const CircularProgressIndicator();
                         }
                         if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
                         }
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return Text('No hi ha notícies disponibles');
+                          return const Text('No hi ha notícies disponibles');
                         }
 
-                        List<DocumentSnapshot> filteredNews =
-                            snapshot.data!.docs.where((doc) {
+                        // Filtrado por búsqueda y categoría
+                        final filteredNews = snapshot.data!.docs.where((doc) {
                           bool matchesCategory = selectedCategory == null ||
                               doc['Categoria'] == selectedCategory;
                           bool matchesSearch = doc['Titol'] != null &&
@@ -239,15 +171,13 @@ class _noticiesPageState extends State<noticiesPage> {
                         }).toList();
 
                         if (filteredNews.isEmpty) {
-                          return Text(
+                          return const Text(
                               'No s\'han trobat notícies amb els filtres aplicats.');
                         }
 
                         return Column(
-                          children:
-                              filteredNews.map((DocumentSnapshot document) {
-                            Map<String, dynamic> data =
-                                document.data() as Map<String, dynamic>;
+                          children: filteredNews.map((doc) {
+                            final data = doc.data() as Map<String, dynamic>;
 
                             return FutureBuilder<DocumentSnapshot>(
                               future: FirebaseFirestore.instance
@@ -259,9 +189,10 @@ class _noticiesPageState extends State<noticiesPage> {
                               builder: (context, vistoSnapshot) {
                                 if (vistoSnapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
+                                  return const CircularProgressIndicator();
                                 }
-                                bool isVisto = vistoSnapshot.hasData &&
+
+                                final isVisto = vistoSnapshot.hasData &&
                                     vistoSnapshot.data!.exists;
 
                                 return InfoCard(
@@ -286,7 +217,7 @@ class _noticiesPageState extends State<noticiesPage> {
             ),
             AnimatedOpacity(
               opacity: mostrarImagen ? 1.0 : 0.0,
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               child: Visibility(
                 visible: mostrarImagen,
                 child: Container(
@@ -308,7 +239,7 @@ class _noticiesPageState extends State<noticiesPage> {
 
   Future<void> marcarComoVisto(String NoticiaTitle, String userId) async {
     try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+      final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(userId)
           .collection('noticiesVistes')
@@ -327,19 +258,19 @@ class _noticiesPageState extends State<noticiesPage> {
           'timestampVisto': FieldValue.serverTimestamp(),
         });
 
-        DocumentReference datosRef = FirebaseFirestore.instance
+        final datosRef = FirebaseFirestore.instance
             .collection('Usuarios')
             .doc(userId)
             .collection('trivial')
             .doc('datos');
 
         await FirebaseFirestore.instance.runTransaction((transaction) async {
-          DocumentSnapshot datosSnapshot = await transaction.get(datosRef);
+          final datosSnapshot = await transaction.get(datosRef);
 
           if (!datosSnapshot.exists) {
             transaction.set(datosRef, {'coins': 10});
           } else {
-            int coinsActuales = datosSnapshot.get('coins') ?? 0;
+            final coinsActuales = datosSnapshot.get('coins') ?? 0;
             transaction.update(datosRef, {'coins': coinsActuales + 10});
           }
         });
@@ -347,7 +278,7 @@ class _noticiesPageState extends State<noticiesPage> {
         setState(() {
           mostrarImagen = true;
         });
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
         setState(() {
           mostrarImagen = false;
         });
