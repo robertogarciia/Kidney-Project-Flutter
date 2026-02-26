@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:kidneyproject/pages/laMevaDietaDetall.dart';
 
@@ -29,11 +30,11 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
   bool _isLoading = true;
   String _tituloAppBar = 'Les Meves Dietes';
   late String _targetUserId; // usuario real al que consultar dietas
+  StreamSubscription<QuerySnapshot>? _dietesSubscription;
 
   Future<void> _initializePage() async {
     await _loadUserData();
-    await _fetchDietes();
-    setState(() => _isLoading = false);
+    _subscribeToDietes();
   }
 
   @override
@@ -60,6 +61,10 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
   }
 
   Future<void> _fetchDietes() async {
+    _subscribeToDietes();
+  }
+
+  Query _buildDietesQuery() {
     final collection = FirebaseFirestore.instance
         .collection('Usuarios')
         .doc(_targetUserId)
@@ -75,7 +80,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                   DateTime(today.year, today.month, today.day)))
           .where('fechaCreacion',
               isLessThan: Timestamp.fromDate(
-                  DateTime(today.year, today.month, today.day + 1)));
+                  DateTime(today.year, today.month, today.day).add(const Duration(days: 1))));
     } else if (_currentFilter == 'calendar' && _selectedDate != null) {
       final start = DateTime(
           _selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
@@ -87,24 +92,52 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
           .where('fechaCreacion', isLessThan: Timestamp.fromDate(end));
     }
 
-    final snapshot = await query.get();
-    List<QueryDocumentSnapshot> dietes = snapshot.docs;
+    return query;
+  }
 
-    if (_mostrarFavorits) {
-      dietes = dietes.where((d) => d['favorito'] == true).toList();
-    }
+  void _subscribeToDietes() {
+    _dietesSubscription?.cancel();
 
-    setState(() => _dietes = dietes);
+    final query = _buildDietesQuery();
+    _dietesSubscription = query.snapshots().listen(
+      (snapshot) {
+        List<QueryDocumentSnapshot> dietes = snapshot.docs;
+
+        if (_mostrarFavorits) {
+          dietes = dietes.where((d) => d['favorito'] == true).toList();
+        }
+
+        dietes = _sortDietesList(dietes);
+
+        if (!mounted) return;
+        setState(() {
+          _dietes = dietes;
+          _isLoading = false;
+        });
+      },
+      onError: (e) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        print("Error escuchando dietas: $e");
+      },
+    );
   }
 
   void _sortDietes() {
-    _dietes.sort((a, b) {
+    _dietes = _sortDietesList(_dietes);
+  }
+
+  List<QueryDocumentSnapshot> _sortDietesList(
+      List<QueryDocumentSnapshot> dietes) {
+    final sorted = List<QueryDocumentSnapshot>.from(dietes);
+    sorted.sort((a, b) {
       final aScore = a['puntuacionTotal'] ?? 0;
       final bScore = b['puntuacionTotal'] ?? 0;
       return _isDescending
           ? bScore.compareTo(aScore)
           : aScore.compareTo(bScore);
     });
+    return sorted;
   }
 
   Future<void> _showDatePicker() async {
@@ -120,7 +153,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
         _currentFilter = 'calendar';
         _dietes = [];
       });
-      _fetchDietes();
+      _subscribeToDietes();
     }
   }
 
@@ -129,7 +162,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
       _currentFilter = _currentFilter == 'today' ? 'all' : 'today';
       _dietes = [];
     });
-    _fetchDietes();
+    _subscribeToDietes();
   }
 
   Future<void> _deleteDiet(String dietaId, int index) async {
@@ -140,11 +173,15 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
 
     try {
       await userRef.doc(dietaId).delete();
-      setState(() => _dietes.removeAt(index));
-      _fetchDietes();
     } catch (e) {
       print("Error al eliminar la dieta: $e");
     }
+  }
+
+  @override
+  void dispose() {
+    _dietesSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -207,7 +244,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                       _dietes = [];
                       _mostrarFavorits = false;
                     });
-                    _fetchDietes();
+                    _subscribeToDietes();
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -259,7 +296,7 @@ class _lesMevesDietesState extends State<lesMevesDietes> {
                               activeColor: Colors.amber,
                               onChanged: (val) {
                                 setState(() => _mostrarFavorits = val);
-                                _fetchDietes();
+                                _subscribeToDietes();
                               }),
                         ],
                       ),

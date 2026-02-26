@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:async';
 
 import 'menu_principal.dart';
 import 'estatAnim.dart';
@@ -27,6 +28,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
   final List<int> years = List<int>.generate(10, (index) => 2023 + index);
   int selectedYear = DateTime.now().year;
   bool isLoading = true;
+  StreamSubscription<QuerySnapshot>? _moodSubscription;
 
   final List<String> months = [
     'Gener',
@@ -49,44 +51,56 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
     final now = DateTime.now();
     selectedMonth = months[now.month - 1];
     moodData = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
-    fetchMoodData(selectedMonth);
+    _subscribeMoodData(selectedMonth);
   }
 
-  Future<void> fetchMoodData(String month) async {
+  void _subscribeMoodData(String month) {
+    _moodSubscription?.cancel();
     setState(() => isLoading = true);
 
-    try {
-      final start = DateTime(selectedYear, months.indexOf(month) + 1, 1);
-      final end =
-          DateTime(selectedYear, months.indexOf(month) + 2, 0, 23, 59, 59);
+    final start = DateTime(selectedYear, months.indexOf(month) + 1, 1);
+    final end = DateTime(selectedYear, months.indexOf(month) + 1, 1)
+        .add(const Duration(days: 32));
+    final endOfMonth = DateTime(end.year, end.month, 1);
 
-      final targetUserId = widget.isFamiliar && widget.relatedPatientId != null
-          ? widget.relatedPatientId!
-          : widget.userId;
+    final targetUserId = widget.isFamiliar && widget.relatedPatientId != null
+        ? widget.relatedPatientId!
+        : widget.userId;
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection('Usuarios')
-          .doc(targetUserId)
-          .collection('estatAnim')
-          .where('Data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('Data', isLessThanOrEqualTo: Timestamp.fromDate(end))
-          .get();
+    _moodSubscription = FirebaseFirestore.instance
+        .collection('Usuarios')
+        .doc(targetUserId)
+        .collection('estatAnim')
+        .where('Data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('Data', isLessThan: Timestamp.fromDate(endOfMonth))
+        .snapshots()
+        .listen(
+      (snapshot) {
+        final counts = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
 
-      final counts = {'Content/a': 0, 'Neutral': 0, 'Trist/a': 0};
+        for (var doc in snapshot.docs) {
+          final mood = doc['Estat'];
+          if (counts.containsKey(mood)) counts[mood] = counts[mood]! + 1;
+        }
 
-      for (var doc in snapshot.docs) {
-        final mood = doc['Estat'];
-        if (counts.containsKey(mood)) counts[mood] = counts[mood]! + 1;
-      }
+        if (!mounted) return;
+        setState(() {
+          moodData = counts;
+          isLoading = false;
+        });
+      },
+      onError: (e) {
+        print('Error al escuchar datos: $e');
+        if (!mounted) return;
+        setState(() => isLoading = false);
+      },
+    );
+  }
 
-      setState(() {
-        moodData = counts;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error al obtener datos: $e');
-      setState(() => isLoading = false);
-    }
+  @override
+  void dispose() {
+    _moodSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -156,7 +170,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   onChanged: (newValue) {
                     setState(() {
                       selectedMonth = newValue!;
-                      fetchMoodData(selectedMonth);
+                      _subscribeMoodData(selectedMonth);
                     });
                   },
                   isExpanded: true,
@@ -192,7 +206,7 @@ class _graficaEstatAnimState extends State<graficaEstatAnim> {
                   onChanged: (newValue) {
                     setState(() {
                       selectedYear = newValue!;
-                      fetchMoodData(selectedMonth);
+                      _subscribeMoodData(selectedMonth);
                     });
                   },
                   isExpanded: true,
